@@ -2,7 +2,7 @@
 import auth from '@/auth';
 import type { CodeInfo, CodeMapping, FhirValueSetDefinition, InformedCodeMapping, Predicate, Variable } from '@/stores/types';
 import { mdiArrowLeft, mdiArrowRight, mdiMagnify, mdiPencil } from '@mdi/js';
-import { ref, watch, type Ref } from 'vue';
+import { computed, ref, watch, type Ref } from 'vue';
 import CodeChildren from './CodeChildren.vue';
 import { expandValueSet, getCode } from '@/utils/fhirApi.ts';
 
@@ -30,11 +30,9 @@ const comment = ref("");
 const predicates = ["owl:sameAs", "owl:equivalentClass", "owl:equivalentProperty", "rdfs:subClassOf", "rdfs:subPropertyOf", "skos:relatedMatch", "skos:closeMatch", "skos:exactMatch", "skos:narrowMatch", "skos:broadMatch", "oboInOwl:hasDbXref", "rdfs:seeAlso"];
 
 const go = async (text: string) => {
-  console.log("letsago");
   loadingSearch.value = true;
   const results: InformedCodeMapping[][] = [];
   const fetches = valueSets.map(async (set) => {
-      console.log("fhir!");
       const response = await expandValueSet(text, set);
       return response;
   });
@@ -144,6 +142,9 @@ const loadParent = async (parentCode: string) => {
 
 // const compareCodes = (code: InformedCodeMapping) => code.code === focusCode.value?.code && code.system === focusCode.value?.system;
 
+const additionalInformation = computed(() => dataElement.metadata.map((pair) => `${pair.key}: ${pair.value}`).join(`
+`));
+
 </script>
 
 <template>
@@ -154,6 +155,26 @@ const loadParent = async (parentCode: string) => {
   <v-row v-if="!selectedCode" size="12" class="full-width">
     <v-col :cols="focusCode ? 6 : 12">
       <v-row fluid>
+        <h3>{{ dataElement.label }}</h3><br />
+        <h6 v-if="dataElement.variableName">{{ dataElement.variableName }}</h6>
+        <v-expansion-panels v-if="dataElement.metadata.length">
+          <v-expansion-panel v-if="dataElement.choices?.length" title="Auswahlmöglichkeiten">
+            <v-expansion-panel-text>
+              <template v-for="choice in dataElement.choices">
+                {{ choice.name }} (<var>{{ choice.code }}</var>)<br />
+              </template>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+          <v-expansion-panel v-if="dataElement.metadata.length" title="Weitere Informationen">
+            <v-expansion-panel-text>
+              <template v-for="m in dataElement.metadata">
+                {{ m.key }}: {{ m.value }}<br />
+              </template>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
+      </v-row>
+      <v-row fluid>
         <v-text-field v-model="search" hint="Code suchen …">
           <template #append-inner>
             <v-btn :loading="loadingSearch" :disabled="loadingSearch" :icon="mdiMagnify" variant="text" @click="go(search)" />
@@ -161,7 +182,7 @@ const loadParent = async (parentCode: string) => {
         </v-text-field>
       </v-row>
       <v-row fluid>
-        <!-- TODO group by terminology/source -->
+        <!-- TODO group by terminology/source, or display it & filter out duplicates? -->
         <v-data-table
           v-if="searchResults?.length"
           :item-value="(item) => item"

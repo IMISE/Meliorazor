@@ -168,8 +168,6 @@ const testConnection = async (input: ValueSetDefinition) => {
 }
 
 watch(response, async () => {
-  console.log(response);
-  console.log(response.value)
   if (response.value?.ok) {
     const body = await response.value.text();
     const id = Number(body);

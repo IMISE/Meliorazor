@@ -16,7 +16,6 @@ const data: Ref<Variable | undefined> = ref();
 
 const get = async (elementId: number) => {
   const u = await auth.getUser();
-  console.log(u?.access_token, elementId);
   if (!u?.access_token || !elementId) return;
   const options = {
     method: "GET",
