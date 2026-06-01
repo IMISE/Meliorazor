@@ -1,0 +1,12 @@
+{"properties": [
+  {
+    "name": "spring.security.oauth2.resourceserver.jwt.issuer-uri",
+    "type": "java.lang.String",
+    "description": "OAuth issuer URI, e.g. Keycloak Realm URL"
+  },
+  {
+    "name": "whitelisted.cors.url",
+    "type": "java.lang.String",
+    "description": "CORS allowed origins, separated using a comma (,)"
+  }
+]}

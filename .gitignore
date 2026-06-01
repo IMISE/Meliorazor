@@ -1,0 +1,6 @@
+postgres_data
+keycloak_data
+.vscode
+.env
+.env.*
+
