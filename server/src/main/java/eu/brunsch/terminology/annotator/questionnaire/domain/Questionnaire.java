@@ -1,5 +1,7 @@
 package eu.brunsch.terminology.annotator.questionnaire.domain;
 
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
@@ -45,4 +47,34 @@ public class Questionnaire {
     @ElementCollection
     private FhirValueSetDefinition[] valueSets;
 
+    /**
+     * Whether a user with the given username is able to see this questionnaire.
+     * This questionnaire should not be displayed to this user if it answers `false`.
+     * @param username set on questionnaire and taken from claims 
+     * @return whether user is allowed to see this
+     */
+    public boolean seenBy(final String username) {
+        for (Participant participant : participants) {
+            if (participant.getUsername().equals(username) && participant.getRoles().length > 0) {
+                System.err.println("Worked, innit");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Whether a user with the given username is able to administer this questionnaire.
+     * Editing or deleting (parts of) this project should be rejected if it answers `false`.
+     * @param username set on questionnaire and taken from claims 
+     * @return whether user is allowed to administer this
+     */
+    public boolean administeredBy(final String username) {
+        for (Participant participant : participants) {
+            if (participant.getUsername().equals(username) && List.of(participant.getRoles()).contains(Participant.Role.ADMIN)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

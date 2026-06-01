@@ -89,7 +89,7 @@ public class AnnotationController {
      */
     @GetMapping("dataElement/{dataElement}/annotation/{id}")
     public AnnotationDto getAnnotation(final @PathVariable Long id) {
-        return service.getAnnotation(id);
+        return service.getAnnotationDto(id);
     }
 
     /**

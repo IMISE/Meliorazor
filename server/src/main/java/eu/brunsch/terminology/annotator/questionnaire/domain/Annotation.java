@@ -2,6 +2,7 @@ package eu.brunsch.terminology.annotator.questionnaire.domain;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -188,4 +189,46 @@ public class Annotation {
                         .isAfter(c2.getSubmittedAt()) ? c1 : c2))
             .values();
     }
+
+    /**
+     * Whether a user with the given username is able to see this annotation.
+     * This annotation should not be displayed to this user if it answers `false`.
+     * @param username set on annotation and questionnaire and taken from claims 
+     * @return whether user is allowed to see this
+     */
+    public boolean seenBy(final String username) {
+        if (authorName.equals(username) || getVariable().getQuestionnaire() == null) {
+            return true;
+        }
+
+        for (Participant participant : getVariable().getQuestionnaire().getParticipants()) {
+            if (participant.getUsername().equals(username)) {
+                final List<Participant.Role> roles = List.of(participant.getRoles());
+                if (roles.contains(Participant.Role.FEEDBACK) || roles.contains(Participant.Role.VIEW)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Whether a user with the given username is able to review annotations on data elements of this questionnaire.
+     * Feedback by this user on data elements of this project should be rejected if it answers `false`.
+     * @param username set on annotation and questionnaire and taken from claims 
+     * @return whether user is allowed to give feedback on this
+     */
+    public boolean reviewableBy(final String username) {
+        if (getVariable().getQuestionnaire() == null) {
+            return true;
+        }
+        // if (authorName.equals(username)) { return false; }
+        for (Participant participant : getVariable().getQuestionnaire().getParticipants()) {
+            if (participant.getUsername().equals(username) && List.of(participant.getRoles()).contains(Participant.Role.FEEDBACK)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

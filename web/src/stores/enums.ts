@@ -5,7 +5,7 @@ export enum Role {
   ADMIN = "ADMIN"
 }
 
-export const roles = [{ title: "Annotieren", value: "ANNOTATE" }, { title: "Korrigieren", value: "FEEDBACK" }, { title: "Sehen", value: "VIEW" }, { title: "Administrieren", value: "ADMIN" }];
+export const roles = [{ title: "Annotieren", value: "ANNOTATE" }, { title: "Korrigieren", value: "FEEDBACK" }, { title: "Alles Sehen", value: "VIEW" }, { title: "Administrieren", value: "ADMIN" }];
 export enum Status {
   OPEN = "OPEN",
   ACCEPTED = "ACCEPTED",

@@ -1,27 +1,31 @@
 package eu.brunsch.terminology.annotator;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
-import org.springframework.http.HttpMethod;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.CorsConfigurer;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtException;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import eu.brunsch.terminology.annotator.useraccount.KeycloakJwtAuthenticationConverter;
 
 @Configuration
 @EnableMethodSecurity
@@ -29,61 +33,56 @@ import eu.brunsch.terminology.annotator.useraccount.KeycloakJwtAuthenticationCon
 public class AnnotatorSecurityConfiguration {
 
     /** Environment vars are loaded here. To be replaced some time. */
-    @Autowired
-    private Environment environment;
-
-    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
-    private String issuerUri;
+    @Value("${whitelisted.cors.url}")
+    private String whitelistedCorsUrls;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity security)
-        throws Exception {
-
-        // Allow CORS requests
-        security.cors(Customizer.withDefaults());
-        return security.authorizeHttpRequests(http -> http
-                    // Allow access to Swagger
-                    .requestMatchers(
-                        "/v3/api-docs/**",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html"
-                    ).permitAll()
-                    // Authenticate all other requests
-                    .anyRequest().authenticated()
-                // Use OAuth
-                ).oauth2ResourceServer(oauth2 ->
-                    oauth2.jwt(jwt ->
-                        jwt.jwtAuthenticationConverter(
-                            new KeycloakJwtAuthenticationConverter()))
-                ).build();
+    JwtAuthenticationConverter authenticationConverter(AuthoritiesConverter authoritiesConverter) {
+        final var authenticationConverter = new JwtAuthenticationConverter();
+        authenticationConverter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            return authoritiesConverter.convert(jwt.getClaims());
+        });
+        return authenticationConverter;
     }
 
     @Bean
-    public JwtDecoder jwtDecoder() {
-
-        // without this, the oauth call to keycloak results in "Read timed out" error
-        // TODO put this where it actually belongs
-        System.setProperty("com.nimbusds.jose.jwk.source.RemoteJWKSet.defaultHttpReadTimeout", "2000");
-        System.setProperty("com.nimbusds.jose.jwk.source.RemoteJWKSet.defaultHttpConnectTimeout", "2000");
-
-        JwtDecoder jwtDecoder = NimbusJwtDecoder.withIssuerLocation(issuerUri).build();
-
-        return new JwtDecoder() {
-            @Override
-            public Jwt decode(String token) throws JwtException {
-                System.out.println("token: " + token);
-                Jwt jwt = jwtDecoder.decode(token);
-                System.out.println("jwt: " + jwt);
-                return jwt;
-            }
+    AuthoritiesConverter realmRolesAuthoritiesConverter() {
+        return claims -> {
+            var realmAccess = Optional.ofNullable((Map<String, Object>) claims.get("realm_access"));
+            var roles = realmAccess.flatMap(map -> Optional.ofNullable((List<String>) map.get("roles")));
+            return roles.map(List::stream)
+            .orElse(Stream.empty())
+            .map(SimpleGrantedAuthority::new)
+            .map(GrantedAuthority.class::cast)
+            .toList();
         };
     }
 
-    /**
-     * Configure allowed Origins for CORS.
-     *
-     * @return A configurer that configures CORS allowed origins.
-     */
+    @Bean
+    SecurityFilterChain resourceServerSecurityFilterChain(HttpSecurity http, Converter<Jwt, AbstractAuthenticationToken> authenticationConverter) throws Exception {
+        // Allow CORS requests
+        http.cors(Customizer.withDefaults());
+
+        http.oauth2ResourceServer(resourceServer -> {
+            resourceServer.jwt(jwtDecoder -> {
+                jwtDecoder.jwtAuthenticationConverter(authenticationConverter);
+            });
+        });
+
+        http.sessionManagement(sessions -> {
+            sessions.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        }).csrf(CsrfConfigurer<HttpSecurity>::disable);
+
+        http.authorizeHttpRequests(requests -> {
+            requests.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll();
+            requests.anyRequest().authenticated();
+        });
+
+        return http.build();
+    }
+
+    interface AuthoritiesConverter extends Converter<Map<String, Object>, Collection<GrantedAuthority>> {}
+
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
@@ -92,14 +91,13 @@ public class AnnotatorSecurityConfiguration {
              */
             @Override
             public void addCorsMappings(final CorsRegistry registry) {
-                final String urls = environment.getProperty("whitelisted.cors.url");
-                if (urls == null) {
+                if (whitelistedCorsUrls == null || whitelistedCorsUrls == "") {
                     throw new RuntimeException(
                         "Missing whitelisted CORS properties!"
                     );
                 }
                 registry.addMapping("/**")
-                    .allowedOrigins(urls.split(","))
+                    .allowedOrigins(whitelistedCorsUrls.split(","))
                     .allowedMethods("*");
             }
         };
@@ -119,8 +117,7 @@ public class AnnotatorSecurityConfiguration {
     public CommonsRequestLoggingFilter logFilter() {
         final int maxPayloadLength = 10000;
 
-        CommonsRequestLoggingFilter filter
-          = new CommonsRequestLoggingFilter();
+        CommonsRequestLoggingFilter filter = new CommonsRequestLoggingFilter();
         filter.setIncludeQueryString(true);
         filter.setIncludePayload(true);
         filter.setMaxPayloadLength(maxPayloadLength);
@@ -128,5 +125,4 @@ public class AnnotatorSecurityConfiguration {
         filter.setIncludeClientInfo(true);
         return filter;
     }
-
 }

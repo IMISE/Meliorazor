@@ -1,5 +1,7 @@
 package eu.brunsch.terminology.annotator.questionnaire.domain;
 
+import java.util.List;
+
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
@@ -72,5 +74,23 @@ public class DataElement {
      */
     @Embeddable
     public record AdditionalInformation(String key, String value) { }
+
+    /**
+     * Whether a user with the given username is able to annotate this data element and its choices.
+     * Annotations by this user on this data element should be rejected if it answers `false`.
+     * @param username set on questionnaire and taken from claims 
+     * @return whether user is allowed to annotate this
+     */
+    public boolean annotatableBy(final String username) {
+        if (getQuestionnaire() == null) {
+            return true;
+        }
+        for (Participant participant : getQuestionnaire().getParticipants()) {
+            if (participant.getUsername().equals(username) && List.of(participant.getRoles()).contains(Participant.Role.ANNOTATE)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 }
