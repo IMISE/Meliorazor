@@ -1,6 +1,5 @@
 package eu.brunsch.terminology.annotator.questionnaire.domain;
 
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
