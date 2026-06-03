@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import auth from '@/auth';
-import type { CodeMapping, Predicate } from '@/stores/types';
+import type { CodeMapping, Predicate } from '@/types/types';
 import { mdiPencil } from '@mdi/js';
 import { ref, type Ref } from 'vue';
 

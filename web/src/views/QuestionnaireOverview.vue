@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import auth from '@/auth';
 import QuestionnaireList from '@/components/QuestionnaireList.vue';
-import type { Questionnaire } from '@/stores/types';
+import type { Questionnaire } from '@/types/types';
 import { mdiPlus, mdiRefresh } from '@mdi/js';
 import { onMounted, ref, type Ref } from 'vue';
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Status } from '@/stores/enums';
-import type { Annotation } from '@/stores/types';
+import { Status } from '@/types/enums';
+import type { Annotation } from '@/types/types';
 import { mdiArrowRight, mdiCheckboxBlankCircleOutline, mdiCheckCircleOutline, mdiCloseCircleOutline } from '@mdi/js';
 
 defineProps<{

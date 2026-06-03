@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { CommentType } from '@/stores/enums';
-import type { AnnotationComment } from '@/stores/types';
+import { CommentType } from '@/types/enums';
+import type { AnnotationComment } from '@/types/types';
 import { mdiCheckboxBlankCircleOutline, mdiCheckCircleOutline, mdiCloseCircleOutline } from '@mdi/js';
 
 const { comment } = defineProps<{

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { Variable } from '@/stores/types';
+import type { Variable } from '@/types/types';
 import { computed, inject, type Ref } from 'vue';
-import { Role, Status } from '@/stores/enums';
+import { Role, Status } from '@/types/enums';
 import { mdiCheckboxBlankCircleOutline, mdiCheckCircleOutline } from '@mdi/js';
 import type { IdTokenClaims } from 'oidc-client-ts';
 

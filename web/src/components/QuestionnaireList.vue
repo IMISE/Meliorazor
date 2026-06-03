@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Questionnaire } from '@/stores/types';
+import type { Questionnaire } from '@/types/types';
 import QuestionnaireInfo from './QuestionnaireInfo.vue';
 
 defineProps<{

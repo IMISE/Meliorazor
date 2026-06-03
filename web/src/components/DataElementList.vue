@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { Variable } from '@/stores/types';
+import type { Variable } from '@/types/types';
 import DataElementInfo from './DataElementInfo.vue';
-import type { Role } from '@/stores/enums.ts';
+import type { Role } from '@/types/enums.ts';
 
 defineProps<{
   projectId: number,

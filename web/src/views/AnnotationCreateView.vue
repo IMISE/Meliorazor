@@ -2,7 +2,7 @@
 import auth from '@/auth';
 import Annotator from '@/components/Annotator.vue';
 import TabbedInterface from '@/components/TabbedInterface.vue';
-import type { Questionnaire, Variable } from '@/stores/types';
+import type { Questionnaire, Variable } from '@/types/types';
 import { computed, onMounted, ref, watch, type Ref } from 'vue';
 import { useRouter } from 'vue-router';
 

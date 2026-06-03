@@ -1,19 +1,24 @@
 <script setup lang="ts">
-import type { User } from "@/stores/user";
+import type { User } from "@/types/types";
+import { ref, type Ref } from "vue";
 
-const props = defineProps<{
-  user: User;
+defineProps<{
+  username: string;
 }>();
+
+// TODO fetch
+const user: Ref<User | undefined> = ref(undefined);
+
 </script>
 
 <template>
-  <div class="container">
-    <div class="name">{{ user.lastname }}</div>
+  <div class="container" v-if="user">
+    <div class="name">{{ user.displayName }}</div>
     <div class="buttons">
       <!-- TDDO button to add user to project -->
       <!-- TODO stats, as modal maybe? -->
       <v-icon-btn icon="mdi-counter" href="example.com" />
-      <v-icon-btn icon="mdi-email-fast" :href="`mailto:${props.user.email}`" />
+      <v-icon-btn icon="mdi-email-fast" :href="`mailto:${user.email}`" />
     </div>
   </div>
 </template>

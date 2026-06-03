@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import auth from '@/auth';
 import DataElementList from '@/components/DataElementList.vue';
-import { Role, Status } from '@/stores/enums';
-import type { Questionnaire } from '@/stores/types';
+import { Role, Status } from '@/types/enums';
+import type { Questionnaire } from '@/types/types';
 import type { IdTokenClaims } from 'oidc-client-ts';
 import { computed, onMounted, ref, watch, type Ref } from 'vue';
 import { useRouter } from 'vue-router';

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import auth from '@/auth';
 import AnnotationList from '@/components/AnnotationList.vue';
-import type { Variable } from '@/stores/types';
+import type { Variable } from '@/types/types';
 import { mdiReload } from '@mdi/js';
 import { watch } from 'vue';
 import { computed, onMounted, ref, type Ref } from 'vue';

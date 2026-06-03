@@ -2,9 +2,9 @@
 import { computed, ref, watch, type Ref } from 'vue';
 import Papa from 'papaparse';
 import { mdiAccountMinus, mdiAccountPlus, mdiAlertCircleOutline, mdiCheck, mdiMinus, mdiPlus, mdiTestTube } from '@mdi/js';
-import type { FhirValueSetDefinition, Participant, Questionnaire, QuestionnaireOptions, Variable } from '@/stores/types';
+import type { FhirValueSetDefinition, Participant, Questionnaire, QuestionnaireOptions, Variable } from '@/types/types';
 import auth from '@/auth';
-import { roles } from '@/stores/enums';
+import { roles } from '@/types/enums';
 import { useRouter } from 'vue-router';
 
 const title = ref("");

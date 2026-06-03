@@ -1,5 +1,5 @@
-import type { Designation, Parameters, Properties, StringValue } from "@/stores/fhir";
-import type { CodeInfo, CodeMapping, FhirValueSetDefinition, InformedCodeMapping } from "@/stores/types";
+import type { Designation, Parameters, Properties, StringValue } from "@/types/fhir";
+import type { CodeInfo, CodeMapping, FhirValueSetDefinition, InformedCodeMapping } from "@/types/types";
 
 async function fetchFhir(url: string, expectedResourceType: string) {
   const response = await fetch(url);

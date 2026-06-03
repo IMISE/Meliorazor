@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FhirValueSetDefinition, InformedCodeMapping } from '@/stores/types';
+import type { FhirValueSetDefinition, InformedCodeMapping } from '@/types/types';
 import { expandValueSet } from '@/utils/fhirApi';
 import { mdiMagnify } from '@mdi/js';
 import { ref, type Ref } from 'vue';

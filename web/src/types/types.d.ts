@@ -73,6 +73,12 @@ export type FhirValueSetDefinition = {
   valueSet: string,
 };
 
+export interface User {
+  username: string;
+  displayName: string;
+  email: string;
+}
+
 export type Predicate = "owl:sameAs" | "owl:equivalentClass" | "owl:equivalentProperty" | "rdfs:subClassOf" | "rdfs:subPropertyOf" | "skos:relatedMatch" | "skos:closeMatch" | "skos:exactMatch" | "skos:narrowMatch" | "skos:broadMatch" | "oboInOwl:hasDbXref" | "rdfs:seeAlso";
 
 export type InformedCodeMapping = CodeMapping & { valueSet: FhirValueSetDefinition };

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Variable } from '@/stores/types';
+import type { Variable } from '@/types/types';
 
 defineProps<{
   dataElement: Variable,

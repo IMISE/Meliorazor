@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CodeInfo, CodeMapping, InformedCodeMapping } from '@/stores/types';
+import type { CodeInfo, CodeMapping, InformedCodeMapping } from '@/types/types';
 import { getCode } from '@/utils/fhirApi';
 import { ref, type Ref } from 'vue';
 

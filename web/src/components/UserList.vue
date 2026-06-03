@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Participant } from '@/stores/types';
+import type { Participant } from '@/types/types';
 import { ref } from 'vue';
 import UserInfo from './UserInfo.vue';
 
@@ -14,7 +14,7 @@ const selection = ref({});
 <template>
   <v-list>
     <v-list-item v-for="p in users" :subtitle="p.roles.join(', ')">
-      <user-info :user="p.user" />
+      <user-info :username="p.username" />
     </v-list-item>
   </v-list>
 </template>

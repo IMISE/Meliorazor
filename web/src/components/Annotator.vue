@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CodeInfo, CodeMapping, FhirValueSetDefinition, InformedCodeMapping, Variable } from '@/stores/types';
+import type { CodeInfo, CodeMapping, FhirValueSetDefinition, InformedCodeMapping, Variable } from '@/types/types';
 import { mdiArrowLeft, mdiArrowRight } from '@mdi/js';
 import { ref, watch, type Ref } from 'vue';
 import { getCode } from '@/utils/fhirApi.ts';

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Status } from '@/stores/enums';
-import type { Annotation, CodeInfo, FhirValueSetDefinition } from '@/stores/types';
+import { Status } from '@/types/enums';
+import type { Annotation, CodeInfo, FhirValueSetDefinition } from '@/types/types';
 import { findCode } from '@/utils/fhirApi';
 import type { Ref } from 'vue';
 import { ref } from 'vue';
