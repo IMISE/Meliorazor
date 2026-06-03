@@ -2,8 +2,7 @@
 import auth from '@/auth';
 import type { CodeInfo, CodeMapping, FhirValueSetDefinition, InformedCodeMapping, Predicate, Variable } from '@/stores/types';
 import { mdiArrowLeft, mdiArrowRight, mdiMagnify, mdiPencil } from '@mdi/js';
-import { computed, ref, watch, type Ref } from 'vue';
-import CodeChildren from './CodeChildren.vue';
+import { ref, watch, type Ref } from 'vue';
 import { expandValueSet, getCode } from '@/utils/fhirApi.ts';
 
 const { valueSets, dataElement } = defineProps<{
@@ -18,7 +17,6 @@ const { valueSets, dataElement } = defineProps<{
 const search = ref(dataElement.label ?? "");
 const loadingSearch = ref(false);
 const loadingFocus = ref(false);
-const loadingParent = ref(false);
 const loadingCreate = ref(false);
 
 const searchResults: Ref<InformedCodeMapping[] | undefined> = ref(undefined);
@@ -31,7 +29,6 @@ const predicates = ["owl:sameAs", "owl:equivalentClass", "owl:equivalentProperty
 
 const go = async (text: string) => {
   loadingSearch.value = true;
-  const results: InformedCodeMapping[][] = [];
   const fetches = valueSets.map(async (set) => {
       const response = await expandValueSet(text, set);
       return response;
@@ -59,7 +56,6 @@ const searchResultsGroupBy: import('vuetify/lib/components/VDataTable/composable
 
 // further information
 const focusCode: Ref<InformedCodeMapping | undefined> = ref(undefined);
-const parents: Ref<CodeInfo[]> = ref([]);
 const focusCodeInfo: Ref<CodeInfo | undefined> = ref(undefined);
 const selectedCode: Ref<CodeMapping | undefined> = ref(undefined);
 
@@ -106,44 +102,19 @@ const submitAnnotation = async () => {
 }
 
 
-// populate parents (height: 3) of focusCode
-// populate children (depth: 3) of focusCode
-watch(focusCode, async () => {
-  const code = focusCode.value;
-  if (!code?.valueSet) return;
+// populate focusCodeInfo
+watch(focusCode, async (newCode, oldCode) => {
+  if (!newCode?.valueSet || newCode === oldCode) return;
   focusCodeInfo.value = undefined;
-  loadingFocus.value = true;
 
   try {
-    const response = await getCode(code.code, code.system, code.valueSet.server);
+    const response = await getCode(newCode.code, newCode.system, newCode.valueSet.server);
     if (!response) return;
     focusCodeInfo.value = response;
   } catch (e) {
     console.error(e);
-  } finally {
-    loadingFocus.value = false;
   }
 });
-
-const loadParent = async (parentCode: string) => {
-  const code = focusCode.value;
-  if (!code?.valueSet) return;
-  loadingParent.value = true;
-  try {
-    const response = await getCode(parentCode, focusCode.value!.system, focusCode.value!.valueSet.server);
-    if (!response) return;
-    parents.value.unshift(response);
-  } catch (e) {
-    console.error(e);
-  } finally {
-    loadingParent.value = false;
-  }
-}
-
-// const compareCodes = (code: InformedCodeMapping) => code.code === focusCode.value?.code && code.system === focusCode.value?.system;
-
-const additionalInformation = computed(() => dataElement.metadata.map((pair) => `${pair.key}: ${pair.value}`).join(`
-`));
 
 </script>
 
@@ -193,33 +164,8 @@ const additionalInformation = computed(() => dataElement.metadata.map((pair) => 
         />
       </v-row>
     </v-col>
-    <v-col v-if="focusCode" cols="6">
-      <template v-if="!loadingFocus">
-        <br /><h3>Info</h3>
-        <li>
-          <ul>Inaktiv? {{ focusCodeInfo?.inactive ? "Ja" : "Nein" }}</ul>
-          <ul v-if="focusCodeInfo?.definition">{{ focusCodeInfo.definition }}</ul>
-        </li>
-        <br /><h3>Hierarchie</h3>
-        <div>
-          <v-btn v-if="parents[0]?.parents[0]" @click="loadParent(parents[0].parents[0])" variant="text" :disabled="loadingParent" :loading="loadingParent" block>Nächste Elterngeneration laden</v-btn>
-          <!-- Parents of current selection -->
-          <v-row v-for="parent in parents">
-            {{ parent.self.display }} (<var>{{ parent.self.code }}</var>)
-          </v-row>
-          <!-- Current selection & Children -->
-           <v-row cols="6">
-             <code-children v-if="focusCodeInfo" @focus="updateFocus" :depth="0" :max-cols="6" :code="focusCode.code" :info="focusCodeInfo" :server="focusCode.valueSet.server" />
-           </v-row>
-        </div>
-      </template>
-      <template v-if="focusCodeInfo?.alternativeNames.length">
-        <br /><h3>Alternative Namen</h3>
-        <v-list lines="one">
-          <v-list-item v-for="name in focusCodeInfo.alternativeNames" :title="name" class="wrap-text" />
-        </v-list>
-      </template>
-      <v-btn @click="selectedCode = focusCode" block>Auswählen</v-btn>
+    <v-col v-if="focusCode && focusCodeInfo" cols="6">
+      <code-display :code="focusCodeInfo" :server="focusCode.valueSet.server" show-select-button @focus="updateFocus" @selection="(v: CodeMapping) => selectedCode = v" />
     </v-col>
   </v-row>
   <v-col v-else cols="12">

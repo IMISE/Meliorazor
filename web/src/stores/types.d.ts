@@ -1,4 +1,4 @@
-import type { Role } from "./enums";
+import type { Role, Status } from "./enums";
 import type { User } from "./user";
 
 export interface Questionnaire {
@@ -42,14 +42,6 @@ export interface Choice {
   id: number | undefined;
   code: string;
   name: string;
-  annotations: Annotation[];
-}
-
-export interface DataElement {
-  id: number;
-  variableName: string | null;
-  name: string;
-  additionalInformation: Map<string, string>;
   annotations: Annotation[];
 }
 
