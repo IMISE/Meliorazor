@@ -42,7 +42,7 @@ const loadParent = async (parentCode: string) => {
   <div>
     <v-btn v-if="parents[0]?.parents[0]" @click="loadParent(parents[0].parents[0])" variant="text" :disabled="loadingParent" :loading="loadingParent" block>Nächste Elterngeneration laden</v-btn>
     <!-- Parents of current selection -->
-    <v-row v-for="parent in parents">
+    <v-row v-for="(parent, i) in parents" @click="i === 0 ? undefined : $emit('focus', codeInfo.self)">
       {{ parent.self.display }} (<var>{{ parent.self.code }}</var>)
     </v-row>
     <!-- Current selection & Children -->

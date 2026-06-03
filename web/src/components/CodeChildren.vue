@@ -5,7 +5,7 @@ import { ref } from 'vue';
 import { computed, type Ref } from 'vue';
 
 defineEmits<{
-  (e: 'focus', v: CodeMapping): void,
+  (e: "focus", v: CodeMapping): void,
 }>();
 
 const props = defineProps<{ depth: number, maxCols: number, info: CodeInfo, server: string }>();
