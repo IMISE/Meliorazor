@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import CodeAnnotator from '@/components/CodeAnnotator.vue';
+import CodeDisplay from '@/components/CodeDisplay.vue';
+import CodeSearch from '@/components/CodeSearch.vue';
+import DataElementSummary from '@/components/DataElementSummary.vue';
 import type { CodeInfo, CodeMapping, FhirValueSetDefinition, InformedCodeMapping, Variable } from '@/types/types';
 import { mdiArrowLeft, mdiArrowRight } from '@mdi/js';
 import { ref, watch, type Ref } from 'vue';
@@ -48,29 +52,28 @@ watch(focusCode, async (newCode, oldCode) => {
 </script>
 
 <template>
-  <v-row size="12" cols="12" class="full-width">
+  <v-row cols="12" class="full-width">
     <v-btn v-if="showPrev" :href="prev" class="navigate" :prepend-icon="mdiArrowLeft">Zurück</v-btn>
     <v-btn v-if="showNext" :href="next" class="navigate" :append-icon="mdiArrowRight">Weiter</v-btn>
-  </v-row>
+  </v-row><br />
   <v-row v-if="!selectedCode" size="12" class="full-width">
     <v-col :cols="focusCode ? 6 : 12">
-      <v-row fluid>
-        <data-element-summary :data-element="dataElement" />
-        <code-search :initial-search="dataElement.variableName?.replaceAll('_', ' ') ?? ''" :valueSets="valueSets" @focus="focus" />
-      </v-row>
+      <data-element-summary :data-element="dataElement" />
+      <code-search :initial-search="dataElement.variableName?.replaceAll('_', ' ') ?? ''" :valueSets="valueSets" @focus="focus" />
     </v-col>
     <v-col v-if="focusCode && focusCodeInfo" cols="6">
-      <code-display :code="focusCodeInfo" :server="focusCode.valueSet.server" show-select-button @focus="updateFocus" @selection="(v: CodeMapping) => selectedCode = v" />
+      <code-display :codeInfo="focusCodeInfo" :server="focusCode.valueSet.server" show-select-button @focus="updateFocus" @selection="(v: CodeMapping) => selectedCode = v" />
     </v-col>
   </v-row>
   <v-col v-else cols="12">
-    <code-annotator :code="selectedCode" @edit="unselect" />
+    <code-annotator :data-element-id="dataElement.id!" :code="selectedCode" @edit="unselect" />
   </v-col>
 </template>
 
 <style scoped>
 .navigate {
   background-color: lightblue;
+  color: black;
 }
 .save {
   background-color: greenyellow;

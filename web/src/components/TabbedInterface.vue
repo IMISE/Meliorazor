@@ -22,7 +22,7 @@ const tab = computed(() => isNaN(index.value) ? 0 : index.value);
       </template>
     </v-tabs>
     <v-divider vertical></v-divider>
-    <v-tabs-window v-model="tab">
+    <v-tabs-window v-model="tab" style="width: 100%" class="tabs-window">
       <template v-for="(e, i) in data">
           <v-tabs-window-item v-if="e" :value="e.id">
             <slot :element="e" :index="i" :input="data"></slot>
@@ -39,5 +39,8 @@ const tab = computed(() => isNaN(index.value) ? 0 : index.value);
 .fit {
   max-width: 200px;
   overflow-x: scroll;
+}
+.tabs-window {
+  padding: 20px;
 }
 </style>

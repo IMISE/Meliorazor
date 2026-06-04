@@ -6,7 +6,7 @@ import { ref, type Ref } from 'vue';
 
 const { code, dataElementId } = defineProps<{
   code: CodeMapping,
-  dataElementId: number | string,
+  dataElementId: number,
 }>();
 
 defineEmits<{

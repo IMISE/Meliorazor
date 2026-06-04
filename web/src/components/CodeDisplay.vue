@@ -52,9 +52,9 @@ const loadParent = async (parentCode: string) => {
   </div>
   <template v-if="codeInfo?.alternativeNames.length">
     <br /><h3>Alternative Namen</h3>
-    <v-list lines="one">
-      <v-list-item v-for="name in codeInfo.alternativeNames" :title="name" class="wrap-text" />
-    </v-list>
+    <ul>
+      <li v-for="name in codeInfo.alternativeNames">{{ name }}</li>
+    </ul>
   </template>
   <v-btn @click="$emit('selection', codeInfo.self)" block>Auswählen</v-btn>
 </template>
