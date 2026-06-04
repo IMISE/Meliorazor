@@ -32,6 +32,7 @@ const updateFocus = (value: CodeMapping) => {
   };
 }
 const unselect = () => {
+  focusCode.value = undefined;
   selectedCode.value = undefined;
 };
 

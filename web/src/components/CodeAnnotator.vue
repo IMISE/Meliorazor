@@ -54,7 +54,7 @@ const submitAnnotation = async () => {
 </script>
 
 <template>
-  <v-row fluid>
+  <div class="code-annotator-container">
     <v-list lines="one">
       <v-list-item :key="code.system + code.code">
         <template #title>{{ code.display }}</template>
@@ -66,17 +66,21 @@ const submitAnnotation = async () => {
         </template>
       </v-list-item>
     </v-list>
-  </v-row>
-  <!-- form to add further SSSOM metadata -->
-  <v-row fluid>
+    <br />
+    <!-- form to add further SSSOM metadata -->
     <v-form @submit.prevent="submitAnnotation">
-      <v-slider v-model="confidence" :step="1" :min="0" :max="100" label="Konfidenz" thumb-label="always">
+      <v-slider v-model="confidence" :step="1" :min="0" :max="100" label="Konfidenz" thumb-label="hover">
         <template #thumb-label="{ modelValue }">{{ modelValue }}%</template>
       </v-slider>
       <v-select label="Prädikat" v-model="predicate" :items="predicates" />
       <v-textarea v-model="comment" label="Kommentar" />
       <v-btn :disabled="loadingCreate" :loading="loadingCreate" size="x-large" type="submit" block>Erstellen</v-btn>
     </v-form>
-  </v-row>
-
+  </div>
 </template>
+
+<style>
+.code-annotator-container {
+  max-width: 800px;
+}
+</style>
