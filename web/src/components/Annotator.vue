@@ -59,7 +59,7 @@ watch(focusCode, async (newCode, oldCode) => {
   <v-row v-if="!selectedCode" size="12" class="full-width">
     <v-col :cols="focusCode ? 6 : 12">
       <data-element-summary :data-element="dataElement" />
-      <code-search :initial-search="dataElement.variableName?.replaceAll('_', ' ') ?? ''" :valueSets="valueSets" @focus="focus" />
+      <code-search :initial-search="dataElement.variableName?.replaceAll('_', ' ') ?? ''" :valueSets="valueSets" :focus="focusCode" @focus="focus" />
     </v-col>
     <v-col v-if="focusCode && focusCodeInfo" cols="6">
       <code-display :codeInfo="focusCodeInfo" :server="focusCode.valueSet.server" show-select-button @focus="updateFocus" @selection="(v: CodeMapping) => selectedCode = v" />

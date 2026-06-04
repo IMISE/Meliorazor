@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import type { FhirValueSetDefinition, InformedCodeMapping } from '@/types/types';
+import type { CodeMapping, FhirValueSetDefinition, InformedCodeMapping } from '@/types/types';
 import { expandValueSet } from '@/utils/fhirApi';
 import { mdiMagnify } from '@mdi/js';
 import { ref, type Ref } from 'vue';
 
-const { initialSearch, valueSets } = defineProps<{
+const { initialSearch, valueSets, focus } = defineProps<{
   initialSearch: string,
   valueSets: FhirValueSetDefinition[],
+  focus: InformedCodeMapping | undefined,
 }>();
 
 defineEmits<{
@@ -44,6 +45,12 @@ const go = async (text: string) => {
   loading.value = false;
 }
 
+const colorFocusCode = ({ item }: { item: CodeMapping }) => {
+  if (focus && item.code === focus.code && item.system === focus.system) {
+    return { class: "focus-code" };
+  }
+}
+
 </script>
 
 <template>
@@ -62,7 +69,14 @@ const go = async (text: string) => {
       :items="searchResults"
       :headers="searchResultHeaders"
       :group-by="searchResultsGroupBy"
+      :row-props="colorFocusCode"
       @click:row="(event: any, v: { item: InformedCodeMapping }) => $emit('focus', v.item)"
     />
   </v-row>
 </template>
+
+<style>
+.focus-code {
+  background-color: skyblue;
+}
+</style>
