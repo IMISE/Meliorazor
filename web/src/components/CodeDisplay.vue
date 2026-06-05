@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { CodeInfo, CodeMapping, InformedCodeMapping } from '@/types/types';
+import CodeChildren from './CodeChildren.vue';
+import type { CodeInfo, CodeMapping } from '@/types/types';
 import { getCode } from '@/utils/fhirApi';
 import { compareCodes } from '@/utils/terminologyCodes';
 import { watch } from 'vue';
@@ -55,13 +56,15 @@ watch(() => codeInfo, (newVal) => {
   <div>
     <v-btn v-if="parents[0]?.parents[0]" @click="loadParent(parents[0].parents[0])" variant="text" :disabled="loadingParent" :loading="loadingParent" block>Nächste Elterngeneration laden</v-btn>
     <!-- Parents of current selection -->
-    <v-row v-for="(parent, i) in parents" @click="i === 0 ? undefined : $emit('focus', codeInfo.self)">
-      {{ parent.self.display }} (<var>{{ parent.self.code }}</var>)
-    </v-row>
+    <template v-for="(parent, i) in parents">
+      <v-row v-if="i !== parents.length-1" @click="$emit('focus', codeInfo.self)">
+        {{ parent.self.display }} (<var>{{ parent.self.code }}</var>)
+      </v-row>
+    </template>
     <!-- Current selection & Children -->
-     <v-row cols="6">
-       <code-children v-if="codeInfo" @focus="(v: CodeMapping) => $emit('focus', v)" :depth="0" :max-cols="6" :code="codeInfo.self" :info="codeInfo" :server="server" />
-     </v-row>
+    <v-row cols="6">
+      <code-children v-if="codeInfo" @focus="(v: CodeMapping) => $emit('focus', v)" :depth="0" :max-cols="6" :code="codeInfo.self" :info="codeInfo" :server="server" />
+    </v-row>
   </div>
   <template v-if="codeInfo?.alternativeNames.length">
     <br /><h3>Alternative Namen</h3>
