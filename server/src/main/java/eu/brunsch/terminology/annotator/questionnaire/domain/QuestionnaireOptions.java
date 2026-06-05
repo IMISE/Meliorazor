@@ -83,7 +83,7 @@ public class QuestionnaireOptions {
         final Integer minCount,
         final Float minRatio
     ) {
-        boolean result = false;
+        boolean result = true;
         if (minCount != null) {
             result = result && minCount <= count;
         }
