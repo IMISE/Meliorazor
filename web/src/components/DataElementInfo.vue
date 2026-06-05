@@ -79,12 +79,6 @@ const correctableIds = computed(() =>
 </template>
 
 <style lang="css" scoped>
-.accepted {
-  background-color: #028A0F;
-}
-.mine {
-  background-color: yellow;
-}
 .variable {
   display: block;
   margin: 20px;

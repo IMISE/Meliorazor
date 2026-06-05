@@ -47,7 +47,14 @@ watch(dataElementId, () => get(dataElementId.value));
     <h3>{{ data.variableName }}</h3>
     <br />
     <h2 v-if="data.annotations.length">Annotationen</h2>
-    <annotation-list :project-id="projectId" :project-name="projectName" :data-element-id="data.id!" :data-element-name="data.label" :annotations="data.annotations" />
+    <annotation-list
+      show-add-button
+      :project-id="projectId"
+      :project-name="projectName"
+      :data-element-id="data.id!"
+      :data-element-name="data.label"
+      :annotations="data.annotations"
+    />
   </template>
   <template v-else-if="loading">
     Lade ...

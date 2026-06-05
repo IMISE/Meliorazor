@@ -58,13 +58,18 @@ const annotateAll = () => router.push({ name: "create-annotation", params: {
 </script>
 
 <template>
-  <v-sheet :min-height="200" class="sheet">
+  <v-sheet :min-height="200" :width="1000" class="sheet">
     <template v-if="questionnaire">
       <h1>{{ questionnaire.title }}</h1>
       <p>{{ questionnaire.description }}</p>
       <v-btn v-if="annotatable" @click="annotateAll">Annotieren!</v-btn>
       <v-btn v-else-if="correctable">Annotationen korrigieren</v-btn>
-      <data-element-list :project-id="questionnaire.id" :project-name="questionnaire.title" :data-elements="questionnaire.dataElements" :my-roles="roles" />
+      <data-element-list
+        :project-id="questionnaire.id"
+        :project-name="questionnaire.title"
+        :data-elements="questionnaire.dataElements"
+        :my-roles="roles"
+      />
     </template>
     <template v-else-if="loading">
       <h1>Laden...</h1>
