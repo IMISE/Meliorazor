@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import type { CodeInfo, CodeMapping, InformedCodeMapping } from '@/types/types';
 import { getCode } from '@/utils/fhirApi';
+import { compareCodes } from '@/utils/terminologyCodes';
+import { watch } from 'vue';
 import { ref, type Ref } from 'vue';
 
 const { codeInfo, server } = defineProps<{
   codeInfo: CodeInfo,
   server: string,
-  showSelectButton: boolean | undefined,
+  showSelectButton: boolean,
 }>();
 
 defineEmits<{
@@ -14,7 +16,7 @@ defineEmits<{
   (e: "focus", v: CodeMapping): void,
 }>();
 
-const parents: Ref<CodeInfo[]> = ref([]);
+const parents: Ref<CodeInfo[]> = ref([codeInfo]);
 const loadingParent = ref(false);
 
 const loadParent = async (parentCode: string) => {
@@ -29,6 +31,17 @@ const loadParent = async (parentCode: string) => {
     loadingParent.value = false;
   }
 }
+
+watch(codeInfo, (newVal) => {
+  const parent = parents.value.findIndex((val) => compareCodes(val.self, newVal.self));
+  if (parent !== -1) {
+    if ((parent + 1) < parents.value.length) {
+      parents.value.splice(parent + 1);
+    }
+  } else {
+    parents.value = [newVal];
+  }
+});
 
 </script>
 
@@ -56,5 +69,5 @@ const loadParent = async (parentCode: string) => {
       <li v-for="name in codeInfo.alternativeNames">{{ name }}</li>
     </ul>
   </template>
-  <v-btn @click="$emit('selection', codeInfo.self)" block>Auswählen</v-btn>
+  <v-btn v-if="showSelectButton" @click="$emit('selection', codeInfo.self)" block>Auswählen</v-btn>
 </template>

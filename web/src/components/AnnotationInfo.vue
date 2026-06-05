@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import CodeDisplay from './CodeDisplay.vue';
 import { Status } from '@/types/enums';
 import type { Annotation, CodeInfo, FhirValueSetDefinition } from '@/types/types';
 import { findCode } from '@/utils/fhirApi';
@@ -41,7 +42,13 @@ const getAnnotatedCode = async () => {
       <ul>
         <li>Status: {{ statusText }}</li>
         <li>Erstellt von: {{ annotation.authorName }}</li>
-        <li><v-btn variant="text" @click="getAnnotatedCode">{{ annotation.code.display }}</v-btn></li>
+        <li>Konfidenz: {{ annotation.confidence }}</li>
+        <li>
+          {{ annotation.predicate }}
+          <v-btn v-if="valueSets?.length" variant="text" @click="getAnnotatedCode">{{ annotation.code.display }}</v-btn>
+          <template v-else>{{ annotation.code.display }} ({{ annotation.code.code }} in {{ annotation.code.system }})</template>
+        </li>
+        <li v-if="annotation.comment">Kommentar: {{ annotation.comment }}</li>
       </ul>
       <template v-if="annotation.comments?.length">
         <comment v-for="comment in annotation.comments" :comment="comment" />
@@ -50,8 +57,8 @@ const getAnnotatedCode = async () => {
         <i>Keine Kommentare vorhanden.</i>
       </template>
     </v-col>
-    <v-col v-if="code" cols="6">
-      <code-display :code-info="code" :server="server" />
+    <v-col v-if="code && server" cols="6">
+      <code-display :code-info="code" :server="server" :show-select-button="false" />
     </v-col>
   </v-row>
 </template>

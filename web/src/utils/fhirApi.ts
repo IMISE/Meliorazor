@@ -31,7 +31,7 @@ export async function getCode(code: string, system: string, server: string): Pro
 
 export async function findCode(code: string, system: string, servers: string[]) {
   // filter out duplicate servers
-  const deduped = [...new Set(...servers)];
+  const deduped = [...new Set(servers)];
 
   // find code on servers
   const promises = deduped.map(async (server) => ({

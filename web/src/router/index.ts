@@ -51,17 +51,17 @@ const router = createRouter({
         name: 'data-element-annotations',
         component: () => import('../views/DataElementView.vue'),
         meta: { tabLabel: 'Annotations', tabIcon: 'book-alphabet' },
-        children: [{
-          path: ':aid-:subject',
-          name: 'focus-annotation',
-          component: () => import('../views/AnnotationEditView.vue'),
-        }]
       }, {
         path: 'history',
         name: 'data-element-history',
         component: HomeView,
         meta: { tabLabel: 'History', tabIcon: 'history' },
       }],
+    },
+    {
+      path: '/projects/:pid-:title/elements/:eid-:name/annotations/:aid-:subject',
+      name: 'focus-annotation',
+      component: () => import('../views/AnnotationEditView.vue'),
     },
     {
       path: '/annotate/:projectId-:elementIds',

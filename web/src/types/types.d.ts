@@ -51,6 +51,9 @@ export interface Annotation {
   code: CodeMapping;
   status: Status;
   comments: AnnotationComment[];
+  confidence: number;
+  comment: string;
+  predicate: string;
 }
 
 export interface AnnotationComment {
