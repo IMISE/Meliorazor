@@ -32,7 +32,7 @@ const loadParent = async (parentCode: string) => {
   }
 }
 
-watch(codeInfo, (newVal) => {
+watch(() => codeInfo, (newVal) => {
   const parent = parents.value.findIndex((val) => compareCodes(val.self, newVal.self));
   if (parent !== -1) {
     if ((parent + 1) < parents.value.length) {

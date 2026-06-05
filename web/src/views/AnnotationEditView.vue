@@ -1,32 +1,32 @@
 <script setup lang="ts">
 import auth from '@/auth';
+import AnnotationCommentor from '@/components/AnnotationCommentor.vue';
 import AnnotationInfo from '@/components/AnnotationInfo.vue';
+import { Role } from '@/types/enums';
 import type { Annotation, Questionnaire } from '@/types/types';
+import type { IdTokenClaims } from 'oidc-client-ts';
 import type { Ref } from 'vue';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
-const annotationId = computed(() => router.currentRoute.value.params.aid);
-const dataElementId = computed(() => router.currentRoute.value.params.eid);
-const projectId = computed(() => router.currentRoute.value.params.pid);
+const annotationId = computed(() => router.currentRoute.value.params.pid !== undefined ? router.currentRoute.value.params.aid as string : undefined);
+const dataElementId = computed(() => router.currentRoute.value.params.pid !== undefined ? router.currentRoute.value.params.eid as string : undefined);
+const projectId = computed(() => router.currentRoute.value.params.pid !== undefined ? router.currentRoute.value.params.pid as string : undefined);
 
+const me: Ref<IdTokenClaims | undefined> = ref(undefined);
 const project: Ref<Questionnaire | undefined> = ref(undefined);
 const annotation: Ref<Annotation | undefined> = ref(undefined);
 const loadingProject = ref(false);
 const loadingAnnotation = ref(false);
 
+const roles = computed(() => project.value?.participants.find((participant) => participant.username === me.value?.preferred_username)?.roles ?? []);
 
-const getAnnotation = async (newId: string[] | string | undefined, oldId: string[] | string | undefined) => {
-  if (loadingAnnotation.value || newId === oldId) {
-    return;
-  } else if (!newId || !dataElementId.value) {
-    annotation.value = undefined;
-    return;
-  }
+const loadAnnotation = async () => {
   try {
     loadingAnnotation.value = true;
     const u = await auth.getUser();
+    me.value = u?.profile;
     if (!u?.access_token) return;
     const options = {
       method: "GET",
@@ -45,7 +45,17 @@ const getAnnotation = async (newId: string[] | string | undefined, oldId: string
   }
 }
 
-const getProject = async (newId: string[] | string | undefined, oldId: string[] | string | undefined) => {
+const getAnnotation = async (newId: string | undefined, oldId: string | undefined) => {
+  if (loadingAnnotation.value || newId === oldId) {
+    return;
+  } else if (!newId || !dataElementId.value) {
+    annotation.value = undefined;
+    return;
+  }
+  await loadAnnotation();
+}
+
+const getProject = async (newId: string | undefined, oldId: string | undefined) => {
   if (loadingProject.value || newId === oldId) {
     return;
   } else if (!newId) {
@@ -82,6 +92,9 @@ onMounted(() => Promise.allSettled([getAnnotation(annotationId.value, undefined 
 
 <template>
   <p v-if="loadingProject || loadingAnnotation">Lädt ...</p>
-  <annotation-info v-else-if="annotation && project" :annotation="annotation" :value-sets="project.valueSets" />
+  <template v-else-if="annotation && project && dataElementId">
+    <annotation-info :annotation="annotation" :value-sets="project.valueSets" :my-roles="roles" />
+    <annotation-commentor v-if="roles.includes(Role.FEEDBACK)" @reload="loadAnnotation" :annotation-id="annotation.id" :data-element-id="dataElementId" />
+  </template>
   <p v-else>Nicht gefunden :-(</p>
 </template>

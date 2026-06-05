@@ -25,7 +25,7 @@ const uncorrected = computed(() => questionnaire.value?.dataElements.flatMap((e)
 const correctable = computed(() => roles.value?.some((role) => role === Role.FEEDBACK) && uncorrected.value.length);
 
 onMounted(() => get(projectId.value))
-watch(projectId, () => get(projectId.value));
+watch(projectId, (newVal) => get(newVal));
 
 const get = async (id: number) => {
   const u = await auth.getUser();

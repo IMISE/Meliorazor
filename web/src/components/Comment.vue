@@ -41,7 +41,6 @@ const { comment } = defineProps<{
     width: 240px;
     overflow-wrap: break-word;
     margin: 20px;
-    background-color: #FFD0D0;
   }
   .comment-footer {
     font-size: 10pt;

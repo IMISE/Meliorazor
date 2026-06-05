@@ -3,9 +3,9 @@ import CodeDisplay from './CodeDisplay.vue';
 import { Status } from '@/types/enums';
 import type { Annotation, CodeInfo, FhirValueSetDefinition } from '@/types/types';
 import { findCode } from '@/utils/fhirApi';
-import type { Ref } from 'vue';
-import { ref } from 'vue';
+import { ref, type Ref } from 'vue';
 import { computed } from 'vue';
+import Comment from './Comment.vue';
 
 const { annotation, valueSets } = defineProps<{
   annotation: Annotation,
@@ -48,8 +48,10 @@ const getAnnotatedCode = async () => {
           <v-btn v-if="valueSets?.length" variant="text" @click="getAnnotatedCode">{{ annotation.code.display }}</v-btn>
           <template v-else>{{ annotation.code.display }} ({{ annotation.code.code }} in {{ annotation.code.system }})</template>
         </li>
-        <li v-if="annotation.comment">Kommentar: {{ annotation.comment }}</li>
+        <li v-if="annotation.comment">Kommentar bei Erstellung: {{ annotation.comment }}</li>
       </ul>
+      <br />
+      <h3>Diskussion</h3>
       <template v-if="annotation.comments?.length">
         <comment v-for="comment in annotation.comments" :comment="comment" />
       </template>

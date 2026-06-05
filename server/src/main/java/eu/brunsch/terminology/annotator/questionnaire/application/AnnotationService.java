@@ -284,7 +284,7 @@ public class AnnotationService {
         final Annotation parent = annotationRepository.findById(annotationId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         if (!parent.seenBy(username())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND); 
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "did not find annotation with id " + annotationId); 
         }
         if (!parent.reviewableBy(username())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN); 

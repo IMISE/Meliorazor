@@ -123,7 +123,7 @@ public class AnnotationController {
      * @param dto information about the comment
      * @return ID of the newly created comment
      */
-    @PostMapping("dataElement/{dataElement}/annotation/{id}")
+    @PostMapping("dataElement/{dataElement}/annotation/{id}/comment")
     public Long createComment(
         final @PathVariable Long id,
         final @RequestBody CommentDto dto
