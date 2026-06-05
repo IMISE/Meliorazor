@@ -1,9 +1,9 @@
 import { UserManager, WebStorageStateStore } from "oidc-client-ts"
 
 export const kc = {
-  authorityUrl: `${import.meta.env.VITE_OAUTH_BASE}/realms/master`,
-  realm: 'master',
-  clientId: 'annotator_oid_client'
+  authorityUrl: `${import.meta.env.VITE_OAUTH_BASE}/realms/${import.meta.env.VITE_OAUTH_REALM}`,
+  realm: `${import.meta.env.VITE_OAUTH_REALM}`,
+  clientId: import.meta.env.annotator_oid_client,
 };
 
 const auth = new UserManager({
