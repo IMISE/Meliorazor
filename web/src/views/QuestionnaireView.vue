@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import auth from '@/auth';
-import DataElementList from '@/components/DataElementList.vue';
+import DataElementInfo from '@/components/DataElementInfo.vue';
 import { Role, Status } from '@/types/enums';
 import type { Questionnaire } from '@/types/types';
 import type { IdTokenClaims } from 'oidc-client-ts';
@@ -31,7 +31,7 @@ const elements = computed(() => (deSearch.value ?
         de.label?.toLocaleLowerCase().includes(s) ||
         de.variableName?.toLocaleLowerCase().includes(s)
     ))(deSearch.value.toLocaleLowerCase())
-  : questionnaire.value?.dataElements) ?? []);
+  : questionnaire.value?.dataElements.filter((de) => de)) ?? []);
 
 onMounted(() => get(projectId.value))
 watch(projectId, (newVal) => get(newVal));
@@ -71,17 +71,20 @@ const annotateAll = () => router.push({ name: "create-annotation", params: {
     <template v-if="questionnaire">
       <h1>{{ questionnaire.title }}</h1>
       <p>{{ questionnaire.description }}</p>
-      <v-btn v-if="annotatable" @click="annotateAll">Annotieren!</v-btn>
-      <v-btn v-else-if="correctable">Annotationen korrigieren</v-btn>
       <br />
       <h2>Datenelemente</h2>
       <v-text-field v-model="deSearch" label="Suche"></v-text-field>
-      <data-element-list
-        :project-id="questionnaire.id"
-        :project-name="questionnaire.title"
-        :data-elements="elements"
-        :my-roles="roles"
-      />
+      <v-btn v-if="annotatable" @click="annotateAll">{{ elements.length }} Datenelemente annotieren</v-btn>
+      <!-- TODO implement -->
+      <v-btn v-if="correctable">Annotationen korrigieren</v-btn>
+      <v-item-group :max="0">
+        <v-item v-for="element in elements" :key="element.id">
+          <data-element-info :project-id="projectId" :project-title="questionnaire.title" :data-element="element" :my-roles="roles" />
+        </v-item>
+        <v-item v-if="!elements?.length">
+          <i>Keine Datenelemente gefunden.</i>
+        </v-item>
+      </v-item-group>
     </template>
     <template v-else-if="loading">
       <h1>Laden...</h1>
