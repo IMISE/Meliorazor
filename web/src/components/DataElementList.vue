@@ -12,8 +12,6 @@ defineProps<{
 </script>
 
 <template>
-  <br />
-  <h2>Datenelemente</h2>
   <v-item-group :max="0">
     <v-item v-for="element in dataElements" :key="element.id">
       <data-element-info :project-id="projectId" :project-title="projectName" :data-element="element" :my-roles="myRoles" />

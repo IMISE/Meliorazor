@@ -18,11 +18,20 @@ const loading = ref(false);
 
 const roles = computed(() => questionnaire.value?.participants.find((participant) => participant.username === me.value?.preferred_username)?.roles ?? []);
 
-const unannotated = computed(() => questionnaire.value?.dataElements.filter((e) => e.annotations.every((a) => a.status === Status.REJECTED)) ?? []);
+const unannotated = computed(() => elements.value.filter((e) => e.annotations.every((a) => a.status === Status.REJECTED)) ?? []);
 const annotatable = computed(() => roles.value?.some((role) => role === Role.ANNOTATE) && unannotated.value.length);
 
-const uncorrected = computed(() => questionnaire.value?.dataElements.flatMap((e) => e.annotations.filter((a) => a.status === Status.OPEN && a.authorName !== me.value?.preferred_username)) ?? []);
+const uncorrected = computed(() => elements.value.flatMap((e) => e.annotations.filter((a) => a.status === Status.OPEN && a.authorName !== me.value?.preferred_username)) ?? []);
 const correctable = computed(() => roles.value?.some((role) => role === Role.FEEDBACK) && uncorrected.value.length);
+
+const deSearch = ref("");
+const elements = computed(() => (deSearch.value ?
+    ((s: string) =>
+      questionnaire.value?.dataElements.filter((de) =>
+        de.label?.toLocaleLowerCase().includes(s) ||
+        de.variableName?.toLocaleLowerCase().includes(s)
+    ))(deSearch.value.toLocaleLowerCase())
+  : questionnaire.value?.dataElements) ?? []);
 
 onMounted(() => get(projectId.value))
 watch(projectId, (newVal) => get(newVal));
@@ -64,10 +73,13 @@ const annotateAll = () => router.push({ name: "create-annotation", params: {
       <p>{{ questionnaire.description }}</p>
       <v-btn v-if="annotatable" @click="annotateAll">Annotieren!</v-btn>
       <v-btn v-else-if="correctable">Annotationen korrigieren</v-btn>
+      <br />
+      <h2>Datenelemente</h2>
+      <v-text-field v-model="deSearch" label="Suche"></v-text-field>
       <data-element-list
         :project-id="questionnaire.id"
         :project-name="questionnaire.title"
-        :data-elements="questionnaire.dataElements"
+        :data-elements="elements"
         :my-roles="roles"
       />
     </template>

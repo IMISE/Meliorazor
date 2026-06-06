@@ -5,8 +5,7 @@ import AnnotationInfo from '@/components/AnnotationInfo.vue';
 import { Role } from '@/types/enums';
 import type { Annotation, Questionnaire } from '@/types/types';
 import type { IdTokenClaims } from 'oidc-client-ts';
-import type { Ref } from 'vue';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch, type Ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
