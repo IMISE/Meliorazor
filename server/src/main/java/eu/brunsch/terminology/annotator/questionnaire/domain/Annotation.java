@@ -34,7 +34,7 @@ public class Annotation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** TODO use terminology code instead. */
+    /** Terminology code mapped in this annotation. */
     private Code code;
 
     /**

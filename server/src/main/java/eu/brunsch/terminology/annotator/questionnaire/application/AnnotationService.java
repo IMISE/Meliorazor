@@ -1,5 +1,7 @@
 package eu.brunsch.terminology.annotator.questionnaire.application;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -23,11 +25,15 @@ import eu.brunsch.terminology.annotator.questionnaire.domain.Questionnaire;
 import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireMapper;
 import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireOptions;
+import eu.brunsch.terminology.annotator.questionnaire.domain.Version;
+import eu.brunsch.terminology.annotator.questionnaire.domain.VersionCreateDto;
+import eu.brunsch.terminology.annotator.questionnaire.domain.VersionDto;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.AnnotationRepository;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.ChoiceRepository;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.CommentRepository;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.DataElementRepository;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.QuestionnaireRepository;
+import eu.brunsch.terminology.annotator.questionnaire.infrastructure.VersionRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -36,6 +42,8 @@ import lombok.RequiredArgsConstructor;
 public class AnnotationService {
     /** Questionnaire DB access. */
     private final QuestionnaireRepository questionnaireRepository;
+    /** Version DB access. */
+    private final VersionRepository versionRepository;
     /** Data Element DB access. */
     private final DataElementRepository dataElementRepository;
     /** Choice DB access. */
@@ -126,7 +134,7 @@ public class AnnotationService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         if (!q.seenBy(username())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }   
+        }
         final var dataElements = dataElementRepository.findByQuestionnaire(q);
         final QuestionnaireDto questionnaireDto = questionnaireMapper.toDto(q);
         final DataElementDto[] dataElemetDtos = dataElements.stream()
@@ -253,8 +261,7 @@ public class AnnotationService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         // check if user is able to see
-        final Questionnaire q = annotation.getVariable().getQuestionnaire();
-        if (q == null || !q.seenBy(username())) {
+        if (!annotation.seenBy(username())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
@@ -323,6 +330,75 @@ public class AnnotationService {
         annotation.removeComment(comment, req);
         annotationRepository.save(annotation);
         commentRepository.deleteById(id);
+    }
+
+    /**
+     * Creates a new version.
+     * If not all annotations are found, throws 404.
+     * @param questionnaireId questionnaire that's versioned
+     * @param dto information about the newly created version
+     * @return ID of newly created versioning
+     * @throws ResponseStatusException 404 if questionnaire or annotation not found or not seen, 401 if user is no admin of the questionnaire
+     */
+    public Long createVersion(final Long questionnaireId, final VersionCreateDto dto) {
+        final String username = username();
+        final Questionnaire q = questionnaireRepository.findById(questionnaireId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        // access control
+        if (!q.seenBy(username)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        } else if (!q.administeredBy(username)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        final Annotation[] annotations = annotationRepository
+            .findAllById(List.of(dto.getAnnotationIds()))
+            .stream()
+            // we already checked for admin, so we don't need to do this step I guess
+            // but when we stream anyways ...
+            .filter(a -> a.seenBy(username))
+            .toArray(size -> new Annotation[size]);
+        // check if all annotations exist
+        if (annotations.length != dto.getAnnotationIds().length) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        // key must be unique for each questionnaire id
+        if (versionRepository.existsByKeyAndQuestionnaireId(dto.getKey(), questionnaireId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
+        }
+
+        final Version version = new Version(null, dto.getKey(), dto.getDescription(), annotations, q, null);
+        return versionRepository.save(version).getId();
+    }
+
+    public VersionDto getVersion(final Long questionnaireId, final Long versionId) {
+        final String username = username();
+        final Questionnaire q = questionnaireRepository.findById(questionnaireId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        // access control
+        if (!q.seenBy(username)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        } else if (!q.administeredBy(username)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        final VersionDto dto = new VersionDto();
+        final Version v = versionRepository.findById(versionId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        dto.setAnnotations(
+            List.of(v.getAnnotations())
+                .stream()
+                .map(a -> annotationMapper.toDto(a))
+                .toArray(size -> new AnnotationDto[size])
+        );
+        dto.setKey(v.getKey());
+        dto.setDescription(v.getDescription());
+        dto.setId(v.getId());
+        dto.setSubmittedAt(v.getSubmittedAt());
+        return dto;
     }
 
     /**

@@ -11,6 +11,8 @@ import eu.brunsch.terminology.annotator.questionnaire.domain.AnnotationDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.CommentDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.DataElementDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireDto;
+import eu.brunsch.terminology.annotator.questionnaire.domain.VersionCreateDto;
+import eu.brunsch.terminology.annotator.questionnaire.domain.VersionDto;
 import lombok.RequiredArgsConstructor;
 
 
@@ -141,4 +143,25 @@ public class AnnotationController {
         service.deleteComment(id);
     }
 
+    /**
+     * Group together annotations in a version.
+     * @param questionnaireId Questionnaire that's getting a new version.
+     * @param versionDto Annotation IDs, version name and short description or other.
+     * @return
+     */
+    @PostMapping("questionnaire/{questionnaireId}/version")
+    public Long createVersion(
+        final @PathVariable Long questionnaireId,
+        final @RequestBody VersionCreateDto versionDto
+    ) {
+        return service.createVersion(questionnaireId, versionDto);
+    }
+
+    @GetMapping("questionnaire/{questionnaireId}/version/{versionId}")
+    public VersionDto getVersion(
+        final @PathVariable Long questionnaireId,
+        final @PathVariable Long versionId
+    ) {
+        return service.getVersion(questionnaireId, versionId);
+    }
 }
