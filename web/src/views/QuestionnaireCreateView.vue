@@ -6,15 +6,18 @@ import type { FhirValueSetDefinition, Participant, Questionnaire, QuestionnaireO
 import auth from '@/auth';
 import { roles } from '@/types/enums';
 import { useRouter } from 'vue-router';
+import { read, utils } from 'xlsx';
 
 const title = ref("");
 const description = ref("");
 const file = ref();
+const fileType: Ref<"RedCap" | "OpenClinica"> = ref("RedCap");
+
 type ValueSetDefinition = FhirValueSetDefinition & { testResult: { ok: boolean, title: string, status: string, codes: number } | undefined, loading: boolean };
 const emptyValueSet: () => ValueSetDefinition = () => ({ display: "", server: "", valueSet: "", testResult: undefined, loading: false });
 const valueSets: Ref<ValueSetDefinition[]> = ref([emptyValueSet()]);
 const participants: Ref<Participant[]> = ref([{ username: "", roles: [] }]);
-const contents: Ref<Papa.ParseResult<any> | undefined> = ref(undefined);
+const contents: Ref<{ data: { [index: string]: string }[], errors: any[] } | undefined> = ref(undefined);
 const options = ref({
   posCount: {
     use: true,
@@ -43,19 +46,41 @@ const options = ref({
 });
 watch(file, () => {
   if(!file.value) contents.value = undefined;
-  Papa.parse(file.value, {
-    complete: (result) => { contents.value = result },
-    header: true,
-    worker: true,
-  });
+
+  switch (fileType.value) {
+    case "RedCap": {
+      Papa.parse(file.value, {
+        complete: (result) => { contents.value = { data: result.data as { [index: string]: string }[], errors: result.errors } },
+        header: true,
+        worker: true,
+      });
+      break;
+    }
+    case "OpenClinica": {
+      try {
+        const wb = read(file);
+        const ws = wb.Sheets["Items"]!;
+        const items: { [index: string]: string }[] = utils.sheet_to_json(ws, { header: "A", skipHidden: true });
+        contents.value = { data: items, errors: [] };
+      } catch (e) {
+        console.error(e);
+        contents.value = { data: [], errors: [e] };
+      }
+      break;
+    }
+    default: {
+      console.error("Unknown type of input file");
+    }
+  }
+
 });
 
-const parsedDataREDCap = computed(() => contents.value?.data.map((datum) => ({
+const parsedDataREDCap = () => contents.value?.data.map((datum) => ({
   id: undefined,
   variableName: datum["Variable / Field Name"] as string,
   label: datum["Field Label"] as string,
   type: datum["Field Type"] as string,
-  choices: ["dropdown", "checkbox", "radio"].includes(datum["Field Type"]) ?
+  choices: ["dropdown", "checkbox", "radio"].includes(datum["Field Type"] as string) ?
       (datum["Choices, Calculations, OR Slider Labels"] as string)
         .split(" | ")
         .map((choice) => choice.split(", ", 2))
@@ -69,11 +94,42 @@ const parsedDataREDCap = computed(() => contents.value?.data.map((datum) => ({
   metadata: Object.keys(datum)
     .filter((key) =>
       !["Variable / Field Name", "Field Label", "Field Type"].includes(key)
-      && (key !== "Choices, Calculations, OR Slider Labels" || !["dropdown", "checkbox", "radio"].includes(datum["Field Type"])))
+      && (key !== "Choices, Calculations, OR Slider Labels" || !["dropdown", "checkbox", "radio"].includes(datum["Field Type"] as string)))
     .filter((key) => datum[key])
     .map((key) => ({ key, value: datum[key] })),
   annotations: [],
-} as Variable)));
+} as Variable));
+
+const parsedDataOpenClinica = () => contents.value?.data.map((datum) => ({
+  id: undefined,
+  variableName: datum["ITEM_NAME*"] as string,
+  label: datum["DESCRIPTION_LABEL*"] as string,
+  type: datum["DATA_TYPE*"] as string,
+  choices: datum["RESPONSE_OPTIONS_TEXT"] ?
+      ((datum["RESPONSE_OPTIONS_TEXT"] as string))
+        .split(",")
+        .filter((choice) => choice)
+        .map((choice, index) => ({
+          id: undefined,
+          code: "" + index,
+          name: choice,
+          annotations: [],
+        }))
+    : null,
+  metadata: Object.keys(datum)
+    .filter((key) => !["ITEM_NAME*", "DESCRIPTION_LABEL*", "DATA_TYPE*", "RESPONSE_OPTIONS_TEXT"].includes(key))
+    .filter((key) => datum[key])
+    .map((key) => ({ key, value: datum[key] })),
+  annotations: [],
+} as Variable));
+
+const parsedData = computed(() => {
+  switch (fileType.value) {
+    case "RedCap": return parsedDataREDCap();
+    case "OpenClinica": return parsedDataOpenClinica();
+    default: return undefined;
+  }
+})
 
 const headers = [{
   title: "Variablenname",
@@ -97,16 +153,16 @@ const headers = [{
 const loading: Ref<boolean> = ref(false);
 const response: Ref<Response | undefined> = ref(undefined);
 const create = async () => {
-  if (!parsedDataREDCap.value) return;
+  if (!parsedData.value) return;
   const u = await auth.getUser();
   if (!u?.access_token) return;
   loading.value = true;
-  response.value = await fetch(`${import.meta.env.VITE_API_BASE}/questionnaire`, {
+  response.value = await fetch(`${import.meta.env.VITE_API_BASE ?? "__API_BASE__"}/questionnaire`, {
     method: "POST",
     body: JSON.stringify({
       title: title.value,
       description: description.value,
-      dataElements: parsedDataREDCap.value as Variable[],
+      dataElements: parsedData.value as Variable[],
       options: {
         reqPosReviews: options.value.posCount.use ? options.value.posCount.val : null,
         reqNegReviews: options.value.negCount.use ? options.value.negCount.val : null,
@@ -183,7 +239,7 @@ const notEmpty = ref([
   (v: string | any[]) => !!v.length || "darf nicht leer sein",
 ]);
 const atLeastOneDE = ref([
-  (_: any) => !!parsedDataREDCap.value?.length || "darf nicht leer sein",
+  (_: any) => !!parsedData.value?.length || "darf nicht leer sein",
 ]);
 const participantUser = ref([
   (v: string) => !!v.length || "darf nicht leer sein",
@@ -222,7 +278,11 @@ const fracSliderRules = ref([
       <h1>Projekt erstellen</h1>
       <v-text-field v-model="title" :rules="notEmpty" label="Titel" required></v-text-field>
       <v-textarea v-model="description" label="Beschreibung"></v-textarea>
-      <v-file-input v-model="file" accept=".csv" :rules="atLeastOneDE" label="Data Dictionary eingeben"></v-file-input>
+      <v-select label="Typ vom Data Dictionary" :rules="notEmpty" :items="['RedCap', 'OpenClinica']" v-model="fileType"></v-select>
+      <template>
+        <v-file-input v-if="fileType == 'RedCap'" v-model="file" accept=".xls" :rules="atLeastOneDE" label="Data Dictionary eingeben"></v-file-input>
+        <v-file-input v-if="fileType == 'OpenClinica'" v-model="file" accept=".csv" :rules="atLeastOneDE" label="Data Dictionary eingeben"></v-file-input>
+      </template>
       <br />
 
       <h2>FHIR value sets</h2>
@@ -324,7 +384,7 @@ const fracSliderRules = ref([
 
   <v-sheet width="1000" v-if="contents" class="sheet">
     <h1>Daten</h1>
-    <v-data-table v-if="parsedDataREDCap?.length" :headers="headers" :items="parsedDataREDCap"></v-data-table>
+    <v-data-table v-if="parsedData?.length" :headers="headers" :items="parsedData"></v-data-table>
     <p v-else><i>Keine Daten gefunden.</i></p>
     <template v-if="contents.errors?.length">
       <h1>Fehler</h1>
