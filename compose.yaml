@@ -77,22 +77,16 @@ services:
   # will only work if HTTPS certs are provided
   # else use override (with caddy reverse proxy)
   reverse-proxy:
-    image: nginx:1.31
-    container_name: nginx
+    image: caddy:2-alpine
+    container_name: caddy
     restart: unless-stopped
     ports:
       - "${HTTP_PORT}:${HTTP_PORT}"
       - "${HTTPS_PORT}:${HTTPS_PORT}"
     volumes:
-      # not in version control
-      - ./nginx_config/certs/dhparam.pem:/etc/nginx/dhparam.pem:ro
-      - ./nginx_config/certs/key.pem:/etc/ssl/private/key.pem:ro
-      - ./nginx_config/certs/cert.pem:/etc/ssl/certs/cert.pem:ro
-      # in version control
-      - ./nginx_config/snippets:/etc/nginx/snippets
-      - ./nginx_config/annotator.conf:/etc/nginx/templates/default.conf.template
-      # docker stuff
-      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
     environment:
       BASE_URL: ${BASE_URL}
       API_PORT: ${API_PORT}
@@ -100,3 +94,7 @@ services:
       OAUTH_PORT: ${OAUTH_PORT}
       HTTP_PORT: ${HTTP_PORT}
       HTTPS_PORT: ${HTTPS_PORT}
+
+volumes:
+  caddy_data:
+  caddy_config:
