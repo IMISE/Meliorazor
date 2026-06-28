@@ -1,16 +1,16 @@
 {
-    http_port {env.HTTP_PORT}
-    https_port {env.HTTPS_PORT}
+    http_port {$HTTP_PORT}
+    https_port {$HTTPS_PORT}
 }
 
-{env.BASE_URL} {
-    handle {env.API_CONTEXT}/* {
-        reverse_proxy annotator-api:{env.API_PORT}
+{$BASE_URL} {
+    handle {$API_CONTEXT}* {
+        reverse_proxy localhost:{$API_PORT}
     }
-    handle {env.OAUTH_CONTEXT}/* {
-        reverse_proxy annotator-oauth:{env.OAUTH_PORT}
+    handle {$OAUTH_CONTEXT}* {
+        reverse_proxy localhost:{$OAUTH_PORT}
     }
     handle {
-        reverse_proxy annotator-web:80
+        reverse_proxy localhost:{$VITE_PORT}
     }
 }

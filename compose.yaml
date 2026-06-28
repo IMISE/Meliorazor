@@ -18,7 +18,7 @@ services:
     build:
       context: web/
     ports:
-      - "${VITE_PORT}:${VITE_PORT}"
+      - "${VITE_PORT}:80"
     environment:
       BASE_URL: ${BASE_URL}
       VITE_PORT: ${VITE_PORT}
@@ -66,6 +66,7 @@ services:
       KC_HEALTH_ENABLED: true
       KC_LOG_LEVEL: info
       KC_SPI_CONNECTIONS_HTTP_CLIENT_DEFAULT_SOCKET_TIMEOUT_MILLIS: 30000
+      KC_SPI_CONNECTIONS_HTTP_CLIENT_DEFAULT_CONNECTION_TIMEOUT_MILLIS: 30000
       KC_BOOTSTRAP_ADMIN_USERNAME: ${OAUTH_ADMIN_USER}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${OAUTH_ADMIN_PASSWORD}
     healthcheck:
@@ -74,27 +75,3 @@ services:
       interval: 5s
       timeout: 5s
       retries: 30
-  # will only work if HTTPS certs are provided
-  # else use override (with caddy reverse proxy)
-  reverse-proxy:
-    image: caddy:2-alpine
-    container_name: caddy
-    restart: unless-stopped
-    ports:
-      - "${HTTP_PORT}:${HTTP_PORT}"
-      - "${HTTPS_PORT}:${HTTPS_PORT}"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-    environment:
-      BASE_URL: ${BASE_URL}
-      API_PORT: ${API_PORT}
-      VITE_PORT: ${VITE_PORT}
-      OAUTH_PORT: ${OAUTH_PORT}
-      HTTP_PORT: ${HTTP_PORT}
-      HTTPS_PORT: ${HTTPS_PORT}
-
-volumes:
-  caddy_data:
-  caddy_config:
