@@ -7,6 +7,7 @@ import ViteFonts from 'unplugin-fonts/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/',
   plugins: [
     vue(),
     vueDevTools(),
@@ -26,5 +27,9 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
+  },
+  envDir: "..",
+  build: {
+    sourcemap: true,
   },
 })

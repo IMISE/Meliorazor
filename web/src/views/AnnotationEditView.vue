@@ -35,7 +35,7 @@ const loadAnnotation = async () => {
       }
     };
 
-    const response = await fetch(`${import.meta.env.VITE_API_BASE}/dataElement/${dataElementId.value}/annotation/${annotationId.value}`, options);
+    const response = await fetch(`${(window as any).config?.VITE_API_BASE}/dataElement/${dataElementId.value}/annotation/${annotationId.value}`, options);
     annotation.value = await response.json() as Annotation;
   } catch (e) {
     console.error(e);
@@ -73,7 +73,7 @@ const getProject = async (newId: string | undefined, oldId: string | undefined) 
       }
     };
 
-    const response = await fetch(`${import.meta.env.VITE_API_BASE}/questionnaire/${projectId.value}`, options);
+    const response = await fetch(`${(window as any).config?.VITE_API_BASE}/questionnaire/${projectId.value}`, options);
     project.value = await response.json() as Questionnaire;
   } catch (e) {
     console.error(e);

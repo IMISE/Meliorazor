@@ -57,15 +57,20 @@ watch(file, () => {
       break;
     }
     case "OpenClinica": {
-      try {
-        const wb = read(file);
-        const ws = wb.Sheets["Items"]!;
-        const items: { [index: string]: string }[] = utils.sheet_to_json(ws, { header: "A", skipHidden: true });
-        contents.value = { data: items, errors: [] };
-      } catch (e) {
-        console.error(e);
-        contents.value = { data: [], errors: [e] };
-      }
+      const reader = new FileReader();
+      reader.onload = ((data) => {
+        try {
+          const wb = read(data, { type: "buffer" });
+          const ws = wb.Sheets["Items"]!;
+          const items: { [index: string]: string }[] = utils.sheet_to_json(ws, { header: "A", skipHidden: true });
+          contents.value = { data: items, errors: [] };
+        } catch (e) {
+          console.error(e);
+          contents.value = { data: [], errors: [e] };
+        }
+      });
+      reader.onerror = console.error;
+      reader.readAsText(file.value);
       break;
     }
     default: {
@@ -157,7 +162,7 @@ const create = async () => {
   const u = await auth.getUser();
   if (!u?.access_token) return;
   loading.value = true;
-  response.value = await fetch(`${import.meta.env.VITE_API_BASE ?? "__API_BASE__"}/questionnaire`, {
+  response.value = await fetch(`${(window as any).config?.VITE_API_BASE}/questionnaire`, {
     method: "POST",
     body: JSON.stringify({
       title: title.value,
@@ -279,10 +284,8 @@ const fracSliderRules = ref([
       <v-text-field v-model="title" :rules="notEmpty" label="Titel" required></v-text-field>
       <v-textarea v-model="description" label="Beschreibung"></v-textarea>
       <v-select label="Typ vom Data Dictionary" :rules="notEmpty" :items="['RedCap', 'OpenClinica']" v-model="fileType"></v-select>
-      <template>
-        <v-file-input v-if="fileType == 'RedCap'" v-model="file" accept=".xls" :rules="atLeastOneDE" label="Data Dictionary eingeben"></v-file-input>
-        <v-file-input v-if="fileType == 'OpenClinica'" v-model="file" accept=".csv" :rules="atLeastOneDE" label="Data Dictionary eingeben"></v-file-input>
-      </template>
+      <v-file-input v-if="fileType === 'RedCap'" v-model="file" accept=".csv" :rules="atLeastOneDE" label="Data Dictionary eingeben"></v-file-input>
+      <v-file-input v-if="fileType === 'OpenClinica'" v-model="file" accept=".xls" :rules="atLeastOneDE" label="Data Dictionary eingeben"></v-file-input>
       <br />
 
       <h2>FHIR value sets</h2>

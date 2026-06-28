@@ -43,7 +43,7 @@ const get = async (id: number) => {
 
   loading.value = true;
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE}/questionnaire/${id}`, {
+    const response = await fetch(`${(window as any).config?.VITE_API_BASE}/questionnaire/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

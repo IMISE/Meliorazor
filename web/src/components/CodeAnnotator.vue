@@ -30,7 +30,7 @@ const submitAnnotation = async () => {
 
   loadingCreate.value = true;
   try {
-    response.value = await fetch(`${import.meta.env.VITE_API_BASE}/dataElement/${dataElementId}/annotation`, {
+    response.value = await fetch(`${(window as any).config?.VITE_API_BASE}/dataElement/${dataElementId}/annotation`, {
       method: "POST",
       body: JSON.stringify({
         authorName: u.profile?.preferred_username,

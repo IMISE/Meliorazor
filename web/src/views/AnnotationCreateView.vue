@@ -29,7 +29,7 @@ const getData = async () => {
     }
   };
 
-  const response = await fetch(`${import.meta.env.VITE_API_BASE}/questionnaire/${projectId.value}`, options);
+  const response = await fetch(`${(window as any).config?.VITE_API_BASE}/questionnaire/${projectId.value}`, options);
   project.value = await response.json() as Questionnaire;
 
 }

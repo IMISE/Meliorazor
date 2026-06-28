@@ -3,4 +3,4 @@ keycloak_data
 .vscode
 .env
 .env.*
-
+!.env.example

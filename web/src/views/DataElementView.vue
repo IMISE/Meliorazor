@@ -28,7 +28,7 @@ const get = async (elementId: number) => {
       }
     };
 
-    const response = await fetch(`${import.meta.env.VITE_API_BASE}/dataElement/${elementId}`, options);
+    const response = await fetch(`${(window as any).config?.VITE_API_BASE}/dataElement/${elementId}`, options);
     data.value = await response.json() as Variable;
   } catch (e) {
     console.error(e);

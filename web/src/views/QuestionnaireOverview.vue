@@ -16,7 +16,7 @@ const getQuestionnaires = async () => {
     if (!u?.access_token) return;
     isLoggedIn.value = true;
 
-    const response = await fetch(`${import.meta.env.VITE_API_BASE}/questionnaire`, {
+    const response = await fetch(`${(window as any).config?.VITE_API_BASE}/questionnaire`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

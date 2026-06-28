@@ -24,7 +24,7 @@ const giveFeedback = async () => {
     const u = await auth.getUser();
     if (!u?.access_token) return;
 
-    response.value = await fetch(`${import.meta.env.VITE_API_BASE}/dataElement/${dataElementId}/annotation/${annotationId}/comment`, {
+    response.value = await fetch(`${(window as any).config?.VITE_API_BASE}/dataElement/${dataElementId}/annotation/${annotationId}/comment`, {
       method: "POST",
       body: JSON.stringify({
         authorName: u.profile.preferred_username,

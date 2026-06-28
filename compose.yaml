@@ -1,8 +1,11 @@
 services:
   server:
+    container_name: annotator-api
     build: server/
     ports:
-      - "8081:8081"
+      - "${API_PORT}:${API_PORT}"
+    volumes:
+      - ./.env:/.env:ro
     depends_on:
       database:
         condition: service_healthy
@@ -10,60 +13,90 @@ services:
       oauth:
         condition: service_healthy
         restart: true
-#      oauth:
-#        condition: service_healthy
-#        restart: true
-#  web:
-#    build: web/
-#    ports:
-#      - "5173:5173"
-#    depends_on:
-#      server:
-#        condition: service_healthy
+  web:
+    container_name: annotator-web
+    build:
+      context: web/
+    ports:
+      - "${VITE_PORT}:${VITE_PORT}"
+    environment:
+      BASE_URL: ${BASE_URL}
+      VITE_PORT: ${VITE_PORT}
+      VITE_API_BASE: ${VITE_API_BASE}
+      VITE_OAUTH_BASE: ${VITE_OAUTH_BASE}
+      VITE_OAUTH_REALM: ${VITE_OAUTH_REALM}
+      VITE_OAUTH_CLIENT_ID: ${VITE_OAUTH_CLIENT_ID}
+#   depends_on: # TODO health check
+#     server:
+#       condition: service_healthy
 #        restart: false
   database:
+    container_name: annotator-database
     image: postgres:18
-    container_name: database
     restart: always
     ports:
-      - "5432:5432"
+      - "${DB_PORT}:${DB_PORT}"
     environment:
-      POSTGRES_USER: annotator
-      POSTGRES_PASSWORD: annotator
-      POSTGRES_DB: annotator
-      POSTGRES_HOST: database
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_HOST: ${DB_HOST}
+      PGPORT: ${DB_PORT}
     volumes:
       - ./postgres_data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "sh -c 'pg_isready -U annotator -d annotator'"]
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${DB_USER} -d ${DB_NAME}'"]
       interval: 10s
       timeout: 3s
       retries: 3
   oauth:
+    container_name: annotator-oauth
     image: quay.io/keycloak/keycloak:26.6.2
-    container_name: oauth
     ports:
-      - "8080:8080"
-    command: ["start-dev", "--import-realm"]
+      - "${OAUTH_PORT}:8080"
+    command: ["start", "--import-realm"]
     volumes:
       - ./keycloak_data:/opt/keycloak/data
     environment:
-      KC_HOSTNAME: http://oauth:8080
-      KC_PROXY: edge
-      KC_HOSTNAME_STRICT: false
-      KC_HOSTNAME_STRICT_HTTPS: false
-      KC_HOSTNAME_DYNAMIC_BACKCHANNEL: true
-      KC_HTTP_RELATIVE_PATH: /
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: "https://${BASE_URL}${OAUTH_CONTEXT}"
+      KC_HTTP_RELATIVE_PATH: ${OAUTH_CONTEXT}
+      KC_PROXY_HEADERS: xforwarded
+      KC_HOSTNAME_STRICT: true
       KC_HTTP_ENABLED: true
       KC_HEALTH_ENABLED: true
-      KC_METRICS_ENABLED: true
       KC_LOG_LEVEL: info
       KC_SPI_CONNECTIONS_HTTP_CLIENT_DEFAULT_SOCKET_TIMEOUT_MILLIS: 30000
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${OAUTH_ADMIN_USER}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${OAUTH_ADMIN_PASSWORD}
     healthcheck:
       test: ["CMD-SHELL", "exec 3<> /dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\\nhost: http://localhost\\nConnection: close\\n\\n' >&3; if [ $? -eq 0 ]; then echo 'Healthcheck Successful'; exit 0; else echo 'Healthcheck Failed'; exit 1; fi;"]
-      start_period: 20s
+      start_period: 60s
       interval: 5s
       timeout: 5s
       retries: 30
+  # will only work if HTTPS certs are provided
+  # else use override (with caddy reverse proxy)
+  reverse-proxy:
+    image: nginx:1.31
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT}:${HTTP_PORT}"
+      - "${HTTPS_PORT}:${HTTPS_PORT}"
+    volumes:
+      # not in version control
+      - ./nginx_config/certs/dhparam.pem:/etc/nginx/dhparam.pem:ro
+      - ./nginx_config/certs/key.pem:/etc/ssl/private/key.pem:ro
+      - ./nginx_config/certs/cert.pem:/etc/ssl/certs/cert.pem:ro
+      # in version control
+      - ./nginx_config/snippets:/etc/nginx/snippets
+      - ./nginx_config/annotator.conf:/etc/nginx/templates/default.conf.template
+      # docker stuff
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    environment:
+      BASE_URL: ${BASE_URL}
+      API_PORT: ${API_PORT}
+      VITE_PORT: ${VITE_PORT}
+      OAUTH_PORT: ${OAUTH_PORT}
+      HTTP_PORT: ${HTTP_PORT}
+      HTTPS_PORT: ${HTTPS_PORT}
