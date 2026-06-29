@@ -13,6 +13,13 @@ services:
       oauth:
         condition: service_healthy
         restart: true
+    healthcheck:
+      test: ["CMD-SHELL", "curl http://localhost/actuator/health | grep '\"status\": \"UP\"' | wc -l"]
+      start_period: 30s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
   web:
     container_name: annotator-web
     build:
@@ -26,10 +33,6 @@ services:
       VITE_OAUTH_BASE: ${VITE_OAUTH_BASE}
       VITE_OAUTH_REALM: ${VITE_OAUTH_REALM}
       VITE_OAUTH_CLIENT_ID: ${VITE_OAUTH_CLIENT_ID}
-#   depends_on: # TODO health check
-#     server:
-#       condition: service_healthy
-#        restart: false
   database:
     container_name: annotator-database
     image: postgres:18
@@ -66,7 +69,6 @@ services:
       KC_HEALTH_ENABLED: true
       KC_LOG_LEVEL: info
       KC_SPI_CONNECTIONS_HTTP_CLIENT_DEFAULT_SOCKET_TIMEOUT_MILLIS: 30000
-      KC_SPI_CONNECTIONS_HTTP_CLIENT_DEFAULT_CONNECTION_TIMEOUT_MILLIS: 30000
       KC_BOOTSTRAP_ADMIN_USERNAME: ${OAUTH_ADMIN_USER}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${OAUTH_ADMIN_PASSWORD}
     healthcheck:

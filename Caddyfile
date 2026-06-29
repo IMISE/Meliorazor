@@ -4,6 +4,9 @@
 }
 
 {$BASE_URL} {
+    handle {$API_CONTEXT}/actuator* {
+        reverse_proxy localhost:{$VITE_PORT}
+    }
     handle {$API_CONTEXT}* {
         reverse_proxy localhost:{$API_PORT}
     }
