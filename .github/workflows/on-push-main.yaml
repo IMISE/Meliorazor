@@ -20,3 +20,4 @@ jobs:
       - test_web
       - test_api
     uses: ./.github/workflows/deploy.yaml
+    secrets: inherit
