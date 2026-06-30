@@ -15,4 +15,4 @@ jobs:
           distribution: 'adopt'
 
       - name: Compile project
-        run: ./mvnw -f ./pom.xml clean package -Dskiptests
+        run: ./mvnw -f ./pom.xml clean compile
