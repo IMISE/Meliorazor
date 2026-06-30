@@ -10,8 +10,13 @@ import { read, utils } from 'xlsx';
 
 const title = ref("");
 const description = ref("");
-const file = ref();
+
 const fileType: Ref<"RedCap" | "OpenClinica"> = ref("RedCap");
+/** RedCap */
+const rcFile = ref();
+/** OpenClinica */
+const ocFile = ref();
+const file = computed(() => fileType.value === "RedCap" ? rcFile.value : ocFile.value);
 
 type ValueSetDefinition = FhirValueSetDefinition & { testResult: { ok: boolean, title: string, status: string, codes: number } | undefined, loading: boolean };
 const emptyValueSet: () => ValueSetDefinition = () => ({ display: "", server: "", valueSet: "", testResult: undefined, loading: false });
@@ -244,7 +249,7 @@ const notEmpty = ref([
   (v: string | any[]) => !!v.length || "darf nicht leer sein",
 ]);
 const atLeastOneDE = ref([
-  (_: any) => !!parsedData.value?.length || "darf nicht leer sein",
+  (_: any) => !!parsedData.value?.length || "darf nicht leer sein; muss mind. ein Datenelement enthalten",
 ]);
 const participantUser = ref([
   (v: string) => !!v.length || "darf nicht leer sein",
@@ -284,8 +289,8 @@ const fracSliderRules = ref([
       <v-text-field v-model="title" :rules="notEmpty" label="Titel" required></v-text-field>
       <v-textarea v-model="description" label="Beschreibung"></v-textarea>
       <v-select label="Typ vom Data Dictionary" :rules="notEmpty" :items="['RedCap', 'OpenClinica']" v-model="fileType"></v-select>
-      <v-file-input v-if="fileType === 'RedCap'" v-model="file" accept=".csv" :rules="atLeastOneDE" label="Data Dictionary eingeben"></v-file-input>
-      <v-file-input v-if="fileType === 'OpenClinica'" v-model="file" accept=".xls" :rules="atLeastOneDE" label="Data Dictionary eingeben"></v-file-input>
+      <v-file-input v-if="fileType === 'RedCap'" v-model="rcFile" accept=".csv" :rules="atLeastOneDE" label="Data Dictionary eingeben"></v-file-input>
+      <v-file-input v-else-if="fileType === 'OpenClinica'" v-model="ocFile" accept=".xls" :rules="atLeastOneDE" label="Data Dictionary eingeben"></v-file-input>
       <br />
 
       <h2>FHIR value sets</h2>
