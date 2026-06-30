@@ -1,0 +1,22 @@
+name: Test and deploy
+on:
+  push:
+    branches:
+      - main
+jobs:
+  test_web:
+    uses: ./.github/workflows/test-web.yaml
+  test_api:
+    uses: ./.github/workflows/test-api.yaml
+  #integration_tests:
+  #  needs:
+  #    - validate_web
+  #    - validate_api
+  #  uses: ./.github/workflows/test-all.yaml
+  
+  deploy:
+  #  needs: integration_tests
+    needs:
+      - test_web
+      - test_api
+    uses: ./.github/workflows/deploy.yaml

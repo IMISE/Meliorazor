@@ -1,8 +1,17 @@
 name: Deploy main branch to server
 on:
-  workflow_dispatch:
-  push:
+  workflow_call:
     branches: ['main']
+    secrets:
+      SSH_KEY:
+        required: true
+      HOST:
+        required: true
+      USER:
+        required: true
+      DIR_NAME:
+        required: true
+  workflow_dispatch:
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -10,9 +19,9 @@ jobs:
       - name: Set up SSH key
         run: |
           mkdir ~/.ssh
-          echo "${{ secrets.ARTIFACT_SSH_KEY }}" > ~/.ssh/id_ed25519
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -p 22 ${{ secrets.ARTIFACT_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -p 22 ${{ secrets.HOST }} >> ~/.ssh/known_hosts
           sudo apt-get install sshpass
 
       - name: Deploy to server
