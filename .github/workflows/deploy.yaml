@@ -1,7 +1,6 @@
 name: Deploy main branch to server
 on:
   workflow_call:
-    branches: ['main']
     secrets:
       SSH_KEY:
         required: true
