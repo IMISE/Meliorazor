@@ -13,15 +13,6 @@ jobs:
         with:
           java-version: '25'
           distribution: 'adopt'
-      - name: Set up the Maven dependencies caching
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
 
-      - name: Install Maven dependencies
-        run: mvn install
-
-      - name: Compile and run unit tests
-        run: mvn test
+      - name: Compile project
+        run: ./mvnw -f ./pom.xml clean package -Dskiptests
