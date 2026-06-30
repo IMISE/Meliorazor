@@ -1,5 +1,8 @@
 name: Build, lint and test web
 on: workflow_call
+defaults:
+  run:
+    working-directory: ./web
 jobs:
   lint:
     runs-on: ubuntu-latest
