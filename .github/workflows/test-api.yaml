@@ -23,5 +23,5 @@ jobs:
       - name: Install Maven dependencies
         run: mvn install
 
-      - name: Run tests
-        run: mvn --batch-mode --update-snapshots verify
+      - name: Compile and run unit tests
+        run: mvn test
