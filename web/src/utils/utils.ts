@@ -1,4 +1,4 @@
-export function clean(input: string | null) {
+export function clean(input: string | null | undefined) {
   return (input || "undef").toLowerCase()
     .replaceAll("ä", "ae")
     .replaceAll("ö", "oe")

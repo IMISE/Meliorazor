@@ -1,5 +1,4 @@
-import type { Role, Status } from "./enums";
-import type { User } from "./user";
+import type { CommentType, Role, Status } from "./enums";
 
 export interface Questionnaire {
   id: number;
@@ -25,10 +24,10 @@ export interface Participant {
 
 export interface Variable {
   id: number | undefined;
-  variableName: ?string;
+  variableName: string | null | undefined;
   label: string;
-  type: ?string;
-  choices: ?Choice[];
+  type: string | null | undefined;
+  choices: Choice[] | null | undefined;
   metadata: KeyValuePair[];
   annotations: Annotation[];
 }

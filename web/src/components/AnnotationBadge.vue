@@ -30,13 +30,13 @@ const goToAnnotation = async () => router.push({
 
 <template>
   <div>
-    <v-chip style="border-radius: 20px 0 0 20px; background-color: darkcyan" inline>
+    <v-chip style="border-radius: 20px 0 0 20px; background-color: darkcyan" aria-label="Prädikat" inline>
       {{ annotation.predicate }}
     </v-chip>
     <v-divider vertical color="white" :thickness="2" />
     <v-tooltip :text="hint">
       <template #activator="{ props }">
-          <v-chip v-bind="props" @click="goToAnnotation" style="border-radius: 0 20px 20px 0; background-color: darkcyan" inline>
+          <v-chip v-bind="props" @click="goToAnnotation" style="border-radius: 0 20px 20px 0; background-color: darkcyan" aria-label="Code" inline>
             {{ annotation.code.display }}
           </v-chip>
       </template>

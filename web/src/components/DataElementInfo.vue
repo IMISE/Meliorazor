@@ -5,7 +5,7 @@ import { Role, roles, status, Status } from '@/types/enums';
 import type { IdTokenClaims } from 'oidc-client-ts';
 import AnnotationBadge from './AnnotationBadge.vue';
 import { useRouter } from 'vue-router';
-import { clean } from '@/utils/utils.ts';
+import { clean } from '@/utils/utils';
 import { mdiCheckboxBlankCircleOutline, mdiCheckCircleOutline, mdiMagnify, mdiPlus } from '@mdi/js';
 
 const { dataElement: data, projectId, projectTitle } = defineProps<{
