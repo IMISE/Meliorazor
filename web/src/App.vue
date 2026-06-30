@@ -23,7 +23,7 @@ onUpdated(() => getUser());
 <template>
   <v-layout>
     <v-app-bar>
-      <v-app-bar-title>AnnoTool [WIP]</v-app-bar-title>
+      <v-app-bar-title>Meliorazor</v-app-bar-title>
       <v-btn href="/">Home</v-btn>
       <v-btn href="/projects">Projekte</v-btn>
       <v-btn v-if="user?.access_token" @click="logout()">Logout</v-btn>
