@@ -3,6 +3,7 @@ import auth from '@/auth';
 import Annotator from '@/components/Annotator.vue';
 import TabbedInterface from '@/components/TabbedInterface.vue';
 import type { Questionnaire, Variable } from '@/types/types';
+import getEnv from '@/utils/env';
 import { computed, onMounted, ref, watch, type Ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -29,7 +30,7 @@ const getData = async () => {
     }
   };
 
-  const response = await fetch(`${(window as any).config?.VITE_API_BASE}/questionnaire/${projectId.value}`, options);
+  const response = await fetch(`${getEnv("VITE_API_BASE")}/questionnaire/${projectId.value}`, options);
   project.value = await response.json() as Questionnaire;
 
 }

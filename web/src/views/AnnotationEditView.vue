@@ -4,6 +4,7 @@ import AnnotationCommentor from '@/components/AnnotationCommentor.vue';
 import AnnotationInfo from '@/components/AnnotationInfo.vue';
 import { Role } from '@/types/enums';
 import type { Annotation, Questionnaire } from '@/types/types';
+import getEnv from '@/utils/env';
 import type { IdTokenClaims } from 'oidc-client-ts';
 import { computed, onMounted, ref, watch, type Ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -35,7 +36,7 @@ const loadAnnotation = async () => {
       }
     };
 
-    const response = await fetch(`${(window as any).config?.VITE_API_BASE}/dataElement/${dataElementId.value}/annotation/${annotationId.value}`, options);
+    const response = await fetch(`${getEnv("VITE_API_BASE")}/dataElement/${dataElementId.value}/annotation/${annotationId.value}`, options);
     annotation.value = await response.json() as Annotation;
   } catch (e) {
     console.error(e);
@@ -73,7 +74,7 @@ const getProject = async (newId: string | undefined, oldId: string | undefined) 
       }
     };
 
-    const response = await fetch(`${(window as any).config?.VITE_API_BASE}/questionnaire/${projectId.value}`, options);
+    const response = await fetch(`${getEnv("VITE_API_BASE")}/questionnaire/${projectId.value}`, options);
     project.value = await response.json() as Questionnaire;
   } catch (e) {
     console.error(e);

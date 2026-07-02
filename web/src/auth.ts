@@ -1,8 +1,9 @@
 import { UserManager, WebStorageStateStore } from "oidc-client-ts"
+import getEnv from "./utils/env";
 
-const base = (window as any).config?.VITE_OAUTH_BASE;
-const realm = (window as any).config?.VITE_OAUTH_REALM;
-const clientId = (window as any).config?.VITE_OAUTH_CLIENT_ID;
+const base = getEnv("VITE_OAUTH_BASE");
+const realm = getEnv("VITE_OAUTH_REALM");
+const clientId = getEnv("VITE_OAUTH_CLIENT_ID");
 
 export const kc = {
   authorityUrl: `${base}/realms/${realm}`,

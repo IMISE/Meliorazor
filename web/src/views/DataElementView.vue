@@ -2,6 +2,7 @@
 import auth from '@/auth';
 import AnnotationList from '@/components/AnnotationList.vue';
 import type { Variable } from '@/types/types';
+import getEnv from '@/utils/env';
 import { mdiReload } from '@mdi/js';
 import { watch } from 'vue';
 import { computed, onMounted, ref, type Ref } from 'vue';
@@ -28,7 +29,7 @@ const get = async (elementId: number) => {
       }
     };
 
-    const response = await fetch(`${(window as any).config?.VITE_API_BASE}/dataElement/${elementId}`, options);
+    const response = await fetch(`${getEnv("VITE_API_BASE")}/dataElement/${elementId}`, options);
     data.value = await response.json() as Variable;
   } catch (e) {
     console.error(e);

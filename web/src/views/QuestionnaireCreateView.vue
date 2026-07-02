@@ -7,6 +7,7 @@ import auth from '@/auth';
 import { roles } from '@/types/enums';
 import { useRouter } from 'vue-router';
 import { read, utils } from 'xlsx';
+import getEnv from '@/utils/env';
 
 const title = ref("");
 const description = ref("");
@@ -167,7 +168,7 @@ const create = async () => {
   const u = await auth.getUser();
   if (!u?.access_token) return;
   loading.value = true;
-  response.value = await fetch(`${(window as any).config?.VITE_API_BASE}/questionnaire`, {
+  response.value = await fetch(`${getEnv("VITE_API_BASE")}/questionnaire`, {
     method: "POST",
     body: JSON.stringify({
       title: title.value,

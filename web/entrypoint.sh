@@ -5,7 +5,8 @@
 # Path to the runtime config.js file
 CONFIG_FILE=/usr/share/nginx/html/config.js
 
-sed -i "s|__BASE_URL__|https://${BASE_URL}|g" "/usr/share/nginx/html/index.html"
+# load config correctly
+sed -i "s|\./config\.js|https://${BASE_URL}/config.js|g" "/usr/share/nginx/html/index.html"
 
 # Replace placeholders in config.js with environment variables
 echo "Generating runtime configuration in $CONFIG_FILE"

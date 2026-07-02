@@ -3,6 +3,7 @@ import auth from '@/auth';
 import DataElementInfo from '@/components/DataElementInfo.vue';
 import { Role, Status } from '@/types/enums';
 import type { Questionnaire } from '@/types/types';
+import getEnv from '@/utils/env';
 import type { IdTokenClaims } from 'oidc-client-ts';
 import { computed, onMounted, ref, watch, type Ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -43,7 +44,7 @@ const get = async (id: number) => {
 
   loading.value = true;
   try {
-    const response = await fetch(`${(window as any).config?.VITE_API_BASE}/questionnaire/${id}`, {
+    const response = await fetch(`${getEnv("VITE_API_BASE")}/questionnaire/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

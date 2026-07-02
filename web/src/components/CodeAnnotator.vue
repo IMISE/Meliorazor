@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import auth from '@/auth';
 import type { CodeMapping, Predicate } from '@/types/types';
+import getEnv from '@/utils/env';
 import { mdiPencil } from '@mdi/js';
 import { ref, type Ref } from 'vue';
 
@@ -30,7 +31,7 @@ const submitAnnotation = async () => {
 
   loadingCreate.value = true;
   try {
-    response.value = await fetch(`${(window as any).config?.VITE_API_BASE}/dataElement/${dataElementId}/annotation`, {
+    response.value = await fetch(`${getEnv("VITE_API_BASE")}/dataElement/${dataElementId}/annotation`, {
       method: "POST",
       body: JSON.stringify({
         authorName: u.profile?.preferred_username,

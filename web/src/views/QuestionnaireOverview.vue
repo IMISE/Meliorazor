@@ -2,6 +2,7 @@
 import auth from '@/auth';
 import QuestionnaireList from '@/components/QuestionnaireList.vue';
 import type { Questionnaire } from '@/types/types';
+import getEnv from '@/utils/env';
 import { mdiPlus, mdiRefresh } from '@mdi/js';
 import { onMounted, ref, type Ref } from 'vue';
 
@@ -16,7 +17,7 @@ const getQuestionnaires = async () => {
     if (!u?.access_token) return;
     isLoggedIn.value = true;
 
-    const response = await fetch(`${(window as any).config?.VITE_API_BASE}/questionnaire`, {
+    const response = await fetch(`${getEnv("VITE_API_BASE")}/questionnaire`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
