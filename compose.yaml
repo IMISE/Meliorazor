@@ -59,7 +59,7 @@ services:
       - "${OAUTH_PORT}:8080"
     command: ["start", "--import-realm"]
     volumes:
-      - ./keycloak_data:/opt/keycloak/data
+      - keycloak_data:/opt/keycloak/data
     environment:
       KC_HOSTNAME: "https://${BASE_URL}${OAUTH_CONTEXT}"
       KC_HTTP_RELATIVE_PATH: ${OAUTH_CONTEXT}
@@ -77,3 +77,5 @@ services:
       interval: 5s
       timeout: 5s
       retries: 30
+volumes:
+  keycloak_data:
