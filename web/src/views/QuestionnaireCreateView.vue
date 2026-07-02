@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { computed, ref, watch, type Ref } from 'vue';
+import { computed, inject, ref, watch, type Ref } from 'vue';
 import Papa from 'papaparse';
 import { mdiAccountMinus, mdiAccountPlus, mdiAlertCircleOutline, mdiCheck, mdiMinus, mdiPlus, mdiTestTube } from '@mdi/js';
-import type { FhirValueSetDefinition, Participant, Questionnaire, QuestionnaireOptions, Variable } from '@/types/types';
+import type { FhirValueSetDefinition, Participant, QuestionnaireOptions, Variable } from '@/types/types';
 import auth from '@/auth';
 import { roles } from '@/types/enums';
 import { useRouter } from 'vue-router';
 import { read, utils } from 'xlsx';
 import getEnv from '@/utils/env';
+import type { IdTokenClaims } from 'oidc-client-ts';
+
+const user = inject("user") as Ref<IdTokenClaims | undefined>;
 
 const title = ref("");
 const description = ref("");
@@ -22,7 +25,7 @@ const file = computed(() => fileType.value === "RedCap" ? rcFile.value : ocFile.
 type ValueSetDefinition = FhirValueSetDefinition & { testResult: { ok: boolean, title: string, status: string, codes: number } | undefined, loading: boolean };
 const emptyValueSet: () => ValueSetDefinition = () => ({ display: "", server: "", valueSet: "", testResult: undefined, loading: false });
 const valueSets: Ref<ValueSetDefinition[]> = ref([emptyValueSet()]);
-const participants: Ref<Participant[]> = ref([{ username: "", roles: [] }]);
+const participants: Ref<Participant[]> = ref([{ username: user.value?.preferred_username ?? "", roles: [] }]);
 const contents: Ref<{ data: { [index: string]: string }[], errors: any[] } | undefined> = ref(undefined);
 const options = ref({
   posCount: {
@@ -336,7 +339,7 @@ const fracSliderRules = ref([
       <v-col fluid>
         <v-row v-for="(row, i) in participants" :key="participants.length + i" gap="10">
           <v-col cols="6">
-            <v-text-field v-model="row.username" :rules="participantUser" label="Nutzername"></v-text-field>
+            <v-text-field v-model="row.username" :rules="participantUser" label="Nutzername" :disabled="i === 0 && !!user?.preferred_username"></v-text-field>
           </v-col>
           <v-col :cols="participants.length > 1 ? 5 : 6">
             <v-select label="Rolle" :rules="notEmpty" :items="roles" v-model="row.roles" multiple></v-select>
