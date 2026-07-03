@@ -8,3 +8,27 @@ export function clean(input: string | null | undefined) {
     .replace(/_{2,}/g, "_")
     .replace(/(^_|_$)/g, "");
 }
+
+export function isUrl(input: string | undefined) {
+  if (!input) return false;
+  try {
+    new URL(input);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function isFhirServer(input: string | undefined) {
+  if (isUrl(input)) {
+    try {
+      const result = await fetch(`${input}/metadata`);
+      const metadata = await result.json();
+      return metadata?.resourceType === "CapabilityStatement";
+    } catch (e) {
+      return false;
+    }
+  } else {
+    return false;
+  }
+}

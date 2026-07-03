@@ -1,14 +1,20 @@
 <script setup lang="ts">
-import { computed, inject, ref, watch, type Ref } from 'vue';
-import Papa from 'papaparse';
-import { mdiAccountMinus, mdiAccountPlus, mdiAlertCircleOutline, mdiCheck, mdiMinus, mdiPlus, mdiTestTube } from '@mdi/js';
-import type { FhirValueSetDefinition, Participant, QuestionnaireOptions, Variable } from '@/types/types';
-import auth from '@/auth';
-import { roles } from '@/types/enums';
-import { useRouter } from 'vue-router';
-import { read, utils } from 'xlsx';
-import getEnv from '@/utils/env';
-import type { IdTokenClaims } from 'oidc-client-ts';
+import { computed, inject, ref, watch, type Ref } from "vue";
+import Papa from "papaparse";
+import { mdiAccountMinus, mdiAccountPlus, mdiAlertCircleOutline, mdiMinus, mdiPlus } from "@mdi/js";
+import type {
+  FhirValueSetDefinition,
+  Participant,
+  QuestionnaireOptions,
+  Variable,
+} from "@/types/types";
+import auth from "@/auth";
+import { roles } from "@/types/enums";
+import { useRouter } from "vue-router";
+import { read, utils } from "xlsx";
+import getEnv from "@/utils/env";
+import type { IdTokenClaims } from "oidc-client-ts";
+import ValueSetSelector from "@/components/ValueSetSelector.vue";
 
 const user = inject("user") as Ref<IdTokenClaims | undefined>;
 
@@ -20,13 +26,21 @@ const fileType: Ref<"RedCap" | "OpenClinica"> = ref("RedCap");
 const rcFile = ref();
 /** OpenClinica */
 const ocFile = ref();
-const file = computed(() => fileType.value === "RedCap" ? rcFile.value : ocFile.value);
+const file = computed(() => (fileType.value === "RedCap" ? rcFile.value : ocFile.value));
 
-type ValueSetDefinition = FhirValueSetDefinition & { testResult: { ok: boolean, title: string, status: string, codes: number } | undefined, loading: boolean };
-const emptyValueSet: () => ValueSetDefinition = () => ({ display: "", server: "", valueSet: "", testResult: undefined, loading: false });
-const valueSets: Ref<ValueSetDefinition[]> = ref([emptyValueSet()]);
-const participants: Ref<Participant[]> = ref([{ username: user.value?.preferred_username ?? "", roles: [] }]);
-const contents: Ref<{ data: { [index: string]: string }[], errors: any[] } | undefined> = ref(undefined);
+const valueSets: Ref<{ id: number; set: FhirValueSetDefinition | undefined }[]> = ref([
+  { id: 0, set: undefined },
+]);
+const valueSetKey = ref(0);
+const setKey = () => {
+  valueSetKey.value++;
+  return valueSetKey.value;
+};
+const participants: Ref<Participant[]> = ref([
+  { username: user.value?.preferred_username ?? "", roles: [] },
+]);
+const contents: Ref<{ data: { [index: string]: string }[]; errors: any[] } | undefined> =
+  ref(undefined);
 const options = ref({
   posCount: {
     use: true,
@@ -38,7 +52,8 @@ const options = ref({
     use: false,
     val: 50,
     fraction: true,
-    label: "Mindestanteil positiver Bewertungen an allen Bewertungen einer Annotation zur automatischen Akzeptanz",
+    label:
+      "Mindestanteil positiver Bewertungen an allen Bewertungen einer Annotation zur automatischen Akzeptanz",
   },
   negCount: {
     use: true,
@@ -50,16 +65,22 @@ const options = ref({
     use: false,
     val: 70,
     fraction: true,
-    label: "Mindestanteil negativer Bewertungen an allen Bewertungen einer Annotation zur automatischen Ablehnung",
+    label:
+      "Mindestanteil negativer Bewertungen an allen Bewertungen einer Annotation zur automatischen Ablehnung",
   },
 });
 watch(file, () => {
-  if(!file.value) contents.value = undefined;
+  if (!file.value) contents.value = undefined;
 
   switch (fileType.value) {
     case "RedCap": {
       Papa.parse(file.value, {
-        complete: (result) => { contents.value = { data: result.data as { [index: string]: string }[], errors: result.errors } },
+        complete: (result) => {
+          contents.value = {
+            data: result.data as { [index: string]: string }[],
+            errors: result.errors,
+          };
+        },
         header: true,
         worker: true,
       });
@@ -67,17 +88,20 @@ watch(file, () => {
     }
     case "OpenClinica": {
       const reader = new FileReader();
-      reader.onload = ((data) => {
+      reader.onload = (data) => {
         try {
           const wb = read(data, { type: "buffer" });
           const ws = wb.Sheets["Items"]!;
-          const items: { [index: string]: string }[] = utils.sheet_to_json(ws, { header: "A", skipHidden: true });
+          const items: { [index: string]: string }[] = utils.sheet_to_json(ws, {
+            header: "A",
+            skipHidden: true,
+          });
           contents.value = { data: items, errors: [] };
         } catch (e) {
           console.error(e);
           contents.value = { data: [], errors: [e] };
         }
-      });
+      };
       reader.onerror = console.error;
       reader.readAsText(file.value);
       break;
@@ -86,83 +110,110 @@ watch(file, () => {
       console.error("Unknown type of input file");
     }
   }
-
 });
 
-const parsedDataREDCap = () => contents.value?.data.map((datum) => ({
-  id: undefined,
-  variableName: datum["Variable / Field Name"] as string,
-  label: datum["Field Label"] as string,
-  type: datum["Field Type"] as string,
-  choices: ["dropdown", "checkbox", "radio"].includes(datum["Field Type"] as string) ?
-      (datum["Choices, Calculations, OR Slider Labels"] as string)
-        .split(" | ")
-        .map((choice) => choice.split(", ", 2))
-        .map((choice) => ({
-          id: undefined,
-          code: choice[0],
-          name: choice[1],
-          annotations: [],
-        }))
-    : null,
-  metadata: Object.keys(datum)
-    .filter((key) =>
-      !["Variable / Field Name", "Field Label", "Field Type"].includes(key)
-      && (key !== "Choices, Calculations, OR Slider Labels" || !["dropdown", "checkbox", "radio"].includes(datum["Field Type"] as string)))
-    .filter((key) => datum[key])
-    .map((key) => ({ key, value: datum[key] })),
-  annotations: [],
-} as Variable));
+const parsedDataREDCap = () =>
+  contents.value?.data.map(
+    (datum) =>
+      ({
+        id: undefined,
+        variableName: datum["Variable / Field Name"] as string,
+        label: datum["Field Label"] as string,
+        type: datum["Field Type"] as string,
+        choices: ["dropdown", "checkbox", "radio"].includes(datum["Field Type"] as string)
+          ? (datum["Choices, Calculations, OR Slider Labels"] as string)
+              .split(" | ")
+              .map((choice) => choice.split(", ", 2))
+              .map((choice) => ({
+                id: undefined,
+                code: choice[0],
+                name: choice[1],
+                annotations: [],
+              }))
+          : null,
+        metadata: Object.keys(datum)
+          .filter(
+            (key) =>
+              !["Variable / Field Name", "Field Label", "Field Type"].includes(key) &&
+              (key !== "Choices, Calculations, OR Slider Labels" ||
+                !["dropdown", "checkbox", "radio"].includes(datum["Field Type"] as string)),
+          )
+          .filter((key) => datum[key])
+          .map((key) => ({ key, value: datum[key] })),
+        annotations: [],
+      }) as Variable,
+  );
 
-const parsedDataOpenClinica = () => contents.value?.data.map((datum) => ({
-  id: undefined,
-  variableName: datum["ITEM_NAME*"] as string,
-  label: datum["DESCRIPTION_LABEL*"] as string,
-  type: datum["DATA_TYPE*"] as string,
-  choices: datum["RESPONSE_OPTIONS_TEXT"] ?
-      ((datum["RESPONSE_OPTIONS_TEXT"] as string))
-        .split(",")
-        .filter((choice) => choice)
-        .map((choice, index) => ({
-          id: undefined,
-          code: "" + index,
-          name: choice,
-          annotations: [],
-        }))
-    : null,
-  metadata: Object.keys(datum)
-    .filter((key) => !["ITEM_NAME*", "DESCRIPTION_LABEL*", "DATA_TYPE*", "RESPONSE_OPTIONS_TEXT"].includes(key))
-    .filter((key) => datum[key])
-    .map((key) => ({ key, value: datum[key] })),
-  annotations: [],
-} as Variable));
+const parsedDataOpenClinica = () =>
+  contents.value?.data.map(
+    (datum) =>
+      ({
+        id: undefined,
+        variableName: datum["ITEM_NAME*"] as string,
+        label: datum["DESCRIPTION_LABEL*"] as string,
+        type: datum["DATA_TYPE*"] as string,
+        choices: datum["RESPONSE_OPTIONS_TEXT"]
+          ? (datum["RESPONSE_OPTIONS_TEXT"] as string)
+              .split(",")
+              .filter((choice) => choice)
+              .map((choice, index) => ({
+                id: undefined,
+                code: "" + index,
+                name: choice,
+                annotations: [],
+              }))
+          : null,
+        metadata: Object.keys(datum)
+          .filter(
+            (key) =>
+              !["ITEM_NAME*", "DESCRIPTION_LABEL*", "DATA_TYPE*", "RESPONSE_OPTIONS_TEXT"].includes(
+                key,
+              ),
+          )
+          .filter((key) => datum[key])
+          .map((key) => ({ key, value: datum[key] })),
+        annotations: [],
+      }) as Variable,
+  );
 
 const parsedData = computed(() => {
   switch (fileType.value) {
-    case "RedCap": return parsedDataREDCap();
-    case "OpenClinica": return parsedDataOpenClinica();
-    default: return undefined;
+    case "RedCap":
+      return parsedDataREDCap();
+    case "OpenClinica":
+      return parsedDataOpenClinica();
+    default:
+      return undefined;
   }
-})
+});
 
-const headers = [{
-  title: "Variablenname",
-  key: "variableName",
-}, {
-  title: "Beschreibung",
-  key: "label",
-}, {
-  title: "Feld-/Datentyp",
-  key: "type",
-}, {
-  title: "Optionen",
-  key: "choices",
-  value: (item: Variable) => (item.choices?.map((choice) => `${choice.code}. ${choice.name}`).join("; ") ?? "-") || "(keine)",
-}, {
-  title: "Weitere Informationen",
-  key: "metadata",
-  value: (item: Variable) => item.metadata.map((pair) => `${pair.key}: ${pair.value}`).join(";") || "-",
-}];
+const headers = [
+  {
+    title: "Variablenname",
+    key: "variableName",
+  },
+  {
+    title: "Beschreibung",
+    key: "label",
+  },
+  {
+    title: "Feld-/Datentyp",
+    key: "type",
+  },
+  {
+    title: "Optionen",
+    key: "choices",
+    value: (item: Variable) =>
+      (item.choices?.map((choice) => `${choice.code}. ${choice.name}`).join("; ") ?? "-") ||
+      "(keine)",
+  },
+  {
+    title: "Weitere Informationen",
+    key: "metadata",
+    value: (item: Variable) =>
+      item.metadata.map((pair) => `${pair.key}: ${pair.value}`).join(";") || "-",
+  },
+];
 
 const loading: Ref<boolean> = ref(false);
 const response: Ref<Response | undefined> = ref(undefined);
@@ -184,18 +235,26 @@ const create = async () => {
         reqNegReviewRatio: options.value.negRatio.use ? options.value.negRatio.val : null,
       } as QuestionnaireOptions,
       participants: participants.value as Participant[],
-      valueSets: valueSets.value.map((v) => ({ display: v.display, server: v.server, valueSet: v.valueSet })) as FhirValueSetDefinition[],
+      valueSets: valueSets.value
+        .map((v) => v.set)
+        .filter((v) => !!v)
+        .map((v) => ({
+          display: v.display,
+          server: v.server,
+          valueSet: v.valueSet,
+        })) as FhirValueSetDefinition[],
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${u.access_token}`,
+      Authorization: `Bearer ${u.access_token}`,
     },
   });
   loading.value = false;
-}
+};
 
 const clean = (input: string | null) =>
-  (input || "undef").toLowerCase()
+  (input || "undef")
+    .toLowerCase()
     .replaceAll("ä", "ae")
     .replaceAll("ö", "oe")
     .replaceAll("ü", "ue")
@@ -203,75 +262,32 @@ const clean = (input: string | null) =>
     .replace(/[^a-z0-9-]/gi, "_")
     .replace(/_{2,}/g, "_")
     .replace(/(^_|_$)/g, "");
-const isUrl = (input: string) => {
-  try {
-    new URL(input);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-const isValidUrlConf = (serverUrl: string, valueSetUrl: string) => {
-  return serverRules.value.every((test) => test(serverUrl) === true && test(valueSetUrl) === true);
-}
-const testConnectionLimit = ref(100);
-const testConnection = async (input: ValueSetDefinition) => {
-  input.loading = true;
-  try {
-    const response = await fetch(`${input.server}/ValueSet/$expand?url=${input.valueSet}&count=${testConnectionLimit.value}`);
-    const json = await response.json();
-    input.testResult = {
-      ok: response.ok && json.resourceType === "ValueSet",
-      title: json.title ?? json.name ?? "unbekannt",
-      status: json.status,
-      codes: json.expansion?.contains?.length ?? json.expansion?.parameter?.find((e: any) => e.name === "count")?.valueInteger ?? "unknown",
-    };
-  } catch (e) {
-    console.error(e);
-    input.testResult = {
-      ok: false, title: "", status: "", codes: 0,
-    };
-  } finally {
-    input.loading = false;
-  }
-}
 
 watch(response, async () => {
   if (response.value?.ok) {
     const body = await response.value.text();
     const id = Number(body);
     if (!body || !Number.isInteger(id)) return;
-    useRouter().push({ name: "single-project", query: {
-      pid: id,
-      title: clean(title.value),
-    }});
+    useRouter().push({
+      name: "single-project",
+      query: {
+        pid: id,
+        title: clean(title.value),
+      },
+    });
   }
 });
 
-const notEmpty = ref([
-  (v: string | any[]) => !!v.length || "darf nicht leer sein",
-]);
+const notEmpty = ref([(v: string | any[]) => !!v.length || "darf nicht leer sein"]);
 const atLeastOneDE = ref([
-  (_: any) => !!parsedData.value?.length || "darf nicht leer sein; muss mind. ein Datenelement enthalten",
+  (_: any) =>
+    !!parsedData.value?.length || "darf nicht leer sein; muss mind. ein Datenelement enthalten",
 ]);
 const participantUser = ref([
   (v: string) => !!v.length || "darf nicht leer sein",
-  (v: string) => participants.value.reduce((acc, w) => Number(v === w.username) + acc, 0) === 1 || "darf nur 1x vorkommen",
-]);
-
-const serverDisplayRules = ref([
-  (v: string) => !!v.length || valueSets.value.length === 1 || "darf nicht leer sein",
-  (v: string) => valueSets.value.reduce((acc, w) => Number(v === w.display) + acc, 0) === 1 || "darf nur 1x vorkommen",
-])
-const serverRules = ref([
-  (v: string) => !!v.length || "darf nicht leer sein",
-  (v: string) => isUrl(v) || "muss valide URL sein",
-]);
-const valueSetRules = ref([
-  (v: string) => !!v.length || "darf nicht leer sein",
-  (v: string) => isUrl(v) || "muss valide URL sein",
-  (v: string) => valueSets.value.reduce((acc, w) => Number(v === w.valueSet) + acc, 0) === 1 || "darf nur 1x vorkommen",
+  (v: string) =>
+    participants.value.reduce((acc, w) => Number(v === w.username) + acc, 0) === 1 ||
+    "darf nur 1x vorkommen",
 ]);
 
 const sliderRules = ref([
@@ -281,9 +297,12 @@ const sliderRules = ref([
 ]);
 const fracSliderRules = ref([
   ...sliderRules.value,
-  (_: number) => (options.value.posRatio.val + options.value.negRatio.val) >= 100 || !options.value.posRatio.use || !options.value.negRatio.use || "müssen zusammen mind. 100% sein",
+  (_: number) =>
+    options.value.posRatio.val + options.value.negRatio.val >= 100 ||
+    !options.value.posRatio.use ||
+    !options.value.negRatio.use ||
+    "müssen zusammen mind. 100% sein",
 ]);
-
 </script>
 
 <template>
@@ -292,45 +311,48 @@ const fracSliderRules = ref([
       <h1>Projekt erstellen</h1>
       <v-text-field v-model="title" :rules="notEmpty" label="Titel" required></v-text-field>
       <v-textarea v-model="description" label="Beschreibung"></v-textarea>
-      <v-select label="Typ vom Data Dictionary" :rules="notEmpty" :items="['RedCap', 'OpenClinica']" v-model="fileType"></v-select>
-      <v-file-input v-if="fileType === 'RedCap'" v-model="rcFile" accept=".csv" :rules="atLeastOneDE" label="Data Dictionary eingeben"></v-file-input>
-      <v-file-input v-else-if="fileType === 'OpenClinica'" v-model="ocFile" accept=".xls" :rules="atLeastOneDE" label="Data Dictionary eingeben"></v-file-input>
+      <v-select
+        label="Typ vom Data Dictionary"
+        :rules="notEmpty"
+        :items="['RedCap', 'OpenClinica']"
+        v-model="fileType"
+      ></v-select>
+      <v-file-input
+        v-if="fileType === 'RedCap'"
+        v-model="rcFile"
+        accept=".csv"
+        :rules="atLeastOneDE"
+        label="Data Dictionary eingeben"
+      ></v-file-input>
+      <v-file-input
+        v-else-if="fileType === 'OpenClinica'"
+        v-model="ocFile"
+        accept=".xls"
+        :rules="atLeastOneDE"
+        label="Data Dictionary eingeben"
+      ></v-file-input>
       <br />
 
       <h2>FHIR value sets</h2>
-      <p>In diesen Value Sets wird nach Termen gesucht.</p>
+      <p>
+        In diesen Value Sets wird nach Termen gesucht. Sie können später noch bearbeitet werden.
+      </p>
       <v-col fluid>
-        <v-row v-for="(row, i) in valueSets" :key="valueSets.length + i" gap="10" ref="row.ref">
-          <v-col v-if="valueSets.length > 1" cols="3">
-            <v-text-field v-model="row.display" :rules="serverDisplayRules" label="Name"></v-text-field>
-          </v-col>
-          <v-col :cols="valueSets.length > 1 ? 4 : 6">
-            <v-text-field v-model="row.server" :rules="serverRules" label="FHIR Server-URL"></v-text-field>
-          </v-col>
-          <v-col :cols="valueSets.length > 1 ? 4 : 6">
-            <v-text-field v-model="row.valueSet" :rules="valueSetRules" label="Value Set-URL"></v-text-field>
-          </v-col>
-          <v-col v-if="valueSets.length > 1" cols="1">
-            <v-icon-btn :icon="mdiMinus" @click="valueSets.splice(i, 1)"></v-icon-btn>
-          </v-col>
-          <v-col v-if="isValidUrlConf(row.server, row.valueSet)" cols="2">
-            <v-btn :disabled="loading || row.loading" :loading="row.loading" :prepend-icon="mdiTestTube" @click="testConnection(row)">Verbindung testen</v-btn>
-          </v-col>
-          <v-col v-if="row.testResult" cols="10">
-            <template v-if="row.testResult.ok">
-              <v-icon :icon="mdiCheck" aria-hidden="true" /> Funktioniert!
-              {{ row.testResult.title }} <template v-if="row.testResult.status">({{ row.testResult.status }})</template>
-              enthält <template v-if="row.testResult.codes === testConnectionLimit">&ge;</template>{{ row.testResult.codes }} Codes.
-            </template>
-            <template v-else>
-              <v-icon :icon="mdiAlertCircleOutline" />Test fehlgeschlagen
-            </template>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-btn variant="text" :disabled="loading" :prepend-icon="mdiPlus" @click="valueSets.push(emptyValueSet())">Hinzufügen</v-btn>
-          <v-btn variant="text" :disabled="loading" :prepend-icon="mdiMinus" @click="valueSets.pop()" v-if="valueSets.length > 1">Entfernen</v-btn>
-        </v-row>
+        <value-set-selector
+          v-for="(row, i) in valueSets"
+          :key="row.id"
+          v-model="row.set"
+          :disabled="loading"
+          :display-controls="valueSets.length > 1"
+          @remove="valueSets.splice(i, 1)"
+        />
+        <v-btn
+          variant="text"
+          :disabled="loading"
+          :prepend-icon="mdiPlus"
+          @click="valueSets.push({ id: setKey(), set: undefined })"
+          >Hinzufügen</v-btn
+        >
       </v-col>
       <br />
 
@@ -339,49 +361,87 @@ const fracSliderRules = ref([
       <v-col fluid>
         <v-row v-for="(row, i) in participants" :key="participants.length + i" gap="10">
           <v-col cols="6">
-            <v-text-field v-model="row.username" :rules="participantUser" label="Nutzername" :disabled="i === 0 && !!user?.preferred_username"></v-text-field>
+            <v-text-field
+              v-model="row.username"
+              :rules="participantUser"
+              label="Nutzername"
+              :disabled="i === 0 && !!user?.preferred_username"
+            ></v-text-field>
           </v-col>
           <v-col :cols="participants.length > 1 ? 5 : 6">
-            <v-select label="Rolle" :rules="notEmpty" :items="roles" v-model="row.roles" multiple></v-select>
+            <v-select
+              label="Rolle"
+              :rules="notEmpty"
+              :items="roles"
+              v-model="row.roles"
+              multiple
+            ></v-select>
           </v-col>
           <v-col v-if="participants.length > 1" cols="1">
             <v-icon-btn :icon="mdiMinus" @click="participants.splice(i, 1)"></v-icon-btn>
           </v-col>
         </v-row>
         <v-row>
-          <v-btn variant="text" :disabled="loading" :prepend-icon="mdiAccountPlus" @click="participants.push({ username: '', roles: [] })">Hinzufügen</v-btn>
-          <v-btn variant="text" :disabled="loading" :prepend-icon="mdiAccountMinus" @click="participants.pop()" v-if="participants.length > 1">Entfernen</v-btn>
+          <v-btn
+            variant="text"
+            :disabled="loading"
+            :prepend-icon="mdiAccountPlus"
+            @click="participants.push({ username: '', roles: [] })"
+            >Hinzufügen</v-btn
+          >
+          <v-btn
+            variant="text"
+            :disabled="loading"
+            :prepend-icon="mdiAccountMinus"
+            @click="participants.pop()"
+            v-if="participants.length > 1"
+            >Entfernen</v-btn
+          >
         </v-row>
       </v-col>
       <br />
 
       <h2>Akzeptanzbedingungen</h2>
       <p>
-        Wenn die Bedingungen erfüllt sind, kann eine Annotation automatisch als akzeptiert oder abgelehnt markiert werden.
-        Wenn nicht, geht das natürlich immer noch manuell.
-        Die Bedingungen hängen von der Anzahl der positiver bzw. negativer Bewertungen oder vom Anteil an allen Bewertungen des Annotationskandidaten ab.
-        Diese anders zu konfigurieren ergibt nur Sinn, wenn auch regelmäßig mehrere Bewertungen pro Annotation erwaret sind.
-        Bei nur einer erwarteten Bewertung reichen die Standardwerte.
-        Um eine Bedingung außen vor zu lassen, einfach deaktivieren.
-      </p><br />
+        Wenn die Bedingungen erfüllt sind, kann eine Annotation automatisch als akzeptiert oder
+        abgelehnt markiert werden. Wenn nicht, geht das natürlich immer noch manuell. Die
+        Bedingungen hängen von der Anzahl der positiver bzw. negativer Bewertungen oder vom Anteil
+        an allen Bewertungen des Annotationskandidaten ab. Diese anders zu konfigurieren ergibt nur
+        Sinn, wenn auch regelmäßig mehrere Bewertungen pro Annotation erwaret sind. Bei nur einer
+        erwarteten Bewertung reichen die Standardwerte. Um eine Bedingung außen vor zu lassen,
+        einfach deaktivieren.
+      </p>
+      <br />
       <v-col fluid>
         <v-row v-for="row in options" fluid>
-          <v-col cols="12"><i>{{ row.label }}</i></v-col>
+          <v-col cols="12"
+            ><i>{{ row.label }}</i></v-col
+          >
           <v-col cols="2">
             <v-checkbox v-model="row.use" label="Aktivieren"></v-checkbox>
           </v-col>
           <v-col cols="10">
-            <v-slider v-model="row.val" :disabled="!row.use" :step="1" :min="0" :max="100" :rules="row.fraction ? fracSliderRules : sliderRules" thumb-label="always">
-              <template #thumb-label="{ modelValue }">{{ modelValue }}<template v-if="row.fraction">%</template></template>
+            <v-slider
+              v-model="row.val"
+              :disabled="!row.use"
+              :step="1"
+              :min="0"
+              :max="100"
+              :rules="row.fraction ? fracSliderRules : sliderRules"
+              thumb-label="always"
+            >
+              <template #thumb-label="{ modelValue }"
+                >{{ modelValue }}<template v-if="row.fraction">%</template></template
+              >
               <template #append>
                 <v-text-field
-                    v-model="row.val"
-                    density="compact"
-                    style="width: 90px; max-width: fit-content; margin-left: 20px;"
-                    type="number"
-                    hide-details
-                    single-line
-                  >
+                  v-model="row.val"
+                  density="compact"
+                  style="width: 90px; max-width: fit-content; margin-left: 20px"
+                  type="number"
+                  hide-details
+                  single-line
+                >
                   <template v-if="row.fraction" #append-inner>%</template>
                 </v-text-field>
               </template>
@@ -390,7 +450,9 @@ const fracSliderRules = ref([
         </v-row>
       </v-col>
 
-      <v-btn :disabled="loading" :loading="loading" size="x-large" type="submit" block>Erstellen</v-btn>
+      <v-btn :disabled="loading" :loading="loading" size="x-large" type="submit" block
+        >Erstellen</v-btn
+      >
     </v-form>
   </v-sheet>
 
@@ -401,7 +463,11 @@ const fracSliderRules = ref([
     <template v-if="contents.errors?.length">
       <h1>Fehler</h1>
       <v-list>
-        <v-list-item v-for="error in contents.errors" :title="`${error.type}: ${error.message}`" color="danger">
+        <v-list-item
+          v-for="error in contents.errors"
+          :title="`${error.type}: ${error.message}`"
+          color="danger"
+        >
           <template #prepend>
             <v-icon :icon="mdiAlertCircleOutline" />
           </template>
