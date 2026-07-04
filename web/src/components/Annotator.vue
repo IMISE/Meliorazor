@@ -13,6 +13,7 @@ import type {
 import { mdiArrowLeft, mdiArrowRight } from "@mdi/js";
 import { ref, watch, type Ref } from "vue";
 import { getCode } from "@/utils/fhirApi.ts";
+import { codeEquals } from "@/utils/fhirUtils";
 
 const { dataElement } = defineProps<{
   valueSets: FhirValueSetDefinition[];
@@ -28,20 +29,24 @@ const focusCode: Ref<InformedCodeMapping | undefined> = ref(undefined);
 const focusCodeInfo: Ref<CodeInfo | undefined> = ref(undefined);
 const selectedCode: Ref<FhirTerminologyCode | undefined> = ref(undefined);
 
-const focus = (value: InformedCodeMapping) => {
-  focusCode.value = value;
-};
-
 const unselect = () => {
   focusCode.value = undefined;
   selectedCode.value = undefined;
 };
 
+const focus = (value: InformedCodeMapping) => {
+  if (focusCode.value && codeEquals(focusCode.value, value)) {
+    unselect();
+  } else {
+    focusCode.value = value;
+  }
+};
+
 const updateFocus = (value: FhirTerminologyCode) => {
-  focusCode.value = {
+  focus({
     ...value,
     valueSet: focusCode.value!.valueSet,
-  };
+  });
 };
 
 // populate focusCodeInfo
