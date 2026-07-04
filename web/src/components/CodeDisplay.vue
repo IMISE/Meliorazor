@@ -1,20 +1,22 @@
 <script setup lang="ts">
-import CodeChildren from './CodeChildren.vue';
-import type { CodeInfo, CodeMapping } from '@/types/types';
-import { getCode } from '@/utils/fhirApi';
-import { compareCodes } from '@/utils/terminologyCodes';
-import { watch } from 'vue';
-import { ref, type Ref } from 'vue';
+import CodeChildren from "./CodeChildren.vue";
+import type { CodeInfo, FhirTerminologyCode } from "@/types/types";
+import { getCode } from "@/utils/fhirApi";
+import { toFhirCode } from "@/utils/fhirUtils.ts";
+import { compareCodes } from "@/utils/terminologyCodes";
+import { mdiCheck, mdiClose } from "@mdi/js";
+import { watch } from "vue";
+import { ref, type Ref } from "vue";
 
 const { codeInfo, server } = defineProps<{
-  codeInfo: CodeInfo,
-  server: string,
-  showSelectButton: boolean,
+  codeInfo: CodeInfo;
+  server: string;
+  showSelectButton: boolean;
 }>();
 
 defineEmits<{
-  (e: "selection", v: CodeMapping): void,
-  (e: "focus", v: CodeMapping): void,
+  (e: "selection", v: FhirTerminologyCode): void;
+  (e: "focus", v: FhirTerminologyCode): void;
 }>();
 
 const parents: Ref<CodeInfo[]> = ref([codeInfo]);
@@ -31,46 +33,79 @@ const loadParent = async (parentCode: string) => {
   } finally {
     loadingParent.value = false;
   }
-}
+};
 
-watch(() => codeInfo, (newVal) => {
-  const parent = parents.value.findIndex((val) => compareCodes(val.self, newVal.self));
-  if (parent !== -1) {
-    if ((parent + 1) < parents.value.length) {
-      parents.value.splice(parent + 1);
+watch(
+  () => codeInfo,
+  (newVal) => {
+    const parent = parents.value.findIndex((val) => compareCodes(val.self, newVal.self));
+    if (parent !== -1) {
+      if (parent + 1 < parents.value.length) {
+        parents.value.splice(parent + 1);
+      }
+    } else {
+      parents.value = [newVal];
     }
-  } else {
-    parents.value = [newVal];
-  }
-});
-
+  },
+);
 </script>
 
 <template>
-  <br /><h3>Info</h3>
+  <br />
+  <h3>Info</h3>
   <li>
-    <ul>Inaktiv? {{ codeInfo?.inactive ? "Ja" : "Nein" }}</ul>
-    <ul v-if="codeInfo?.definition">{{ codeInfo.definition }}</ul>
+    <ul>
+      Inaktiv?
+      <template v-if="codeInfo?.inactive"> <v-icon :icon="mdiCheck" /> Ja</template>
+      <template v-else> <v-icon :icon="mdiClose" /> Nein</template>
+    </ul>
+    <ul v-if="codeInfo?.definition">
+      {{
+        codeInfo.definition
+      }}
+    </ul>
   </li>
-  <br /><h3>Hierarchie</h3>
+  <br />
+  <h3>Hierarchie</h3>
   <div>
-    <v-btn v-if="parents[0]?.parents[0]" @click="loadParent(parents[0].parents[0])" variant="text" :disabled="loadingParent" :loading="loadingParent" block>Nächste Elterngeneration laden</v-btn>
+    <v-btn
+      v-if="parents[0]?.parents[0]"
+      @click="loadParent(parents[0].parents[0])"
+      variant="text"
+      :disabled="loadingParent"
+      :loading="loadingParent"
+      block
+    >
+      Nächste Elterngeneration laden
+    </v-btn>
     <!-- Parents of current selection -->
     <template v-for="(parent, i) in parents">
-      <v-row v-if="i !== parents.length-1" @click="$emit('focus', codeInfo.self)">
-        {{ parent.self.display }} (<var>{{ parent.self.code }}</var>)
+      <v-row v-if="i !== parents.length - 1" @click="$emit('focus', toFhirCode(parent))">
+        {{ parent.self.display }} (<var>{{ parent.self.code }}</var
+        >)
       </v-row>
     </template>
     <!-- Current selection & Children -->
     <v-row cols="6">
-      <code-children v-if="codeInfo" @focus="(v: CodeMapping) => $emit('focus', v)" :depth="0" :max-cols="6" :code="codeInfo.self" :info="codeInfo" :server="server" />
+      <code-children
+        v-if="codeInfo"
+        @focus="(v: FhirTerminologyCode) => $emit('focus', v)"
+        :depth="0"
+        :max-cols="6"
+        :code="codeInfo.self"
+        :info="codeInfo"
+        :server="server"
+      />
     </v-row>
   </div>
   <template v-if="codeInfo?.alternativeNames.length">
-    <br /><h3>Alternative Namen</h3>
+    <br />
+    <h3>Alternative Namen</h3>
     <ul>
       <li v-for="name in codeInfo.alternativeNames">{{ name }}</li>
     </ul>
   </template>
-  <v-btn v-if="showSelectButton" @click="$emit('selection', codeInfo.self)" block>Auswählen</v-btn>
+  <v-btn v-if="showSelectButton" @click="$emit('selection', toFhirCode(codeInfo))" block>
+    Auswählen
+  </v-btn>
 </template>
