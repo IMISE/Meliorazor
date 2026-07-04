@@ -68,6 +68,9 @@ const colorFocusCode = ({ item }: { item: CodeMapping }) => {
     return { class: "focus-code" };
   }
 };
+
+// PAGINATION (todo?)
+const itemsPerPage = ref(15);
 </script>
 
 <template>
@@ -93,6 +96,8 @@ const colorFocusCode = ({ item }: { item: CodeMapping }) => {
       :headers="searchResultHeaders"
       :group-by="searchResultsGroupBy"
       :row-props="colorFocusCode"
+      density="compact"
+      :items-per-page="itemsPerPage"
       @click:row="(event: any, v: { item: InformedCodeMapping }) => $emit('focus', v.item)"
     >
       <template #item.inactive="{ value }">
