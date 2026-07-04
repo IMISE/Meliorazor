@@ -1,5 +1,5 @@
 import type { Designation, Parameters, Properties, StringValue } from "@/types/fhir";
-import type { CodeInfo, CodeMapping, FhirValueSetDefinition, InformedCodeMapping } from "@/types/types";
+import type { CodeInfo, CodeMapping, FhirTerminologyCode, FhirValueSetDefinition, InformedCodeMapping } from "@/types/types";
 
 async function fetchFhir(url: string, expectedResourceType: string) {
   const response = await fetch(url);
@@ -20,7 +20,7 @@ export async function existsInValueSet(code: CodeMapping, valueSet: FhirValueSet
 
 export async function expandValueSet(filter: string, valueSet: FhirValueSetDefinition): Promise<InformedCodeMapping[]> {
   const response = await fetchFhir(`${valueSet.server}/ValueSet/$expand?url=${valueSet.valueSet}&filter=${filter}`, "ValueSet");
-  return response?.expansion?.contains?.length ? response.expansion.contains.map((e: CodeMapping) => ({ ...e, valueSet })) : [];
+  return response?.expansion?.contains?.length ? response.expansion.contains.map((e: FhirTerminologyCode) => ({ ...e, valueSet })) : [];
 }
 
 export async function getCode(code: string, system: string, server: string): Promise<CodeInfo | undefined> {

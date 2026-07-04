@@ -83,7 +83,8 @@ export interface User {
 
 export type Predicate = "owl:sameAs" | "owl:equivalentClass" | "owl:equivalentProperty" | "rdfs:subClassOf" | "rdfs:subPropertyOf" | "skos:relatedMatch" | "skos:closeMatch" | "skos:exactMatch" | "skos:narrowMatch" | "skos:broadMatch" | "oboInOwl:hasDbXref" | "rdfs:seeAlso";
 
-export type InformedCodeMapping = CodeMapping & { valueSet: FhirValueSetDefinition };
+export type FhirTerminologyCode = CodeMapping & { inactive: true | undefined };
+export type InformedCodeMapping = FhirTerminologyCode & { valueSet: FhirValueSetDefinition };
 
 export interface CodeInfo {
   /** codes/IDs of children - must be in same CodeSystem */
