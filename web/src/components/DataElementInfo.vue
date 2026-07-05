@@ -102,7 +102,7 @@ const annotate = () =>
           <template #activator="{ props }">
             <div
               v-bind="props"
-              @click="detailsAcceptedAnnotations = true"
+              @click="detailsAcceptedAnnotations = !detailsAcceptedAnnotations"
               class="accepted-annotations-aggregated"
             >
               {{ acceptedAnnotations.length ? acceptedAnnotations.length : "-" }}
@@ -113,7 +113,7 @@ const annotate = () =>
           <template #activator="{ props }">
             <div
               v-bind="props"
-              @click="detailsOpenAnnotations = true"
+              @click="detailsOpenAnnotations = !detailsOpenAnnotations"
               class="open-annotations-aggregated"
             >
               {{ openAnnotations.length ? openAnnotations.length : "-" }}
