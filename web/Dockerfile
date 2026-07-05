@@ -12,9 +12,9 @@ RUN npm run build
 FROM nginx:stable-alpine AS serve
 COPY --from=build ./dist /usr/share/nginx/html
 COPY ./nginx.conf /etc/nginx/nginx.conf
-COPY ./entrypoint.sh /entrypoint.sh
+COPY ./scripts/entrypoint.sh /entrypoint.sh
 
-RUN chmod +x ./entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 80
 ENTRYPOINT ["/entrypoint.sh"]

@@ -28,7 +28,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: export CI=true
       - run: npm ci
       - run: npx playwright install --with-deps
+      - run: chmod +x ./scripts/generate_config.sh
+      - run: |
+          export CI=true
+          export BASE_URL=localhost
+          export VITE_API_BASE=${{ secrets.TEST_API_BASE }}
+          export VITE_OAUTH_BASE=${{ secrets.TEST_OAUTH_BASE }}
+          export VITE_PORT=5173
+          export VITE_OAUTH_REALM=${{ secrets.TEST_OAUTH_REALM }}
+          export VITE_OAUTH_CLIENT=${{ secrets.TEST_OAUTH_CLIENT }}
+      - run: ./scripts/generate_config.sh
       - run: npm run test:e2e
