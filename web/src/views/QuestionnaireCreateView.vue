@@ -88,6 +88,7 @@ watch(file, () => {
         },
         header: true,
         worker: true,
+        skipEmptyLines: true,
       });
       break;
     }
