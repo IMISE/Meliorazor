@@ -17,6 +17,7 @@ import type { IdTokenClaims } from "oidc-client-ts";
 import ValueSetSelector from "@/components/ValueSetSelector.vue";
 
 const user = inject("user") as Ref<IdTokenClaims | undefined>;
+const router = useRouter();
 
 const title = ref("");
 const description = ref("");
@@ -230,7 +231,7 @@ const headers = [
 ];
 
 const loading: Ref<boolean> = ref(false);
-const response: Ref<Response | undefined> = ref(undefined);
+const response: Ref<Response | undefined> = ref();
 const create = async () => {
   if (!parsedData.value) return;
   const u = await auth.getUser();
@@ -277,14 +278,14 @@ const clean = (input: string | null) =>
     .replace(/_{2,}/g, "_")
     .replace(/(^_|_$)/g, "");
 
-watch(response, async () => {
-  if (response.value?.ok) {
-    const body = await response.value.text();
+watch(response, async (val) => {
+  if (val?.ok) {
+    const body = await val.text();
     const id = Number(body);
     if (!body || !Number.isInteger(id)) return;
-    useRouter().push({
+    return router.push({
       name: "single-project",
-      query: {
+      params: {
         pid: id,
         title: clean(title.value),
       },
