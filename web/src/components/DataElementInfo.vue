@@ -34,8 +34,22 @@ const annotations = computed(() =>
   ),
 );
 
+const groupAnnotationsByCodeSystem = (annotations: Annotation[]) => {
+  return annotations.reduce(
+    (acc, val) =>
+      acc[val.code.system]
+        ? (acc[val.code.system]!.push(val), acc)
+        : ((acc[val.code.system] = [val]), acc),
+    {} as { [index: string]: Annotation[] },
+  );
+};
+
 const acceptedAnnotations = computed(() => annotations.value[Status.ACCEPTED as string]!);
 const openAnnotations = computed(() => annotations.value[Status.OPEN as string]!);
+const groupedAcceptedAnnotations = computed(() =>
+  groupAnnotationsByCodeSystem(acceptedAnnotations.value),
+);
+const groupedOpenAnnotations = computed(() => groupAnnotationsByCodeSystem(openAnnotations.value));
 
 const acceptedTooltip = computed(
   () => `${acceptedAnnotations.value.length} akzeptierte  Annotationen`,
@@ -143,17 +157,20 @@ const annotate = () =>
         <v-col cols="2">Akzeptierte Annotationen</v-col>
         <v-col cols="10">
           <template v-if="acceptedAnnotations.length">
-            <div class="badge-container">
-              <annotation-badge
-                v-for="annotation in acceptedAnnotations"
-                :key="`${dataElement.id}-${annotation.id}`"
-                :annotation="annotation"
-                :data-element-id="dataElement.id!"
-                :data-element-name="dataElement.variableName!"
-                :project-id="projectId"
-                :project-name="projectTitle"
-              />
-            </div>
+            <template v-for="(group, system) in groupedAcceptedAnnotations">
+              {{ system }}:
+              <div class="badge-container">
+                <annotation-badge
+                  v-for="annotation in group"
+                  :key="`${dataElement.id}-${annotation.id}`"
+                  :annotation="annotation"
+                  :data-element-id="dataElement.id!"
+                  :data-element-name="dataElement.variableName!"
+                  :project-id="projectId"
+                  :project-name="projectTitle"
+                />
+              </div>
+            </template>
           </template>
         </v-col>
       </v-row>
@@ -164,17 +181,20 @@ const annotate = () =>
         <v-col cols="2">Offene Annotationen</v-col>
         <v-col>
           <template v-if="openAnnotations.length">
-            <div class="badge-container">
-              <annotation-badge
-                v-for="annotation in openAnnotations"
-                :key="`${dataElement.id}-${annotation.id}`"
-                :annotation="annotation"
-                :data-element-id="dataElement.id!"
-                :data-element-name="dataElement.variableName!"
-                :project-id="projectId"
-                :project-name="projectTitle"
-              />
-            </div>
+            <template v-for="(group, system) in groupedOpenAnnotations">
+              {{ system }}:
+              <div class="badge-container">
+                <annotation-badge
+                  v-for="annotation in group"
+                  :key="`${dataElement.id}-${annotation.id}`"
+                  :annotation="annotation"
+                  :data-element-id="dataElement.id!"
+                  :data-element-name="dataElement.variableName!"
+                  :project-id="projectId"
+                  :project-name="projectTitle"
+                />
+              </div>
+            </template>
           </template>
         </v-col>
       </v-row>
