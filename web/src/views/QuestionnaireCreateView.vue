@@ -21,12 +21,12 @@ const user = inject("user") as Ref<IdTokenClaims | undefined>;
 const title = ref("");
 const description = ref("");
 
-const fileType: Ref<"RedCap" | "OpenClinica"> = ref("RedCap");
-/** RedCap */
+const fileType: Ref<"REDCap" | "OpenClinica"> = ref("REDCap");
+/** REDCap */
 const rcFile = ref();
 /** OpenClinica */
 const ocFile = ref();
-const file = computed(() => (fileType.value === "RedCap" ? rcFile.value : ocFile.value));
+const file = computed(() => (fileType.value === "REDCap" ? rcFile.value : ocFile.value));
 
 const valueSets: Ref<{ id: number; set: FhirValueSetDefinition | undefined }[]> = ref([
   { id: 0, set: undefined },
@@ -78,7 +78,7 @@ watch(file, () => {
   if (!file.value) contents.value = undefined;
 
   switch (fileType.value) {
-    case "RedCap": {
+    case "REDCap": {
       Papa.parse(file.value, {
         complete: (result) => {
           contents.value = {
@@ -192,7 +192,7 @@ const parsedDataOpenClinica = () =>
 
 const parsedData = computed(() => {
   switch (fileType.value) {
-    case "RedCap":
+    case "REDCap":
       return parsedDataREDCap();
     case "OpenClinica":
       return parsedDataOpenClinica();
@@ -327,11 +327,11 @@ const fracSliderRules = ref([
       <v-select
         label="Typ vom Data Dictionary"
         :rules="notEmpty"
-        :items="['RedCap', 'OpenClinica']"
+        :items="['REDCap', 'OpenClinica']"
         v-model="fileType"
       ></v-select>
       <v-file-input
-        v-if="fileType === 'RedCap'"
+        v-if="fileType === 'REDCap'"
         v-model="rcFile"
         accept=".csv"
         :rules="atLeastOneDE"
