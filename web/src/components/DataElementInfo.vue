@@ -157,7 +157,10 @@ const annotate = () =>
         <v-col cols="2">Akzeptierte Annotationen</v-col>
         <v-col cols="10">
           <template v-if="acceptedAnnotations.length">
-            <template v-for="(group, system) in groupedAcceptedAnnotations">
+            <template
+              v-for="(group, system) in groupedAcceptedAnnotations"
+              :key="`${dataElement.id}-a${system}`"
+            >
               {{ system }}:
               <div class="badge-container">
                 <annotation-badge
@@ -181,7 +184,10 @@ const annotate = () =>
         <v-col cols="2">Offene Annotationen</v-col>
         <v-col>
           <template v-if="openAnnotations.length">
-            <template v-for="(group, system) in groupedOpenAnnotations">
+            <template
+              v-for="(group, system) in groupedOpenAnnotations"
+              :key="`${dataElement.id}-o${system}`"
+            >
               {{ system }}:
               <div class="badge-container">
                 <annotation-badge
