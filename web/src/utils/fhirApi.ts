@@ -63,13 +63,15 @@ export async function expandValueSet(
   limit: number | undefined = undefined,
 ): Promise<InformedCodeMapping[]> {
   const response = await fetchFhir(
-    `${server}/ValueSet/$expand?url=${valueSet}&filter=${filter}` + (limit !== undefined)
-      ? `&limit=${limit}`
-      : "",
+    `${server}/ValueSet/$expand?url=${valueSet}&filter=${filter}` +
+      (limit !== undefined ? `&limit=${limit}` : ""),
     "ValueSet",
   );
   return response?.expansion?.contains?.length
-    ? response.expansion.contains.map((e: FhirTerminologyCode) => ({ ...e, valueSet }))
+    ? (response.expansion.contains.map((e: FhirTerminologyCode) => ({
+        ...e,
+        valueSet: { display: "", server, valueSet } as FhirValueSetDefinition,
+      })) as InformedCodeMapping[])
     : [];
 }
 
