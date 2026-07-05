@@ -39,8 +39,13 @@ const setKey = () => {
 const participants: Ref<Participant[]> = ref([
   { username: user.value?.preferred_username ?? "", roles: [] },
 ]);
-const contents: Ref<{ data: { [index: string]: string }[]; errors: any[] } | undefined> =
-  ref(undefined);
+const contents: Ref<
+  | {
+      data: { [index: string]: string }[];
+      errors: (Papa.ParseError | { type: string; message: string })[];
+    }
+  | undefined
+> = ref();
 const options = ref({
   posCount: {
     use: true,
@@ -99,7 +104,15 @@ watch(file, () => {
           contents.value = { data: items, errors: [] };
         } catch (e) {
           console.error(e);
-          contents.value = { data: [], errors: [e] };
+          contents.value = {
+            data: [],
+            errors: [
+              {
+                type: "Fehler!",
+                message: "Unbekannter Fehler beim Parsen der XLS-Datei aufgetreten.",
+              },
+            ],
+          };
         }
       };
       reader.onerror = console.error;
@@ -278,10 +291,9 @@ watch(response, async () => {
   }
 });
 
-const notEmpty = ref([(v: string | any[]) => !!v.length || "darf nicht leer sein"]);
+const notEmpty = ref([(v: string | unknown[]) => !!v.length || "darf nicht leer sein"]);
 const atLeastOneDE = ref([
-  (_: any) =>
-    !!parsedData.value?.length || "darf nicht leer sein; muss mind. ein Datenelement enthalten",
+  () => !!parsedData.value?.length || "darf nicht leer sein; muss mind. ein Datenelement enthalten",
 ]);
 const participantUser = ref([
   (v: string) => !!v.length || "darf nicht leer sein",
@@ -297,7 +309,7 @@ const sliderRules = ref([
 ]);
 const fracSliderRules = ref([
   ...sliderRules.value,
-  (_: number) =>
+  (/* _: number */) =>
     options.value.posRatio.val + options.value.negRatio.val >= 100 ||
     !options.value.posRatio.use ||
     !options.value.negRatio.use ||
