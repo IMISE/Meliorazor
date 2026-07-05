@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import type { FhirKeyValue } from "@/types/fhir";
 import type { FhirValueSetDefinition } from "@/types/types";
+import { allValueSets } from "@/utils/fhirApi";
 import { isFhirServer, isUrl } from "@/utils/utils";
 import {
   mdiAlertCircleOutline,
   mdiCheck,
   mdiLocationEnter,
-  mdiMagnify,
   mdiMinus,
   mdiPencil,
   mdiTestTube,
@@ -79,8 +80,8 @@ const testConnection = async () => {
       status: json.status,
       codes:
         json.expansion?.contains?.length ??
-        json.expansion?.parameter?.find((e: any) => e.name === "count")?.valueInteger ??
-        "unknown",
+        json.expansion?.parameter?.find((e: FhirKeyValue) => e.name === "count")?.valueInteger ??
+        "unbekannt",
     };
   } catch (e) {
     console.error(e);
@@ -98,34 +99,7 @@ const testConnection = async () => {
 const getValueSets = async () => {
   loadingValueSets.value = true;
   try {
-    const response = await fetch(`${server.value}/ValueSet`);
-    const json = (await response.json())?.entry as
-      | {
-          resource:
-            | {
-                name: string | undefined;
-                title: string | undefined;
-                url: string | undefined;
-                status: "preliminary" | "active" | "inactive" | "deleted" | undefined;
-              }
-            | undefined;
-        }[]
-      | undefined;
-    valueSets.value =
-      json
-        ?.filter(
-          (entry) =>
-            entry?.resource &&
-            // if someone wants an inactive or deleted valueset, they can add it themselves
-            ["preliminary", "active", undefined].includes(entry.resource.status) &&
-            (entry.resource.title || entry.resource.name) &&
-            isUrl(entry.resource.url),
-        )
-        .map((entry) => ({
-          display: entry.resource!.title ?? entry.resource!.name!,
-          server: server.value,
-          valueSet: entry.resource!.url!,
-        })) ?? [];
+    valueSets.value = await allValueSets(server.value);
   } catch (e) {
     console.error(e);
   } finally {

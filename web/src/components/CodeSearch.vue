@@ -51,7 +51,7 @@ const searchResultsGroupBy:
 const go = async (text: string) => {
   loading.value = true;
   const fetches = valueSets.map(async (set) => {
-    const response = await expandValueSet(text, set);
+    const response = await expandValueSet(text, set.server, set.valueSet);
     return response;
   });
   // no try/catch - this never fails
