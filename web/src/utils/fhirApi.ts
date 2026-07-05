@@ -1,4 +1,4 @@
-import type { Designation, Parameters, Properties, StringValue } from "@/types/fhir";
+import type { Parameters, Properties, ValidateCode } from "@/types/fhir";
 import type { CodeInfo, CodeMapping, FhirTerminologyCode, FhirValueSetDefinition, InformedCodeMapping } from "@/types/types";
 
 async function fetchFhir(url: string, expectedResourceType: string) {
@@ -9,13 +9,13 @@ async function fetchFhir(url: string, expectedResourceType: string) {
 }
 
 function getPropertyCodes(properties: Properties[]) {
-  return properties.map((e) => e.part.find((f: any) => f.name === "value")?.valueCode).filter((e) => e);
+  return properties.map((e) => e.part.find((f) => f.name === "value")?.valueCode).filter((e) => e !== undefined);
 }
 
 export async function existsInValueSet(code: CodeMapping, valueSet: FhirValueSetDefinition): Promise<boolean | undefined> {
-  const response = await fetchFhir(`${valueSet.server}/ValueSet/$validate-code?code=${code.code}&system=${code.system}&url=${valueSet.valueSet}`, "Parameters");
+  const response: ValidateCode = await fetchFhir(`${valueSet.server}/ValueSet/$validate-code?code=${code.code}&system=${code.system}&url=${valueSet.valueSet}`, "Parameters");
   if (!response?.parameter?.length) return undefined;
-  return response.parameter.find((x: any) => x.name === "result")?.valueBoolean;
+  return response.parameter.find((x) => x.name === "result")?.valueBoolean;
 }
 
 export async function expandValueSet(filter: string, valueSet: FhirValueSetDefinition): Promise<InformedCodeMapping[]> {
@@ -52,20 +52,21 @@ function toCodeInfo(code: string, system: string, response: Parameters) {
   info.self = {
     code,
     system,
-    display: response.parameter.find((x: any) => x.name === "display").valueString,
+    display: response.parameter.find((x) => x.name === "display")?.valueString ?? "",
   };
   const names = response.parameter
     .filter((p) => p.name === "designation" && p?.part?.length)
-    .flatMap((des: Designation) => des.part
-      .filter((x: any) => x.name === "value")
-      .map((x: StringValue) => x.valueString)
-    );
+    .flatMap((des) => des.part
+      ?.filter((x) => x.name === "value")
+      .map((x) => x.valueString)
+    )
+    .filter((x) => x !== undefined);
   info.alternativeNames = [...new Set(names.filter((name) => name))];
-  info.definition = response.parameter.find((p) => p.name === "definition")?.valueString;
+  info.definition = response.parameter.find((p) => p.name === "definition")?.valueString ?? "";
   const properties: Properties[] = response.parameter
-    .filter((e: any) => e?.name === "property" && e.part?.length >= 2)
-    .map((e: any) => ({ code: e.part.find((f: any) => f.name === "code")?.valueCode, part: e.part }));
-  info.inactive = properties.filter((e) => e.code === "inactive")?.[0]?.part.find((e) => e.name === "value")?.valueBoolean;
+    .filter((e) => e?.name === "property" && (e.part?.length ?? 0) >= 2)
+    .map((e) => ({ code: e.part?.find((f) => f.name === "code")?.valueCode, part: e.part ?? [] }));
+  info.inactive = properties.filter((e) => e.code === "inactive")?.[0]?.part.find((e) => e.name === "value")?.valueBoolean ?? false;
   info.parents = getPropertyCodes(properties.filter((e) => e.code === "parent"));
   info.children = getPropertyCodes(properties.filter((e) => e.code === "child"));
   return info;

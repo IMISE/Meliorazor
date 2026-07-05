@@ -1,22 +1,26 @@
 <script setup lang="ts">
-import CodeDisplay from './CodeDisplay.vue';
-import { Status } from '@/types/enums';
-import type { Annotation, CodeInfo, FhirValueSetDefinition } from '@/types/types';
-import { findCode } from '@/utils/fhirApi';
-import { ref, type Ref } from 'vue';
-import { computed } from 'vue';
-import Comment from './Comment.vue';
+import CodeDisplay from "./CodeDisplay.vue";
+import { Status } from "@/types/enums";
+import type { Annotation, CodeInfo, FhirValueSetDefinition } from "@/types/types";
+import { findCode } from "@/utils/fhirApi";
+import { ref, type Ref } from "vue";
+import { computed } from "vue";
+import Comment from "./Comment.vue";
 
 const { annotation, valueSets } = defineProps<{
-  annotation: Annotation,
-  valueSets: FhirValueSetDefinition[],
+  annotation: Annotation;
+  valueSets: FhirValueSetDefinition[];
 }>();
 
 const statusText = computed(() => {
   switch (annotation.status) {
-    case Status.OPEN: return "Offen";
-    case Status.ACCEPTED: return "Akzeptiert";
-    case Status.REJECTED: return "Abgelehnt";
+    case Status.OPEN:
+      return "Offen";
+    case Status.ACCEPTED:
+      return "Akzeptiert";
+    case Status.REJECTED:
+    default:
+      return "Abgelehnt";
   }
 });
 
@@ -28,12 +32,16 @@ const getAnnotatedCode = async () => {
   if (loading.value) return;
   if (!code.value) {
     loading.value = true;
-    const result = await findCode(annotation.code.code, annotation.code.system, valueSets.map((set) => set.server));
+    const result = await findCode(
+      annotation.code.code,
+      annotation.code.system,
+      valueSets.map((set) => set.server),
+    );
     code.value = result.code;
     server.value = result.server;
     loading.value = false;
   }
-}
+};
 </script>
 
 <template>
@@ -45,15 +53,20 @@ const getAnnotatedCode = async () => {
         <li>Konfidenz: {{ annotation.confidence }}</li>
         <li>
           {{ annotation.predicate }}
-          <v-btn v-if="valueSets?.length" variant="text" @click="getAnnotatedCode">{{ annotation.code.display }}</v-btn>
-          <template v-else>{{ annotation.code.display }} ({{ annotation.code.code }} in {{ annotation.code.system }})</template>
+          <v-btn v-if="valueSets?.length" variant="text" @click="getAnnotatedCode">
+            {{ annotation.code.display }}
+          </v-btn>
+          <template v-else>
+            {{ annotation.code.display }}
+            ({{ annotation.code.code }} in {{ annotation.code.system }})
+          </template>
         </li>
         <li v-if="annotation.comment">Kommentar bei Erstellung: {{ annotation.comment }}</li>
       </ul>
       <br />
       <h3>Diskussion</h3>
       <template v-if="annotation.comments?.length">
-        <comment v-for="comment in annotation.comments" :comment="comment" />
+        <comment v-for="comment in annotation.comments" :key="comment.id" :comment="comment" />
       </template>
       <template v-else>
         <i>Keine Kommentare vorhanden.</i>

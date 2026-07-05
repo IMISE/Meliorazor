@@ -100,7 +100,7 @@ const itemsPerPage = ref(15);
       :items-per-page="itemsPerPage"
       @click:row="(event: any, v: { item: InformedCodeMapping }) => $emit('focus', v.item)"
     >
-      <template #item.inactive="{ value }">
+      <template #[`item.inactive`]="{ value }">
         <v-icon v-if="!value" :icon="mdiCheck" />
         <v-icon v-else :icon="mdiClose" />
       </template>
