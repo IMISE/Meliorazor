@@ -25,9 +25,9 @@ const { dataElement } = defineProps<{
 }>();
 
 // further information
-const focusCode: Ref<InformedCodeMapping | undefined> = ref(undefined);
-const focusCodeInfo: Ref<CodeInfo | undefined> = ref(undefined);
-const selectedCode: Ref<FhirTerminologyCode | undefined> = ref(undefined);
+const focusCode: Ref<InformedCodeMapping | undefined> = ref();
+const focusCodeInfo: Ref<CodeInfo | undefined> = ref();
+const selectedCode: Ref<FhirTerminologyCode | undefined> = ref();
 
 const unselect = () => {
   focusCode.value = undefined;

@@ -16,7 +16,7 @@ const projectId = computed(() => router.currentRoute.value.params.projectId);
 //  - extract elementIds from project and use them from now on
 // 2. fetch elements from elementIds
 
-const project: Ref<Questionnaire | undefined> = ref(undefined);
+const project: Ref<Questionnaire | undefined> = ref();
 const dataElements: Ref<Variable[] | undefined> = computed(() =>
   project.value?.dataElements?.filter(
     (variable) => !elementIds.value?.length || elementIds.value.includes(String(variable.id)),

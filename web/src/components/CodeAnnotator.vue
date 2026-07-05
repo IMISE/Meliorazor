@@ -1,29 +1,42 @@
 <script setup lang="ts">
-import auth from '@/auth';
-import type { CodeMapping, Predicate } from '@/types/types';
-import getEnv from '@/utils/env';
-import { mdiPencil } from '@mdi/js';
-import { ref, type Ref } from 'vue';
+import auth from "@/auth";
+import type { CodeMapping, Predicate } from "@/types/types";
+import getEnv from "@/utils/env";
+import { mdiPencil } from "@mdi/js";
+import { ref, type Ref } from "vue";
 
 const { code, dataElementId } = defineProps<{
-  code: CodeMapping,
-  dataElementId: number,
+  code: CodeMapping;
+  dataElementId: number;
 }>();
 
 defineEmits<{
-  (e: "edit"): void,
-  (e: "focus", v: CodeMapping): void,
+  (e: "edit"): void;
+  (e: "focus", v: CodeMapping): void;
 }>();
 
 // creation request
 const loadingCreate = ref(false);
-const response: Ref<Response | undefined> = ref(undefined);
+const response: Ref<Response | undefined> = ref();
 
 // SSSOM metadata
 const confidence: Ref<number> = ref(100);
 const predicate: Ref<Predicate> = ref("skos:exactMatch");
 const comment = ref("");
-const predicates = ["owl:sameAs", "owl:equivalentClass", "owl:equivalentProperty", "rdfs:subClassOf", "rdfs:subPropertyOf", "skos:relatedMatch", "skos:closeMatch", "skos:exactMatch", "skos:narrowMatch", "skos:broadMatch", "oboInOwl:hasDbXref", "rdfs:seeAlso"];
+const predicates = [
+  "owl:sameAs",
+  "owl:equivalentClass",
+  "owl:equivalentProperty",
+  "rdfs:subClassOf",
+  "rdfs:subPropertyOf",
+  "skos:relatedMatch",
+  "skos:closeMatch",
+  "skos:exactMatch",
+  "skos:narrowMatch",
+  "skos:broadMatch",
+  "oboInOwl:hasDbXref",
+  "rdfs:seeAlso",
+];
 
 const submitAnnotation = async () => {
   const u = await auth.getUser();
@@ -31,27 +44,29 @@ const submitAnnotation = async () => {
 
   loadingCreate.value = true;
   try {
-    response.value = await fetch(`${getEnv("VITE_API_BASE")}/dataElement/${dataElementId}/annotation`, {
-      method: "POST",
-      body: JSON.stringify({
-        authorName: u.profile?.preferred_username,
-        code,
-        confidence: confidence.value,
-        comment: comment.value,
-        predicate: predicate.value,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${u.access_token}`,
+    response.value = await fetch(
+      `${getEnv("VITE_API_BASE")}/dataElement/${dataElementId}/annotation`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          authorName: u.profile?.preferred_username,
+          code,
+          confidence: confidence.value,
+          comment: comment.value,
+          predicate: predicate.value,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${u.access_token}`,
+        },
       },
-    });
+    );
   } catch (e) {
     console.error(e);
   } finally {
     loadingCreate.value = false;
   }
-}
-
+};
 </script>
 
 <template>
@@ -63,19 +78,33 @@ const submitAnnotation = async () => {
           <span color="blue">Ausgewählter Code:</span> {{ code.code }} in {{ code.system }}
         </template>
         <template #append>
-          <v-btn :disabled="loadingCreate" :icon="mdiPencil" @click="$emit('edit')" variant="text" />
+          <v-btn
+            :disabled="loadingCreate"
+            :icon="mdiPencil"
+            @click="$emit('edit')"
+            variant="text"
+          />
         </template>
       </v-list-item>
     </v-list>
     <br />
     <!-- form to add further SSSOM metadata -->
     <v-form @submit.prevent="submitAnnotation">
-      <v-slider v-model="confidence" :step="1" :min="0" :max="100" label="Konfidenz" thumb-label="hover">
+      <v-slider
+        v-model="confidence"
+        :step="1"
+        :min="0"
+        :max="100"
+        label="Konfidenz"
+        thumb-label="hover"
+      >
         <template #thumb-label="{ modelValue }">{{ modelValue }}%</template>
       </v-slider>
       <v-select label="Prädikat" v-model="predicate" :items="predicates" />
       <v-textarea v-model="comment" label="Kommentar" />
-      <v-btn :disabled="loadingCreate" :loading="loadingCreate" size="x-large" type="submit" block>Erstellen</v-btn>
+      <v-btn :disabled="loadingCreate" :loading="loadingCreate" size="x-large" type="submit" block
+        >Erstellen</v-btn
+      >
     </v-form>
   </div>
 </template>

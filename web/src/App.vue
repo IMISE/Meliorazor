@@ -7,13 +7,13 @@ import type { User } from "oidc-client-ts";
 const login = () => auth.signinRedirect();
 const logout = () => auth.signoutRedirect();
 
-const user: Ref<User | undefined> = ref(undefined);
+const user: Ref<User | undefined> = ref();
 const profile = computed(() => user.value?.profile);
 
 provide("user", profile);
 
 async function getUser() {
-  user.value = await auth.getUser() ?? undefined;
+  user.value = (await auth.getUser()) ?? undefined;
 }
 
 onMounted(() => getUser());

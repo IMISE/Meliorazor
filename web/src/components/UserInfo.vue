@@ -7,8 +7,7 @@ defineProps<{
 }>();
 
 // TODO fetch
-const user: Ref<User | undefined> = ref(undefined);
-
+const user: Ref<User | undefined> = ref();
 </script>
 
 <template>

@@ -24,8 +24,8 @@ const statusText = computed(() => {
   }
 });
 
-const code: Ref<CodeInfo | undefined> = ref(undefined);
-const server: Ref<string | undefined> = ref(undefined);
+const code: Ref<CodeInfo | undefined> = ref();
+const server: Ref<string | undefined> = ref();
 const loading = ref(false);
 
 const getAnnotatedCode = async () => {

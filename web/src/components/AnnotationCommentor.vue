@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import auth from '@/auth';
-import { CommentType } from '@/types/enums';
-import getEnv from '@/utils/env';
-import { mdiCancel, mdiCheck, mdiCircleOutline } from '@mdi/js';
-import { ref, watch, type Ref } from 'vue';
+import auth from "@/auth";
+import { CommentType } from "@/types/enums";
+import getEnv from "@/utils/env";
+import { mdiCancel, mdiCheck, mdiCircleOutline } from "@mdi/js";
+import { ref, watch, type Ref } from "vue";
 
-const emit = defineEmits(["reload"])
+const emit = defineEmits(["reload"]);
 
 const loading = ref(false);
-const response: Ref<Response | undefined> = ref(undefined);
+const response: Ref<Response | undefined> = ref();
 
 const type: Ref<CommentType> = ref(CommentType.NOTE);
 const comment = ref("");
 
 const { annotationId, dataElementId } = defineProps<{
-  annotationId: string | number,
-  dataElementId: string | number,
+  annotationId: string | number;
+  dataElementId: string | number;
 }>();
 
 const giveFeedback = async () => {
@@ -25,24 +25,27 @@ const giveFeedback = async () => {
     const u = await auth.getUser();
     if (!u?.access_token) return;
 
-    response.value = await fetch(`${getEnv("VITE_API_BASE")}/dataElement/${dataElementId}/annotation/${annotationId}/comment`, {
-      method: "POST",
-      body: JSON.stringify({
-        authorName: u.profile.preferred_username,
-        type: type.value,
-        contents: comment.value,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${u.access_token}`,
+    response.value = await fetch(
+      `${getEnv("VITE_API_BASE")}/dataElement/${dataElementId}/annotation/${annotationId}/comment`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          authorName: u.profile.preferred_username,
+          type: type.value,
+          contents: comment.value,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${u.access_token}`,
+        },
       },
-    });
+    );
   } catch (e) {
     console.error(e);
   } finally {
     loading.value = false;
   }
-}
+};
 
 watch(response, async (res) => {
   if (!res?.ok) return;
@@ -51,8 +54,6 @@ watch(response, async (res) => {
     emit("reload");
   }
 });
-
-
 </script>
 
 <template>
@@ -67,7 +68,8 @@ watch(response, async (res) => {
           :disabled="loading"
           :loading="loading"
           block
-        >Akzeptieren</v-btn>
+          >Akzeptieren</v-btn
+        >
       </v-col>
       <v-col cols="4">
         <v-btn
@@ -77,7 +79,8 @@ watch(response, async (res) => {
           :disabled="loading"
           :loading="loading"
           block
-        >Kommentieren</v-btn>
+          >Kommentieren</v-btn
+        >
       </v-col>
       <v-col cols="4">
         <v-btn
@@ -87,7 +90,8 @@ watch(response, async (res) => {
           :disabled="loading"
           :loading="loading"
           block
-        >Ablehnen</v-btn>
+          >Ablehnen</v-btn
+        >
       </v-col>
     </v-row>
   </v-form>

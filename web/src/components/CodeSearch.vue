@@ -16,7 +16,7 @@ defineEmits<{
 
 const search = ref(initialSearch ?? "");
 const loading = ref(false);
-const searchResults: Ref<InformedCodeMapping[] | undefined> = ref(undefined);
+const searchResults: Ref<InformedCodeMapping[] | undefined> = ref();
 
 const searchResultHeaders = [
   {
