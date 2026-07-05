@@ -1,19 +1,15 @@
 <script setup lang="ts">
-import type { Participant } from '@/types/types';
-import { ref } from 'vue';
-import UserInfo from './UserInfo.vue';
+import type { Participant } from "@/types/types";
+import UserInfo from "./UserInfo.vue";
 
-const props = defineProps<{
+defineProps<{
   users: Participant[];
 }>();
-
-const selection = ref({});
-
 </script>
 
 <template>
   <v-list>
-    <v-list-item v-for="p in users" :subtitle="p.roles.join(', ')">
+    <v-list-item v-for="p in users" :key="p.username" :subtitle="p.roles.join(', ')">
       <user-info :username="p.username" />
     </v-list-item>
   </v-list>

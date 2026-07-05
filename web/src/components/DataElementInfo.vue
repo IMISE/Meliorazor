@@ -143,6 +143,7 @@ const annotate = () =>
             <div class="badge-container">
               <annotation-badge
                 v-for="annotation in acceptedAnnotations"
+                :key="`${dataElement.id}-${annotation.id}`"
                 :annotation="annotation"
                 :data-element-id="dataElement.id!"
                 :data-element-name="dataElement.variableName!"
@@ -162,7 +163,8 @@ const annotate = () =>
           <template v-if="openAnnotations.length">
             <div class="badge-container">
               <annotation-badge
-                v-for="(annotation, i) in openAnnotations"
+                v-for="annotation in openAnnotations"
+                :key="`${dataElement.id}-${annotation.id}`"
                 :annotation="annotation"
                 :data-element-id="dataElement.id!"
                 :data-element-name="dataElement.variableName!"

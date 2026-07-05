@@ -79,7 +79,10 @@ watch(
       Nächste Elterngeneration laden
     </v-btn>
     <!-- Parents of current selection -->
-    <template v-for="(parent, i) in parents">
+    <template
+      v-for="(parent, i) in parents"
+      :key="`${codeInfo.self.system}-${codeInfo.self.code}-${i}-${parent.self.system}-${parent.self.code}`"
+    >
       <v-row v-if="i !== parents.length - 1" @click="$emit('focus', toFhirCode(parent))">
         {{ parent.self.display }} (<var>{{ parent.self.code }}</var
         >)
@@ -102,7 +105,9 @@ watch(
     <br />
     <h3>Alternative Namen</h3>
     <ul>
-      <li v-for="name in codeInfo.alternativeNames">{{ name }}</li>
+      <li v-for="name in codeInfo.alternativeNames" :key="name">
+        {{ name }}
+      </li>
     </ul>
   </template>
   <v-btn v-if="showSelectButton" @click="$emit('selection', toFhirCode(codeInfo))" block>

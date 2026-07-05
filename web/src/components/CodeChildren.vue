@@ -46,6 +46,7 @@ const load = async () => {
   <div v-if="depth + 2 < maxCols" style="padding-left: 20px">
     <code-children
       v-for="child in children"
+      :key="`${info.self.system}-${info.self.code}-${child.self.system}-${child.self.code}`"
       :depth="depth + 1"
       :max-cols="maxCols"
       :info="child"

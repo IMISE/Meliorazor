@@ -413,7 +413,7 @@ const fracSliderRules = ref([
       </p>
       <br />
       <v-col fluid>
-        <v-row v-for="row in options" fluid>
+        <v-row v-for="row in options" :key="row.label" fluid>
           <v-col cols="12"
             ><i>{{ row.label }}</i></v-col
           >
@@ -464,7 +464,8 @@ const fracSliderRules = ref([
       <h1>Fehler</h1>
       <v-list>
         <v-list-item
-          v-for="error in contents.errors"
+          v-for="(error, i) in contents.errors"
+          :key="i"
           :title="`${error.type}: ${error.message}`"
           color="danger"
         >
