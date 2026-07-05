@@ -5,7 +5,7 @@ import type { Annotation, CodeInfo, FhirValueSetDefinition } from "@/types/types
 import { findCode } from "@/utils/fhirApi";
 import { ref, type Ref } from "vue";
 import { computed } from "vue";
-import Comment from "./Comment.vue";
+import SingleComment from "./SingleComment.vue";
 
 const { annotation, valueSets } = defineProps<{
   annotation: Annotation;
@@ -66,7 +66,11 @@ const getAnnotatedCode = async () => {
       <br />
       <h3>Diskussion</h3>
       <template v-if="annotation.comments?.length">
-        <comment v-for="comment in annotation.comments" :key="comment.id" :comment="comment" />
+        <single-comment
+          v-for="comment in annotation.comments"
+          :key="comment.id"
+          :comment="comment"
+        />
       </template>
       <template v-else>
         <i>Keine Kommentare vorhanden.</i>

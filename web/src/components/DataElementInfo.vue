@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type { Annotation, Variable } from "@/types/types";
-import { computed, inject, ref, type Ref } from "vue";
+import { computed, ref } from "vue";
 import { Role, status, Status } from "@/types/enums";
-import type { IdTokenClaims } from "oidc-client-ts";
 import AnnotationBadge from "./AnnotationBadge.vue";
 import { useRouter } from "vue-router";
 import { clean } from "@/utils/utils";
@@ -19,7 +18,7 @@ const {
   myRoles: Role[];
 }>();
 
-const user = inject("user") as Ref<IdTokenClaims | undefined>;
+// const user = inject("user") as Ref<IdTokenClaims | undefined>;
 const router = useRouter();
 
 const detailsOpenAnnotations = ref(false);
@@ -45,17 +44,21 @@ const openTooltip = computed(
   () => `${openAnnotations.value.length} offene, vorgeschlagene Annotationen`,
 );
 
+/*
 const myAnnotations = computed(() =>
   [...openAnnotations.value, ...acceptedAnnotations.value].filter(
     (a) => a.authorName === user.value?.preferred_username,
   ),
 );
+*/
 
+/*
 const correctableIds = computed(() =>
   (openAnnotations.value.length ? openAnnotations.value : data.annotations)
     .map((a) => a.id)
     .join(","),
 );
+*/
 
 const openDataElement = () =>
   router.push({
