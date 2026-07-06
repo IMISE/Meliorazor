@@ -2,8 +2,9 @@
 import auth from "@/auth";
 import type { CodeMapping, Predicate } from "@/types/types";
 import getEnv from "@/utils/env";
-import { mdiPencil } from "@mdi/js";
+import { mdiCheck, mdiCross, mdiPencil } from "@mdi/js";
 import { ref, type Ref } from "vue";
+import type { IconValue } from "vuetify/lib/composables/icons.mjs";
 
 const { code, dataElementId } = defineProps<{
   code: CodeMapping;
@@ -18,6 +19,7 @@ defineEmits<{
 // creation request
 const loadingCreate = ref(false);
 const response: Ref<Response | undefined> = ref();
+const loadingFeedbackIcon: Ref<IconValue | undefined> = ref();
 
 // SSSOM metadata
 const confidence: Ref<number> = ref(100);
@@ -61,6 +63,8 @@ const submitAnnotation = async () => {
         },
       },
     );
+    loadingFeedbackIcon.value = response.value.ok ? mdiCheck : mdiCross;
+    setTimeout(() => (loadingFeedbackIcon.value = undefined), 5000);
   } catch (e) {
     console.error(e);
   } finally {
@@ -102,9 +106,17 @@ const submitAnnotation = async () => {
       </v-slider>
       <v-select label="Prädikat" v-model="predicate" :items="predicates" />
       <v-textarea v-model="comment" label="Kommentar" />
-      <v-btn :disabled="loadingCreate" :loading="loadingCreate" size="x-large" type="submit" block
-        >Erstellen</v-btn
+      <v-btn
+        :prepend-icon="loadingFeedbackIcon"
+        :disabled="loadingCreate"
+        :loading="loadingCreate"
+        size="x-large"
+        type="submit"
+        color="primary"
+        block
       >
+        Erstellen
+      </v-btn>
     </v-form>
   </div>
 </template>

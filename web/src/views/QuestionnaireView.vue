@@ -12,7 +12,7 @@ const me: Ref<IdTokenClaims | undefined> = ref();
 
 const router = useRouter();
 const projectId = computed(() => Number(router.currentRoute.value.params.pid));
-// const projectName = computed(() => String(useRouter().currentRoute.value.params.title));
+// const projectName = computed(() => String(router.currentRoute.value.params.title));
 
 const questionnaire: Ref<Questionnaire | undefined> = ref();
 const loading = ref(false);

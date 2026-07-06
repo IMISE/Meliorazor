@@ -464,9 +464,16 @@ const fracSliderRules = ref([
         </v-row>
       </v-col>
 
-      <v-btn :disabled="loading" :loading="loading" size="x-large" type="submit" block
-        >Erstellen</v-btn
+      <v-btn
+        :disabled="loading"
+        :loading="loading"
+        size="x-large"
+        type="submit"
+        color="primary"
+        block
       >
+        Erstellen
+      </v-btn>
     </v-form>
   </v-sheet>
 
