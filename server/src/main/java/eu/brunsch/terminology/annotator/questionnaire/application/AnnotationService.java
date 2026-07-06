@@ -105,6 +105,9 @@ public class AnnotationService {
     public void deleteQuestionnaire(final Long id) {
         final Questionnaire q = questionnaireRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException());
+        if (!q.administeredBy(username())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
         final var dataElements = dataElementRepository.findByQuestionnaire(q);
         for (final DataElement dataElement : dataElements) {
             dataElement.setQuestionnaire(null);
