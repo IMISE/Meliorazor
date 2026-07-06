@@ -70,7 +70,7 @@ const deleteQuestionnaire = async (q: Questionnaire) => {
               ?.roles.includes(Role.ADMIN)
           "
           :icon="mdiDeleteOutline"
-          @click="deleteQuestionnaire(q)"
+          @click.prevent="deleteQuestionnaire(q)"
         />
       </template>
     </v-list-item>
