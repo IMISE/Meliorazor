@@ -1,3 +1,5 @@
+import type { LocationQueryValue } from "vue-router";
+
 export function clean(input: string | null | undefined, length: number | undefined = undefined) {
   return (input || "undef")
     .toLowerCase()
@@ -9,6 +11,32 @@ export function clean(input: string | null | undefined, length: number | undefin
     .replace(/_{2,}/g, "_")
     .replace(/(^_|_$)/g, "")
     .substring(0, length);
+}
+
+/**
+ * When params contain a comma, vue-router returns it as an array.
+ * Sometimes we just want a string though, maybe because we expect only one argument.
+ * This turns a `string[]` into a `string` by joining with a comma (`,`) and converts `undefined` to `""`.
+ * @param param Value of the parsed parameter.
+ * @returns A type-safe string.
+ */
+export function paramToString(param: string | string[] | undefined): string {
+  return typeof param === "object" ? param.join(",") : (param ?? "");
+}
+
+/**
+ * Sometimes we just want a string[] param, even if there's just one argument.
+ * Similiar to {@link paramToString}.
+ * @param param Value of the parsed parameter.
+ * @returns An array with at least zero elements.
+ */
+
+export function queryToStringArray(
+  param: LocationQueryValue | LocationQueryValue[] | undefined,
+): string[] {
+  const arr =
+    typeof param === "object" ? (param ?? []) : param !== undefined ? param.split(",") : [];
+  return arr.filter((val) => typeof val === "string");
 }
 
 export function isUrl(input: string | undefined) {

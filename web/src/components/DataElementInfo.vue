@@ -6,20 +6,15 @@ import AnnotationBadge from "./AnnotationBadge.vue";
 import { useRouter } from "vue-router";
 import { clean } from "@/utils/utils";
 import { mdiMagnify, mdiPencilPlus } from "@mdi/js";
+import { passthroughSelection } from "@/utils/vueUtils.ts";
 
 const model = defineModel<number[] | undefined>();
 
-const selected: Ref<number[] | undefined> = ref(model === undefined ? undefined : []);
-watch(selected, (newVal, oldVal) => {
-  if (!model.value) return;
-  const _new = newVal ?? [];
-  const _old = oldVal ?? [];
-  const created = _new.filter((el) => !_old.includes(el));
-  const removed = _old.filter((el) => !_new.includes(el));
-
-  model.value = model.value.filter((el) => removed.includes(el));
-  model.value.push(...created);
-});
+const selected: Ref<number[] | undefined> = ref(
+  model.value === undefined ? undefined : model.value,
+);
+watch(selected, (newVal, oldVal) => passthroughSelection(newVal, oldVal, model));
+watch(model, (newVal, oldVal) => passthroughSelection(newVal, oldVal, selected));
 
 const {
   dataElement: data,
@@ -30,6 +25,8 @@ const {
   projectTitle: string;
   dataElement: Variable;
   myRoles: Role[];
+  allowEditSelection: boolean;
+  showActions: boolean;
 }>();
 
 // const user = inject("user") as Ref<IdTokenClaims | undefined>;
@@ -141,29 +138,31 @@ const annotate = () =>
         <br />
         <var v-if="dataElement.variableName" class="varname">{{ dataElement.variableName }}</var>
       </div>
-      <v-divider vertical />
-      <div class="badge-container">
-        <v-tooltip text="Öffnen">
-          <template #activator="{ props }">
-            <v-chip
-              @click="openDataElement"
-              :prepend-icon="mdiMagnify"
-              class="data-element-chip"
-              v-bind="props"
-            ></v-chip>
-          </template>
-        </v-tooltip>
-        <v-tooltip v-if="myRoles.includes(Role.ANNOTATE)" text="Annotieren">
-          <template #activator="{ props }">
-            <v-chip
-              @click="annotate"
-              :prepend-icon="mdiPencilPlus"
-              class="data-element-chip"
-              v-bind="props"
-            ></v-chip>
-          </template>
-        </v-tooltip>
-      </div>
+      <template v-if="showActions">
+        <v-divider vertical />
+        <div class="badge-container">
+          <v-tooltip text="Öffnen">
+            <template #activator="{ props }">
+              <v-chip
+                @click="openDataElement"
+                :prepend-icon="mdiMagnify"
+                class="data-element-chip"
+                v-bind="props"
+              ></v-chip>
+            </template>
+          </v-tooltip>
+          <v-tooltip v-if="myRoles.includes(Role.ANNOTATE)" text="Annotieren">
+            <template #activator="{ props }">
+              <v-chip
+                @click="annotate"
+                :prepend-icon="mdiPencilPlus"
+                class="data-element-chip"
+                v-bind="props"
+              ></v-chip>
+            </template>
+          </v-tooltip>
+        </div>
+      </template>
     </v-row>
     <template v-if="acceptedAnnotations.length && detailsAcceptedAnnotations">
       <v-divider />
@@ -186,6 +185,8 @@ const annotate = () =>
                   :data-element-name="dataElement.variableName!"
                   :project-id="projectId"
                   :project-name="projectTitle"
+                  :allow-edit-selection="allowEditSelection"
+                  display-selection-icon
                 />
               </div>
             </template>
@@ -214,6 +215,8 @@ const annotate = () =>
                   :data-element-name="dataElement.variableName!"
                   :project-id="projectId"
                   :project-name="projectTitle"
+                  :allow-edit-selection="allowEditSelection"
+                  display-selection-icon
                 />
               </div>
             </template>

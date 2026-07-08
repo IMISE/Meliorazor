@@ -12,6 +12,8 @@ const props = defineProps<{
   projectName: string;
   dataElementId: number;
   dataElementName: string;
+  allowEditSelection: boolean;
+  displaySelectionIcon: boolean;
 }>();
 
 const router = useRouter();
@@ -33,10 +35,14 @@ const goToAnnotation = async () =>
 
 const contained = computed(() => model.value?.includes(props.annotation?.id));
 const select = () => {
-  model.value?.push(props.annotation.id);
+  if (props.allowEditSelection) {
+    model.value?.push(props.annotation.id);
+  }
 };
 const unselect = () => {
-  model.value = model.value?.filter((val) => val != props.annotation.id);
+  if (props.allowEditSelection) {
+    model.value = model.value?.filter((val) => val != props.annotation.id);
+  }
 };
 </script>
 
@@ -44,7 +50,9 @@ const unselect = () => {
   <v-hover>
     <template #default="{ isHovering, props: hoverProps }">
       <div v-bind="hoverProps">
-        <template v-if="(isHovering || contained) && modelValue !== undefined">
+        <template
+          v-if="displaySelectionIcon && (isHovering || contained) && modelValue !== undefined"
+        >
           <v-icon
             v-if="contained"
             :icon="mdiCheckCircleOutline"

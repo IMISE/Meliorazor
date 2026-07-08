@@ -7,14 +7,14 @@ export interface Questionnaire {
   dataElements: Variable[];
   options: QuestionnaireOptions;
   participants: Participant[];
-  valueSets: FhirValueSetDefinition[],
+  valueSets: FhirValueSetDefinition[];
 }
 
 export interface QuestionnaireOptions {
-  reqNegReviews: number,
-  reqPosReviews: number,
-  reqNegReviewRatio: number,
-  reqPosReviewRatio: number,
+  reqNegReviews: number;
+  reqPosReviews: number;
+  reqNegReviewRatio: number;
+  reqPosReviewRatio: number;
 }
 
 export interface Participant {
@@ -33,8 +33,8 @@ export interface Variable {
 }
 
 export interface KeyValuePair {
-  key: string,
-  value: string,
+  key: string;
+  value: string;
 }
 
 export interface Choice {
@@ -64,16 +64,29 @@ export interface AnnotationComment {
 }
 
 export type CodeMapping = {
-  system: string,
-  code: string,
-  display: string,
+  system: string;
+  code: string;
+  display: string;
 };
 
 export type FhirValueSetDefinition = {
-  display: string,
-  server: string,
-  valueSet: string,
+  display: string;
+  server: string;
+  valueSet: string;
 };
+
+export interface Version {
+  key: string;
+  description: string;
+  annotations: Annotation[];
+  submittedAt: string;
+}
+
+export interface CreateVersion {
+  key: string;
+  description: string;
+  annotationIds: number[];
+}
 
 export interface User {
   username: string;
@@ -81,7 +94,19 @@ export interface User {
   email: string;
 }
 
-export type Predicate = "owl:sameAs" | "owl:equivalentClass" | "owl:equivalentProperty" | "rdfs:subClassOf" | "rdfs:subPropertyOf" | "skos:relatedMatch" | "skos:closeMatch" | "skos:exactMatch" | "skos:narrowMatch" | "skos:broadMatch" | "oboInOwl:hasDbXref" | "rdfs:seeAlso";
+export type Predicate =
+  | "owl:sameAs"
+  | "owl:equivalentClass"
+  | "owl:equivalentProperty"
+  | "rdfs:subClassOf"
+  | "rdfs:subPropertyOf"
+  | "skos:relatedMatch"
+  | "skos:closeMatch"
+  | "skos:exactMatch"
+  | "skos:narrowMatch"
+  | "skos:broadMatch"
+  | "oboInOwl:hasDbXref"
+  | "rdfs:seeAlso";
 
 export type FhirTerminologyCode = CodeMapping & { inactive: true | undefined };
 export type InformedCodeMapping = FhirTerminologyCode & { valueSet: FhirValueSetDefinition };

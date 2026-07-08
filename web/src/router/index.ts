@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHistory, type LocationQuery } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 
 const router = createRouter({
@@ -63,6 +63,11 @@ const router = createRouter({
       ],
     },
     {
+      path: "/projects/:pid-:title/version/create",
+      name: "create-version",
+      component: () => import("../views/VersionCreateView.vue"),
+    },
+    {
       path: "/projects/:pid-:title/elements/:eid-:name/annotations/:aid-:subject",
       name: "focus-annotation",
       component: () => import("../views/AnnotationEditView.vue"),
@@ -73,7 +78,7 @@ const router = createRouter({
       component: () => import("../views/AnnotationCreateView.vue"),
     },
     {
-      path: "/annotations/:projectId-:annotationIds",
+      path: "/annotations/:projectId-:annotationIds/correct",
       name: "correct-annotation",
       component: () => import("../views/AnnotationCreateView.vue"),
     },

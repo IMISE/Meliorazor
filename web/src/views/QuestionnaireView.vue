@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import auth from "@/auth";
-import DataElementInfo from "@/components/DataElementInfo.vue";
+import DataElementList from "@/components/DataElementList.vue";
 import { Role, Status } from "@/types/enums";
 import type { Questionnaire } from "@/types/types";
 import getEnv from "@/utils/env";
@@ -118,6 +118,17 @@ const correctAll = () => {
     },
   });
 };
+
+const createVersion = () => {
+  router.push({
+    name: "create-version",
+    params: {
+      pid: projectId.value,
+      title: clean(questionnaire.value?.title),
+      annotations: toCorrect.value.join(","),
+    },
+  });
+};
 </script>
 
 <template>
@@ -135,20 +146,22 @@ const correctAll = () => {
       <v-btn v-if="correctable" @click="correctAll" color="primary">
         {{ toCorrect.length }} Annotationen korrigieren
       </v-btn>
-      <v-item-group :max="0">
-        <v-item v-for="element in elements" :key="element.id">
-          <data-element-info
-            v-model="selected"
-            :project-id="projectId"
-            :project-title="questionnaire.title"
-            :data-element="element"
-            :my-roles="roles"
-          />
-        </v-item>
-        <v-item v-if="!elements?.length">
-          <i>Keine Datenelemente gefunden.</i>
-        </v-item>
-      </v-item-group>
+      <v-btn
+        v-if="selected?.length && roles.includes(Role.ADMIN)"
+        @click="createVersion"
+        color="primary"
+      >
+        Version erstellen
+      </v-btn>
+      <data-element-list
+        v-model="selected"
+        :project-id="projectId"
+        :project-title="questionnaire.title"
+        :data-elements="elements"
+        :my-roles="roles"
+        allow-edit-selection
+        show-actions
+      />
     </template>
     <template v-else-if="loading">
       <h1>Laden...</h1>

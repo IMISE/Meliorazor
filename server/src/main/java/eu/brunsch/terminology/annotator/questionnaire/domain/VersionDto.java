@@ -13,7 +13,7 @@ public class VersionDto {
 
     /**
      * Name/title/number/... of the version.
-     * MUST be unique for this project.
+     * MUST be unique in the context of this project.
      */
     private String key;
 

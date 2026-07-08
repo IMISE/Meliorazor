@@ -1,5 +1,6 @@
 package eu.brunsch.terminology.annotator.questionnaire.application;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -376,7 +377,7 @@ public class AnnotationService {
         return versionRepository.save(version).getId();
     }
 
-    public VersionDto getVersion(final Long questionnaireId, final Long versionId) {
+    public VersionDto getVersion(final Long questionnaireId, final String versionKey) {
         final String username = username();
         final Questionnaire q = questionnaireRepository.findById(questionnaireId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -389,7 +390,7 @@ public class AnnotationService {
         }
 
         final VersionDto dto = new VersionDto();
-        final Version v = versionRepository.findById(versionId)
+        final Version v = versionRepository.findByKeyAndQuestionnaireId(versionKey, questionnaireId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         dto.setAnnotations(
             List.of(v.getAnnotations())
@@ -402,6 +403,21 @@ public class AnnotationService {
         dto.setId(v.getId());
         dto.setSubmittedAt(v.getSubmittedAt());
         return dto;
+    }
+
+    public String[] getVersionKeys(final Long questionnaireId) {
+        final String username = username();
+        final Questionnaire q = questionnaireRepository.findById(questionnaireId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        // access control
+        if (!q.seenBy(username)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        } else if (!q.administeredBy(username)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        return versionRepository.findKeysByQuestionnaireId(questionnaireId).toArray(size -> new String[size]);
     }
 
     /**

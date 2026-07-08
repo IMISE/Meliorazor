@@ -15,6 +15,7 @@ const emit = defineEmits<{
 defineProps<{
   questionnaires: Questionnaire[];
   displayControls: boolean;
+  displayLink: boolean;
 }>();
 
 const user = inject("user") as Ref<IdTokenClaims | undefined>;
@@ -46,13 +47,13 @@ const deleteQuestionnaire = async (q: Questionnaire) => {
     <v-list-item
       v-for="(q, i) in questionnaires"
       :key="`${questionnaires.length}-${i}-${q.id}`"
-      :href="`/projects/${q.id}-${clean(q.title.substring(0, 20))}/`"
+      :href="displayLink ? `/projects/${q.id}-${clean(q.title.substring(0, 20))}/` : undefined"
     >
       <v-list-item-title>{{ q.title }}</v-list-item-title>
       <v-list-item-subtitle v-if="q.description">
         {{ q.description.length > 50 ? q.description.substring(0, 47) + "…" : q.description }}
       </v-list-item-subtitle>
-      <template #append>
+      <template v-if="displayControls" #append>
         <v-icon-btn
           v-if="
             q.participants

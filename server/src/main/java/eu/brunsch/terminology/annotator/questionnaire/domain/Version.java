@@ -4,6 +4,7 @@ import java.time.Instant;
 
 import org.springframework.data.annotation.CreatedDate;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,7 +21,7 @@ import lombok.Setter;
 /**
  * Groups annotations of one project into a version.
  */
-@Entity
+@Entity(name = "Version")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -35,6 +36,7 @@ public class Version {
      * Name/title/number/... of the version.
      * MUST be unique for this project.
      */
+    @Column(name = "key")
     private String key;
 
     /** Additional information. */

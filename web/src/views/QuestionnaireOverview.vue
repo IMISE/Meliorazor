@@ -41,6 +41,7 @@ onMounted(getQuestionnaires);
   <questionnaire-list
     :questionnaires="questionnaires"
     display-controls
+    display-link
     @delete="getQuestionnaires"
   />
   <v-row>
