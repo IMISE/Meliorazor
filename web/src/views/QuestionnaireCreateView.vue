@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, ref, watch, type Ref } from "vue";
+import { computed, inject, ref, shallowRef, watch, type Ref, type VNodeRef } from "vue";
 import Papa from "papaparse";
 import { mdiAccountMinus, mdiAccountPlus, mdiAlertCircleOutline, mdiMinus, mdiPlus } from "@mdi/js";
 import type {
@@ -15,6 +15,9 @@ import { read, utils } from "xlsx";
 import getEnv from "@/utils/env";
 import type { IdTokenClaims } from "oidc-client-ts";
 import ValueSetSelector from "@/components/ValueSetSelector.vue";
+
+const step = shallowRef([1]);
+const itemsPerPage = ref(25);
 
 const user = inject("user") as Ref<IdTokenClaims | undefined>;
 const router = useRouter();
@@ -323,147 +326,165 @@ const fracSliderRules = ref([
   <v-sheet width="1000" class="sheet">
     <v-form :disabled="loading" @submit.prevent="create">
       <h1>Projekt erstellen</h1>
-      <v-text-field v-model="title" :rules="notEmpty" label="Titel" required></v-text-field>
-      <v-textarea v-model="description" label="Beschreibung"></v-textarea>
-      <v-select
-        label="Typ vom Data Dictionary"
-        :rules="notEmpty"
-        :items="['REDCap', 'OpenClinica']"
-        v-model="fileType"
-      ></v-select>
-      <v-file-input
-        v-if="fileType === 'REDCap'"
-        v-model="rcFile"
-        accept=".csv"
-        :rules="atLeastOneDE"
-        label="Data Dictionary eingeben"
-      ></v-file-input>
-      <v-file-input
-        v-else-if="fileType === 'OpenClinica'"
-        v-model="ocFile"
-        accept=".xls"
-        :rules="atLeastOneDE"
-        label="Data Dictionary eingeben"
-      ></v-file-input>
-      <br />
-
-      <h2>FHIR value sets</h2>
-      <p>
-        In diesen Value Sets wird nach Termen gesucht. Sie können später noch bearbeitet werden.
-      </p>
-      <v-col fluid>
-        <value-set-selector
-          v-for="(row, i) in valueSets"
-          :key="row.id"
-          v-model="row.set"
-          :disabled="loading"
-          :display-controls="valueSets.length > 1"
-          @remove="valueSets.splice(i, 1)"
-        />
-        <v-btn
-          variant="text"
-          :disabled="loading"
-          :prepend-icon="mdiPlus"
-          @click="valueSets.push({ id: setKey(), set: undefined })"
-          >Hinzufügen</v-btn
+      <v-stepper-vertical v-model="step" :mandatory="false" multiple non-linear hide-actions>
+        <v-stepper-vertical-item title="Allgemeine Informationen" value="1" editable>
+          <v-text-field v-model="title" :rules="notEmpty" label="Titel" required></v-text-field>
+          <v-textarea v-model="description" label="Beschreibung"></v-textarea>
+        </v-stepper-vertical-item>
+        <v-stepper-vertical-item
+          title="Datenelemente"
+          subtitle="Import des Data Dictionaries."
+          value="2"
+          editable
         >
-      </v-col>
-      <br />
-
-      <h2>Mitwirkende</h2>
-      <p>Wer hat welche Rechte?</p>
-      <v-col fluid>
-        <v-row v-for="(row, i) in participants" :key="participants.length + i" gap="10">
-          <v-col cols="6">
-            <v-text-field
-              v-model="row.username"
-              :rules="participantUser"
-              label="Nutzername"
-              :disabled="i === 0 && !!user?.preferred_username"
-            ></v-text-field>
-          </v-col>
-          <v-col :cols="participants.length > 1 ? 5 : 6">
-            <v-select
-              label="Rolle"
-              :rules="notEmpty"
-              :items="roles"
-              v-model="row.roles"
-              multiple
-            ></v-select>
-          </v-col>
-          <v-col v-if="participants.length > 1" cols="1">
-            <v-icon-btn :icon="mdiMinus" @click="participants.splice(i, 1)"></v-icon-btn>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-btn
-            variant="text"
-            :disabled="loading"
-            :prepend-icon="mdiAccountPlus"
-            @click="participants.push({ username: '', roles: [] })"
-            >Hinzufügen</v-btn
-          >
-          <v-btn
-            variant="text"
-            :disabled="loading"
-            :prepend-icon="mdiAccountMinus"
-            @click="participants.pop()"
-            v-if="participants.length > 1"
-            >Entfernen</v-btn
-          >
-        </v-row>
-      </v-col>
-      <br />
-
-      <h2>Akzeptanzbedingungen</h2>
-      <p>
-        Wenn die Bedingungen erfüllt sind, kann eine Annotation automatisch als akzeptiert oder
-        abgelehnt markiert werden. Wenn nicht, geht das natürlich immer noch manuell. Die
-        Bedingungen hängen von der Anzahl der positiver bzw. negativer Bewertungen oder vom Anteil
-        an allen Bewertungen des Annotationskandidaten ab. Diese anders zu konfigurieren ergibt nur
-        Sinn, wenn auch regelmäßig mehrere Bewertungen pro Annotation erwaret sind. Bei nur einer
-        erwarteten Bewertung reichen die Standardwerte. Um eine Bedingung außen vor zu lassen,
-        einfach deaktivieren.
-      </p>
-      <br />
-      <v-col fluid>
-        <v-row v-for="row in options" :key="row.label" fluid>
-          <v-col cols="12"
-            ><i>{{ row.label }}</i></v-col
-          >
-          <v-col cols="2">
-            <v-checkbox v-model="row.use" label="Aktivieren"></v-checkbox>
-          </v-col>
-          <v-col cols="10">
-            <v-slider
-              v-model="row.val"
-              :disabled="!row.use"
-              :step="1"
-              :min="0"
-              :max="100"
-              :rules="row.fraction ? fracSliderRules : sliderRules"
-              thumb-label="always"
+          <v-select
+            label="Typ vom Data Dictionary"
+            :rules="notEmpty"
+            :items="['REDCap', 'OpenClinica']"
+            v-model="fileType"
+          ></v-select>
+          <v-file-input
+            v-if="fileType === 'REDCap'"
+            v-model="rcFile"
+            accept=".csv"
+            :rules="atLeastOneDE"
+            label="Data Dictionary eingeben"
+          ></v-file-input>
+          <v-file-input
+            v-else-if="fileType === 'OpenClinica'"
+            v-model="ocFile"
+            accept=".xls"
+            :rules="atLeastOneDE"
+            label="Data Dictionary eingeben"
+          ></v-file-input>
+        </v-stepper-vertical-item>
+        <v-stepper-vertical-item
+          title="FHIR value sets"
+          subtitle="In diesen Value Sets wird nach Termen gesucht."
+          value="3"
+          editable
+        >
+          <v-col fluid>
+            <value-set-selector
+              v-for="(row, i) in valueSets"
+              :key="row.id"
+              v-model="row.set"
+              :disabled="loading"
+              :display-controls="valueSets.length > 1"
+              @remove="valueSets.splice(i, 1)"
+            />
+            <v-btn
+              variant="text"
+              :disabled="loading"
+              :prepend-icon="mdiPlus"
+              @click="valueSets.push({ id: setKey(), set: undefined })"
+              >Hinzufügen</v-btn
             >
-              <template #thumb-label="{ modelValue }"
-                >{{ modelValue }}<template v-if="row.fraction">%</template></template
-              >
-              <template #append>
-                <v-text-field
-                  v-model="row.val"
-                  density="compact"
-                  style="width: 90px; max-width: fit-content; margin-left: 20px"
-                  type="number"
-                  hide-details
-                  single-line
-                >
-                  <template v-if="row.fraction" #append-inner>%</template>
-                </v-text-field>
-              </template>
-            </v-slider>
           </v-col>
-        </v-row>
-      </v-col>
-
+        </v-stepper-vertical-item>
+        <v-stepper-vertical-item
+          title="Mitwirkende"
+          subtitle="Wer hat welche Rechte?"
+          value="4"
+          editable
+        >
+          <v-col fluid>
+            <v-row v-for="(row, i) in participants" :key="participants.length + i" gap="10">
+              <v-col cols="6">
+                <v-text-field
+                  v-model="row.username"
+                  :rules="participantUser"
+                  label="Nutzername"
+                  :disabled="i === 0 && !!user?.preferred_username"
+                ></v-text-field>
+              </v-col>
+              <v-col :cols="participants.length > 1 ? 5 : 6">
+                <v-select
+                  label="Rolle"
+                  :rules="notEmpty"
+                  :items="roles"
+                  v-model="row.roles"
+                  multiple
+                ></v-select>
+              </v-col>
+              <v-col v-if="participants.length > 1" cols="1">
+                <v-icon-btn :icon="mdiMinus" @click="participants.splice(i, 1)"></v-icon-btn>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-btn
+                variant="text"
+                :disabled="loading"
+                :prepend-icon="mdiAccountPlus"
+                @click="participants.push({ username: '', roles: [] })"
+                >Hinzufügen</v-btn
+              >
+              <v-btn
+                variant="text"
+                :disabled="loading"
+                :prepend-icon="mdiAccountMinus"
+                @click="participants.pop()"
+                v-if="participants.length > 1"
+                >Entfernen</v-btn
+              >
+            </v-row>
+          </v-col>
+        </v-stepper-vertical-item>
+        <v-stepper-vertical-item
+          value="5"
+          title="Akzeptanzbedingungen"
+          subtitle="(optional)"
+          editable
+        >
+          <p>
+            Wenn die Bedingungen erfüllt sind, kann eine Annotation automatisch als akzeptiert oder
+            abgelehnt markiert werden. Wenn nicht, geht das natürlich immer noch manuell. Die
+            Bedingungen hängen von der Anzahl der positiver bzw. negativer Bewertungen oder vom
+            Anteil an allen Bewertungen des Annotationskandidaten ab. Diese anders zu konfigurieren
+            ergibt nur Sinn, wenn auch regelmäßig mehrere Bewertungen pro Annotation erwaret sind.
+            Bei nur einer erwarteten Bewertung reichen die Standardwerte. Um eine Bedingung außen
+            vor zu lassen, einfach deaktivieren.
+          </p>
+          <br />
+          <v-col fluid>
+            <v-row v-for="row in options" :key="row.label" fluid>
+              <v-col cols="12">
+                <i>{{ row.label }}</i>
+              </v-col>
+              <v-col cols="2">
+                <v-checkbox v-model="row.use" label="Aktivieren"></v-checkbox>
+              </v-col>
+              <v-col cols="10">
+                <v-slider
+                  v-model="row.val"
+                  :disabled="!row.use"
+                  :step="1"
+                  :min="0"
+                  :max="100"
+                  :rules="row.fraction ? fracSliderRules : sliderRules"
+                  thumb-label="always"
+                >
+                  <template #thumb-label="{ modelValue }">
+                    {{ modelValue }}<template v-if="row.fraction">%</template>
+                  </template>
+                  <template #append>
+                    <v-text-field
+                      v-model="row.val"
+                      density="compact"
+                      style="width: 90px; max-width: fit-content; margin-left: 20px"
+                      type="number"
+                      hide-details
+                      single-line
+                    >
+                      <template v-if="row.fraction" #append-inner>%</template>
+                    </v-text-field>
+                  </template>
+                </v-slider>
+              </v-col>
+            </v-row>
+          </v-col>
+        </v-stepper-vertical-item>
+      </v-stepper-vertical>
       <v-btn
         :disabled="loading"
         :loading="loading"
@@ -476,10 +497,15 @@ const fracSliderRules = ref([
       </v-btn>
     </v-form>
   </v-sheet>
-
   <v-sheet width="1000" v-if="contents" class="sheet">
     <h1>Daten</h1>
-    <v-data-table v-if="parsedData?.length" :headers="headers" :items="parsedData"></v-data-table>
+    <v-data-table
+      v-if="parsedData?.length"
+      :headers="headers"
+      :items="parsedData"
+      density="compact"
+      :items-per-page="itemsPerPage"
+    ></v-data-table>
     <p v-else><i>Keine Daten gefunden.</i></p>
     <template v-if="contents.errors?.length">
       <h1>Fehler</h1>

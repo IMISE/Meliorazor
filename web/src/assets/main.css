@@ -25,3 +25,8 @@ a, a:visited, a:hover, a:link, a:active {
     padding: 0 2rem;
   }
 }
+
+.v-expansion-panel-title {
+  justify-content: flex-start;
+  gap: 20px;
+}
