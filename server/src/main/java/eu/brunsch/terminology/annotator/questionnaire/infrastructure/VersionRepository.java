@@ -11,7 +11,7 @@ import eu.brunsch.terminology.annotator.questionnaire.domain.Version;
 public interface VersionRepository extends JpaRepository<Version, Long> {
     public Boolean existsByKeyAndQuestionnaireId(String key, Long questionnaireId);
 
-    @Query("SELECT v.key FROM Version v WHERE v.questionnaire_id = ?1", nativeQuery = true)
+    @Query("select v.key from Version v where v.questionnaire.id = ?1")
     public List<String> findKeysByQuestionnaireId(Long questionnaireId);
 
     public Optional<Version> findByKeyAndQuestionnaireId(String key, Long questionnaireId);
