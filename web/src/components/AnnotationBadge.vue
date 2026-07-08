@@ -51,7 +51,11 @@ const unselect = () => {
     <template #default="{ isHovering, props: hoverProps }">
       <div v-bind="hoverProps">
         <template
-          v-if="displaySelectionIcon && (isHovering || contained) && modelValue !== undefined"
+          v-if="
+            displaySelectionIcon &&
+            (isHovering || contained || !allowEditSelection) &&
+            modelValue !== undefined
+          "
         >
           <v-icon
             v-if="contained"
