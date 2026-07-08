@@ -4,11 +4,12 @@ import DataElementInfo from "@/components/DataElementInfo.vue";
 import { Role, Status } from "@/types/enums";
 import type { Questionnaire } from "@/types/types";
 import getEnv from "@/utils/env";
+import { clean } from "@/utils/utils";
 import type { IdTokenClaims } from "oidc-client-ts";
-import { computed, onMounted, ref, watch, type Ref } from "vue";
+import { computed, inject, onMounted, ref, watch, type Ref } from "vue";
 import { useRouter } from "vue-router";
 
-const me: Ref<IdTokenClaims | undefined> = ref();
+const user = inject("user") as Ref<IdTokenClaims | undefined>;
 
 const router = useRouter();
 const projectId = computed(() => Number(router.currentRoute.value.params.pid));
@@ -20,7 +21,7 @@ const loading = ref(false);
 const roles = computed(
   () =>
     questionnaire.value?.participants.find(
-      (participant) => participant.username === me.value?.preferred_username,
+      (participant) => participant.username === user.value?.preferred_username,
     )?.roles ?? [],
 );
 
@@ -36,7 +37,7 @@ const uncorrected = computed(
   () =>
     elements.value.flatMap((e) =>
       e.annotations.filter(
-        (a) => a.status === Status.OPEN && a.authorName !== me.value?.preferred_username,
+        (a) => a.status === Status.OPEN && a.authorName !== user.value?.preferred_username,
       ),
     ) ?? [],
 );
@@ -62,7 +63,6 @@ watch(projectId, (newVal) => get(newVal));
 
 const get = async (id: number) => {
   const u = await auth.getUser();
-  me.value = u?.profile;
   if (!u?.access_token) return;
 
   loading.value = true;

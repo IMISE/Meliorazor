@@ -1,20 +1,24 @@
 <script setup lang="ts">
-import { RouterView } from "vue-router";
+import { RouterView, useRouter } from "vue-router";
 import auth from "./auth";
 import { computed, onMounted, onUpdated, provide, ref, type Ref } from "vue";
 import type { User } from "oidc-client-ts";
+import { watch } from "vue";
 
 const login = () => auth.signinRedirect();
 const logout = () => auth.signoutRedirect();
 
 const user: Ref<User | undefined> = ref();
 const profile = computed(() => user.value?.profile);
+const router = useRouter();
 
 provide("user", profile);
 
 async function getUser() {
   user.value = (await auth.getUser()) ?? undefined;
 }
+
+watch(router.currentRoute, getUser);
 
 onMounted(() => getUser());
 onUpdated(() => getUser());
