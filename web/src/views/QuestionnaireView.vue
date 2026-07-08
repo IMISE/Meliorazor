@@ -83,6 +83,23 @@ const get = async (id: number) => {
   }
 };
 
+const selected: Ref<number[] | undefined> = ref(
+  roles.value.some((role) => role == Role.ADMIN || role == Role.FEEDBACK) ? [] : undefined,
+);
+watch(roles, (val) => {
+  if (val.some((role) => role == Role.ADMIN || role == Role.FEEDBACK)) {
+    if (!selected.value?.length) {
+      selected.value = [];
+    } // if is admin and we've already selected some, keep going
+  } else {
+    selected.value = undefined;
+  }
+});
+
+const toCorrect = computed(() =>
+  selected.value?.length ? selected.value : uncorrected.value.map((annotation) => annotation.id),
+);
+
 const annotateAll = () =>
   router.push({
     name: "create-annotation",
@@ -91,6 +108,16 @@ const annotateAll = () =>
       elementIds: questionnaire.value?.dataElements.map((de) => de.id).join(","),
     },
   });
+
+const correctAll = () => {
+  router.push({
+    name: "correct-annotation",
+    params: {
+      projectId: projectId.value,
+      annotationIds: toCorrect.value.join(","),
+    },
+  });
+};
 </script>
 
 <template>
@@ -101,14 +128,17 @@ const annotateAll = () =>
       <br />
       <h2>Datenelemente</h2>
       <v-text-field v-model="deSearch" label="Suche"></v-text-field>
-      <v-btn v-if="annotatable" @click="annotateAll"
-        >{{ elements.length }} Datenelemente annotieren</v-btn
-      >
+      <v-btn v-if="annotatable" @click="annotateAll" color="primary">
+        {{ elements.length }} Datenelemente annotieren
+      </v-btn>
       <!-- TODO implement -->
-      <v-btn v-if="correctable">Annotationen korrigieren</v-btn>
+      <v-btn v-if="correctable" @click="correctAll" color="primary">
+        {{ toCorrect.length }} Annotationen korrigieren
+      </v-btn>
       <v-item-group :max="0">
         <v-item v-for="element in elements" :key="element.id">
           <data-element-info
+            v-model="selected"
             :project-id="projectId"
             :project-title="questionnaire.title"
             :data-element="element"

@@ -1,11 +1,25 @@
 <script setup lang="ts">
 import type { Annotation, Variable } from "@/types/types";
-import { computed, ref } from "vue";
+import { computed, ref, watch, type Ref } from "vue";
 import { Role, status, Status } from "@/types/enums";
 import AnnotationBadge from "./AnnotationBadge.vue";
 import { useRouter } from "vue-router";
 import { clean } from "@/utils/utils";
 import { mdiMagnify, mdiPencilPlus } from "@mdi/js";
+
+const model = defineModel<number[] | undefined>();
+
+const selected: Ref<number[] | undefined> = ref(model === undefined ? undefined : []);
+watch(selected, (newVal, oldVal) => {
+  if (!model.value) return;
+  const _new = newVal ?? [];
+  const _old = oldVal ?? [];
+  const created = _new.filter((el) => !_old.includes(el));
+  const removed = _old.filter((el) => !_new.includes(el));
+
+  model.value = model.value.filter((el) => removed.includes(el));
+  model.value.push(...created);
+});
 
 const {
   dataElement: data,
@@ -165,6 +179,7 @@ const annotate = () =>
               <div class="badge-container">
                 <annotation-badge
                   v-for="annotation in group"
+                  v-model="selected"
                   :key="`${dataElement.id}-${annotation.id}`"
                   :annotation="annotation"
                   :data-element-id="dataElement.id!"
@@ -192,6 +207,7 @@ const annotate = () =>
               <div class="badge-container">
                 <annotation-badge
                   v-for="annotation in group"
+                  v-model="selected"
                   :key="`${dataElement.id}-${annotation.id}`"
                   :annotation="annotation"
                   :data-element-id="dataElement.id!"
