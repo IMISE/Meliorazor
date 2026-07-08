@@ -125,6 +125,8 @@ const createVersion = () => {
     params: {
       pid: projectId.value,
       title: clean(questionnaire.value?.title),
+    },
+    query: {
       annotations: toCorrect.value.join(","),
     },
   });
