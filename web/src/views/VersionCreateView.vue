@@ -3,7 +3,7 @@ import DataElementList from "@/components/DataElementList.vue";
 import QuestionnaireList from "@/components/QuestionnaireList.vue";
 import type { Questionnaire, Variable } from "@/types/types";
 import { createVersion, getProject, getVersionKeys } from "@/utils/api";
-import { paramToString, queryToStringArray } from "@/utils/utils";
+import { clean, paramToString, queryToStringArray } from "@/utils/utils";
 import { computed, onMounted, ref, watch, type Ref } from "vue";
 import { useRouter } from "vue-router";
 
@@ -20,6 +20,7 @@ const creating = ref(false);
 /** whether the form is in a valid state */
 const isValid = ref();
 
+const errorState = ref(false);
 const key = ref("");
 const description = ref("");
 
@@ -49,7 +50,7 @@ onMounted(async () => {
 });
 
 const create = async () => {
-  createVersion(
+  const response = await createVersion(
     projectId.value,
     {
       key: key.value,
@@ -58,6 +59,30 @@ const create = async () => {
     },
     creating,
   );
+  const error = async () => {
+    errorState.value = true;
+    setTimeout(() => (errorState.value = false), 10_000);
+    otherVersions.value = await getVersionKeys(projectId.value);
+  };
+
+  // rails!
+  if (!response?.ok) {
+    await error();
+  } else {
+    const id = await response.text();
+    if (Number.isNaN(Number(id))) {
+      await error();
+    } else {
+      // TODO: go to version view or at least versions tab
+      return router.push({
+        name: "single-project",
+        params: {
+          pid: projectId.value,
+          title: clean(project.value?.title),
+        },
+      });
+    }
+  }
 };
 
 const keyRules = ref([
@@ -68,7 +93,10 @@ const keyRules = ref([
 
 <template>
   <h1>Version erstellen</h1>
-  <v-stepper v-if="project" :items="['Projekt', 'Annotationen', 'Überprüfen', 'Abschicken']">
+  <v-stepper
+    v-if="project"
+    :items="['Projekt', 'Enthaltene Annotationen', 'Überprüfen', 'Benennung']"
+  >
     <template #[`item.1`]>
       <v-card title="Projekt">
         <questionnaire-list
@@ -118,11 +146,12 @@ const keyRules = ref([
           :loading="creating"
           size="x-large"
           type="submit"
-          color="primary"
+          :color="errorState ? 'danger' : 'primary'"
           block
         >
           Erstellen
         </v-btn>
+        <template v-if="errorState">Da ist etwas schiefgelaufen.</template>
       </v-form>
     </template>
   </v-stepper>
