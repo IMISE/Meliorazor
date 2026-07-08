@@ -105,7 +105,7 @@ const annotateAll = () =>
     name: "create-annotation",
     params: {
       projectId: projectId.value,
-      elementIds: questionnaire.value?.dataElements.map((de) => de.id).join(","),
+      elementIds: elements.value.map((de) => de.id).join(","),
     },
   });
 
