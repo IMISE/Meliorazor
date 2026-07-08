@@ -5,12 +5,10 @@ import java.util.List;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
-import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -49,10 +47,6 @@ public class Questionnaire {
     /** URLs of whitelisted value sets. */
     @ElementCollection
     private FhirValueSetDefinition[] valueSets;
-
-    /** Versions regarding this project. */
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "questionnaire")
-    private Version[] versions;
 
     /**
      * Whether a user with the given username is able to see this questionnaire.
