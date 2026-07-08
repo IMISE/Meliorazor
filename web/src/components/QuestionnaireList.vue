@@ -6,6 +6,7 @@ import auth from "@/auth.ts";
 import getEnv from "@/utils/env.ts";
 import { Role } from "@/types/enums.ts";
 import { mdiDeleteOutline } from "@mdi/js";
+import { clean } from "@/utils/utils";
 
 const emit = defineEmits<{
   (e: "delete", v: Questionnaire): void;
@@ -15,17 +16,6 @@ defineProps<{
   questionnaires: Questionnaire[];
   displayControls: boolean;
 }>();
-
-const clean = (input: string | null) =>
-  (input || "undef")
-    .toLowerCase()
-    .replaceAll("ä", "ae")
-    .replaceAll("ö", "oe")
-    .replaceAll("ü", "ue")
-    .replaceAll("ß", "ss")
-    .replace(/[^a-z0-9-]/gi, "_")
-    .replace(/_{2,}/g, "_")
-    .replace(/(^_|_$)/g, "");
 
 const user = inject("user") as Ref<IdTokenClaims | undefined>;
 

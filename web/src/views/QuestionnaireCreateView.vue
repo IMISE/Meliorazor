@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, ref, shallowRef, watch, type Ref, type VNodeRef } from "vue";
+import { computed, inject, ref, shallowRef, watch, type Ref } from "vue";
 import Papa from "papaparse";
 import { mdiAccountMinus, mdiAccountPlus, mdiAlertCircleOutline, mdiMinus, mdiPlus } from "@mdi/js";
 import type {
@@ -15,6 +15,7 @@ import { read, utils } from "xlsx";
 import getEnv from "@/utils/env";
 import type { IdTokenClaims } from "oidc-client-ts";
 import ValueSetSelector from "@/components/ValueSetSelector.vue";
+import { clean } from "@/utils/utils";
 
 const step = shallowRef([1]);
 const itemsPerPage = ref(25);
@@ -269,17 +270,6 @@ const create = async () => {
   });
   loading.value = false;
 };
-
-const clean = (input: string | null) =>
-  (input || "undef")
-    .toLowerCase()
-    .replaceAll("ä", "ae")
-    .replaceAll("ö", "oe")
-    .replaceAll("ü", "ue")
-    .replaceAll("ß", "ss")
-    .replace(/[^a-z0-9-]/gi, "_")
-    .replace(/_{2,}/g, "_")
-    .replace(/(^_|_$)/g, "");
 
 watch(response, async (val) => {
   if (val?.ok) {
