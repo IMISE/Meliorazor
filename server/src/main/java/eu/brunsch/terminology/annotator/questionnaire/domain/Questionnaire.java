@@ -2,12 +2,15 @@ package eu.brunsch.terminology.annotator.questionnaire.domain;
 
 import java.util.List;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,6 +29,7 @@ public class Questionnaire {
     /** Identifier value. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     /** Name or title of the questionnaire. */
@@ -46,16 +50,21 @@ public class Questionnaire {
     @ElementCollection
     private FhirValueSetDefinition[] valueSets;
 
+    /** Versions regarding this project. */
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "questionnaire")
+    private Version[] versions;
+
     /**
      * Whether a user with the given username is able to see this questionnaire.
-     * This questionnaire should not be displayed to this user if it answers `false`.
-     * @param username set on questionnaire and taken from claims 
+     * This questionnaire should not be displayed to this user if it answers
+     * `false`.
+     * 
+     * @param username set on questionnaire and taken from claims
      * @return whether user is allowed to see this
      */
     public boolean seenBy(final String username) {
         for (Participant participant : participants) {
             if (participant.getUsername().equals(username) && participant.getRoles().length > 0) {
-                System.err.println("Worked, innit");
                 return true;
             }
         }
@@ -63,14 +72,18 @@ public class Questionnaire {
     }
 
     /**
-     * Whether a user with the given username is able to administer this questionnaire.
-     * Editing or deleting (parts of) this project should be rejected if it answers `false`.
-     * @param username set on questionnaire and taken from claims 
+     * Whether a user with the given username is able to administer this
+     * questionnaire.
+     * Editing or deleting (parts of) this project should be rejected if it answers
+     * `false`.
+     * 
+     * @param username set on questionnaire and taken from claims
      * @return whether user is allowed to administer this
      */
     public boolean administeredBy(final String username) {
         for (Participant participant : participants) {
-            if (participant.getUsername().equals(username) && List.of(participant.getRoles()).contains(Participant.Role.ADMIN)) {
+            if (participant.getUsername().equals(username)
+                    && List.of(participant.getRoles()).contains(Participant.Role.ADMIN)) {
                 return true;
             }
         }
