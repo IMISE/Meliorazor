@@ -1,17 +1,16 @@
-import { mount } from '@vue/test-utils'
-import { describe, it, expect } from 'vitest'
-import { createVuetify } from 'vuetify'
-import * as components from 'vuetify/components'
-import * as directives from 'vuetify/directives'
+import { mount } from "@vue/test-utils";
+import { describe, it, expect } from "vitest";
+import { createVuetify } from "vuetify";
+import * as components from "vuetify/components";
+import * as directives from "vuetify/directives";
 
-import AnnotationBadge from '../AnnotationBadge.vue'
-import { Status } from '@/types/enums.js'
+import AnnotationBadge from "../AnnotationBadge.vue";
+import { Status } from "@/types/enums.js";
 
 const vuetify = createVuetify({
   components,
   directives,
 });
-
 
 describe("AnnotationBadge", () => {
   it("shows correct text", () => {
@@ -35,6 +34,8 @@ describe("AnnotationBadge", () => {
         projectName: "",
         dataElementId: 0,
         dataElementName: "",
+        allowEditSelection: true,
+        displaySelectionIcon: true,
       },
       global: {
         plugins: [vuetify],
