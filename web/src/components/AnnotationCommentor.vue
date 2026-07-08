@@ -65,28 +65,33 @@ watch(response, async (res) => {
           :prepend-icon="mdiCheck"
           @click="type = CommentType.ACCEPT"
           type="submit"
+          color="success"
           :disabled="loading"
           :loading="loading"
           block
-          >Akzeptieren</v-btn
         >
+          Akzeptieren
+        </v-btn>
       </v-col>
       <v-col cols="4">
         <v-btn
           :prepend-icon="mdiCircleOutline"
           @click="type = CommentType.NOTE"
           type="submit"
+          color="info"
           :disabled="loading"
           :loading="loading"
           block
-          >Kommentieren</v-btn
         >
+          Kommentieren
+        </v-btn>
       </v-col>
       <v-col cols="4">
         <v-btn
           :prepend-icon="mdiCancel"
           @click="type = CommentType.REJECT"
           type="submit"
+          color="error"
           :disabled="loading"
           :loading="loading"
           block
