@@ -49,7 +49,7 @@ public class Version {
 
     /** Questionnaire that is versioned. */
     @ManyToOne
-    @JoinColumn(name = "questionnaire_id", referencedColumnName = "id")
+    @JoinColumn(name = "questionnaire_id")
     private Questionnaire questionnaire;
 
     /** Date and time this comment was submitted at. */
