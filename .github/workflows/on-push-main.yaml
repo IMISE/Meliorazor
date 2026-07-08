@@ -13,11 +13,11 @@ jobs:
   #    - validate_web
   #    - validate_api
   #  uses: ./.github/workflows/test-all.yaml
-  
-  deploy:
-  #  needs: integration_tests
-    needs:
-      - test_web
-      - test_api
-    uses: ./.github/workflows/deploy.yaml
-    secrets: inherit
+
+#  deploy:
+#  #  needs: integration_tests
+#    needs:
+#      - test_web
+#      - test_api
+#    uses: ./.github/workflows/deploy.yaml
+#    secrets: inherit
