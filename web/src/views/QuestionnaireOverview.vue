@@ -12,6 +12,7 @@ const loading = ref(false);
 const isLoggedIn = ref(false);
 
 const getQuestionnaires = async () => {
+  loading.value = true;
   try {
     const u = await auth.getUser();
     if (!u?.access_token) return;
@@ -38,7 +39,9 @@ onMounted(getQuestionnaires);
 <template>
   <h1>Projekte (Fragebögen)</h1>
   <br />
+  <h3 v-if="loading">Lädt &hellip;</h3>
   <questionnaire-list
+    v-else
     :questionnaires="questionnaires"
     display-controls
     display-link
