@@ -7,24 +7,28 @@ defineProps<{
 </script>
 
 <template>
-  <h3>{{ dataElement.label }}</h3>
-  <br />
-  <h6 v-if="dataElement.variableName">{{ dataElement.variableName }}</h6>
-  <v-expansion-panels v-if="dataElement.metadata.length">
-    <v-expansion-panel v-if="dataElement.choices?.length" title="Auswahlmöglichkeiten">
-      <v-expansion-panel-text>
-        <template v-for="choice in dataElement.choices" :key="`${dataElement.id}-${choice.id}`">
-          {{ choice.name }} (<var>{{ choice.code }}</var
-          >)<br />
-        </template>
-      </v-expansion-panel-text>
-    </v-expansion-panel>
-    <v-expansion-panel v-if="dataElement.metadata.length" title="Weitere Informationen">
-      <v-expansion-panel-text>
-        <template v-for="m in dataElement.metadata" :key="`${dataElement.id}-${m.key}-${m.value}`">
-          {{ m.key }}: {{ m.value }}<br />
-        </template>
-      </v-expansion-panel-text>
-    </v-expansion-panel>
-  </v-expansion-panels>
+  <h3>
+    <template v-if="dataElement.variableName">
+      [<var>{{ dataElement.variableName }}</var
+      >]
+    </template>
+    {{ dataElement.label }}
+  </h3>
+  <template v-if="dataElement.choices?.length">
+    Auswahlmöglichkeiten
+    <ul>
+      <li v-for="choice in dataElement.choices" :key="`${dataElement.id}-${choice.id}`">
+        {{ choice.name }} (<var>{{ choice.code }}</var
+        >)
+      </li>
+    </ul>
+  </template>
+  <template v-if="dataElement.metadata?.length">
+    Weitere Informationen
+    <ul>
+      <li v-for="m in dataElement.metadata" :key="`${dataElement.id}-${m.key}-${m.value}`">
+        {{ m.key }}: {{ m.value }}
+      </li>
+    </ul>
+  </template>
 </template>
