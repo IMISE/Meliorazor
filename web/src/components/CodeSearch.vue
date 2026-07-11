@@ -3,7 +3,7 @@ import type { FhirValueSetDefinition } from "@/types/fhir";
 import type { CodeMapping, InformedCodeMapping } from "@/types/types";
 import { expandValueSet } from "@/utils/fhirApi";
 import { mdiCheck, mdiClose, mdiMagnify } from "@mdi/js";
-import { ref, type Ref } from "vue";
+import { ref, watch, type Ref } from "vue";
 
 const { initialSearch, valueSets, focus } = defineProps<{
   initialSearch: string;
@@ -17,7 +17,9 @@ defineEmits<{
 
 const search = ref(initialSearch ?? "");
 const loading = ref(false);
+const searchedOnce = ref(false);
 const searchResults: Ref<InformedCodeMapping[] | undefined> = ref();
+watch(search, () => (searchedOnce.value = false));
 
 const searchResultHeaders = [
   {
@@ -62,6 +64,9 @@ const go = async (text: string) => {
     .filter((answer) => answer.status === "fulfilled")
     .map((answer) => answer.value)
     .flat(1);
+  if (text === search.value) {
+    searchedOnce.value = true;
+  }
   loading.value = false;
 };
 
@@ -116,6 +121,7 @@ const itemsPerPage = ref(15);
         <v-icon v-else :icon="mdiClose" />
       </template>
     </v-data-table>
+    <i v-else-if="searchedOnce">Keine Ergebnisse gefunden</i>
   </v-row>
 </template>
 

@@ -116,7 +116,12 @@ watch(
       </li>
     </ul>
   </template>
-  <v-btn v-if="showSelectButton" @click="$emit('selection', toFhirCode(codeInfo))" block>
+  <v-btn
+    v-if="showSelectButton"
+    block
+    color="primary"
+    @click="$emit('selection', toFhirCode(codeInfo))"
+  >
     Auswählen
   </v-btn>
 </template>
