@@ -8,6 +8,7 @@ jobs:
     uses: ./.github/workflows/test-web.yaml
   test_api:
     uses: ./.github/workflows/test-api.yaml
+    secrets: inherit
   #integration_tests:
   #  needs:
   #    - validate_web
