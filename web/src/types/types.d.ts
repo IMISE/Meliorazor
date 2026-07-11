@@ -104,7 +104,10 @@ export type Predicate =
   | "oboInOwl:hasDbXref"
   | "rdfs:seeAlso";
 
-export type InformedCodeMapping = FhirTerminologyCode & { valueSet: FhirValueSetDefinition };
+export type InformedCodeMapping = FhirTerminologyCode & {
+  valueSet: FhirValueSetDefinition;
+  codeSystemName: string;
+};
 
 export interface CodeInfo {
   /** codes/IDs of children - must be in same CodeSystem */

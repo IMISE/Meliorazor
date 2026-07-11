@@ -40,6 +40,7 @@ const focus = (value: InformedCodeMapping) => {
 const updateFocus = (value: FhirTerminologyCode) => {
   focus({
     ...value,
+    codeSystemName: focusCode.value!.codeSystemName,
     valueSet: focusCode.value!.valueSet,
   });
 };

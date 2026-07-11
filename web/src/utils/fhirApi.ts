@@ -71,7 +71,7 @@ export async function expandValueSet(
   );
   if (response?.expansion?.contains?.length) {
     // build CodeSystem => Version map
-    const versionMap = new Map<string, string>();
+    const versionMap: { [index: string]: { version: string; name: string } } = {};
     response.expansion.parameter
       ?.filter(
         (entry: FhirKeyValue) =>
@@ -79,15 +79,25 @@ export async function expandValueSet(
       )
       .map((entry: FhirKeyValue) => entry.valueUri?.split("|"))
       .forEach((entry: string[]) => {
-        versionMap.set(entry[0]!, entry[1]!);
+        versionMap[entry[0]!] = { version: entry[1]!, name: "" };
       });
+
+    // fetch names of codesystem versions
+    await Promise.allSettled(
+      Object.keys(versionMap).map(async (systemName) => {
+        const name = await getCodeSystemName(systemName, versionMap[systemName]!.version, server);
+        versionMap[systemName]!.name = name ?? "";
+      }),
+    );
+
     return response.expansion.contains.map((e: VersionlessFhirTerminologyCode) => ({
       code: e.code,
       display: e.display,
       system: e.system,
-      systemVersion: versionMap.get(e.system),
+      systemVersion: versionMap[e.system]!.version,
       inactive: e.inactive,
       valueSet: { display: "", server, valueSet } as FhirValueSetDefinition,
+      codeSystemName: versionMap[e.system]!.name,
     })) as InformedCodeMapping[];
   } else return [];
 }
@@ -104,6 +114,15 @@ export async function getCode(
   )) as Parameters;
   if (!response.parameter?.length) return undefined;
   return toCodeInfo(code, system, version, response);
+}
+
+export async function getCodeSystemName(
+  system: string,
+  version: string,
+  server: string,
+): Promise<string | undefined> {
+  return (await fetchFhir(`${server}/CodeSystem?url=${system}&version=${version}`, "Bundle"))
+    ?.entry?.[0]?.resource?.title;
 }
 
 export async function findCode(code: string, system: string, version: string, servers: string[]) {

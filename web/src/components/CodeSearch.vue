@@ -31,6 +31,7 @@ const searchResultHeaders = [
   {
     title: "Codesystem",
     key: "system",
+    value: (item: InformedCodeMapping) => item,
   },
   {
     title: "Aktiv?",
@@ -101,6 +102,15 @@ const itemsPerPage = ref(15);
       :items-per-page="itemsPerPage"
       @click:row="(event: any, v: { item: InformedCodeMapping }) => $emit('focus', v.item)"
     >
+      <template #[`item.system`]="{ value }">
+        <v-tooltip :text="`${value.system}, Version ${value.systemVersion}`">
+          <template #activator="{ props: tooltipProps }">
+            <v-chip v-bind="tooltipProps" inline>
+              {{ value.codeSystemName }}
+            </v-chip>
+          </template>
+        </v-tooltip>
+      </template>
       <template #[`item.inactive`]="{ value }">
         <v-icon v-if="!value" :icon="mdiCheck" />
         <v-icon v-else :icon="mdiClose" />
