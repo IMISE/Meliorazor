@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import SingleUserPage from "@/components/SingleUserPage.vue";
-import type { User } from "oidc-client-ts";
+import type { IdTokenClaims } from "oidc-client-ts";
 import { inject, type Ref } from "vue";
 
-const user = inject("user") as Ref<User | undefined>;
+const user = inject<Ref<IdTokenClaims | undefined>>("user");
 </script>
 
 <template>
-  <single-user-page :username="user?.profile.preferred_username" is-home />
+  <single-user-page :username="user?.preferred_username" is-home />
 </template>

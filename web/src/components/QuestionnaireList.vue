@@ -18,7 +18,7 @@ defineProps<{
   displayLink: boolean;
 }>();
 
-const user = inject("user") as Ref<IdTokenClaims | undefined>;
+const user = inject<Ref<IdTokenClaims | undefined>>("user");
 
 const deleteQuestionnaire = async (q: Questionnaire) => {
   const u = await auth.getUser();

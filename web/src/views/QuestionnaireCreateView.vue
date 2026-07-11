@@ -20,7 +20,7 @@ import { clean } from "@/utils/utils";
 const step = shallowRef([1]);
 const itemsPerPage = ref(25);
 
-const user = inject("user") as Ref<IdTokenClaims | undefined>;
+const user = inject<Ref<IdTokenClaims | undefined>>("user");
 const router = useRouter();
 
 const title = ref("");
@@ -42,7 +42,7 @@ const setKey = () => {
   return valueSetKey.value;
 };
 const participants: Ref<Participant[]> = ref([
-  { username: user.value?.preferred_username ?? "", roles: [] },
+  { username: user?.value?.preferred_username ?? "", roles: [] },
 ]);
 const contents: Ref<
   | {

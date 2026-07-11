@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
+import { mdiBookAlphabet, mdiHistory, mdiPen } from "@mdi/js";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -46,19 +47,19 @@ const router = createRouter({
           path: "create-project-annotate",
           name: "data-element-annotation",
           component: () => import("../views/AnnotationCreateView.vue"),
-          meta: { tabLabel: "Annotate", tabIcon: "draw-pen" },
+          meta: { tabLabel: "Annotate", tabIcon: mdiPen },
         },
         {
           path: "annotations",
           name: "data-element-annotations",
           component: () => import("../views/DataElementView.vue"),
-          meta: { tabLabel: "Annotations", tabIcon: "book-alphabet" },
+          meta: { tabLabel: "Annotations", tabIcon: mdiBookAlphabet },
         },
         {
           path: "history",
           name: "data-element-history",
           component: HomeView,
-          meta: { tabLabel: "History", tabIcon: "history" },
+          meta: { tabLabel: "History", tabIcon: mdiHistory },
         },
       ],
     },

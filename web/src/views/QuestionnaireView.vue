@@ -6,10 +6,10 @@ import type { Questionnaire } from "@/types/types";
 import getEnv from "@/utils/env";
 import { clean } from "@/utils/utils";
 import type { IdTokenClaims } from "oidc-client-ts";
-import { computed, inject, onMounted, ref, watch, type Ref } from "vue";
+import { computed, inject, onMounted, provide, ref, watch, type Ref } from "vue";
 import { useRouter } from "vue-router";
 
-const user = inject("user") as Ref<IdTokenClaims | undefined>;
+const user = inject<Ref<IdTokenClaims | undefined>>("user");
 
 const router = useRouter();
 const projectId = computed(() => Number(router.currentRoute.value.params.pid));
@@ -18,10 +18,12 @@ const projectId = computed(() => Number(router.currentRoute.value.params.pid));
 const questionnaire: Ref<Questionnaire | undefined> = ref();
 const loading = ref(false);
 
+provide("project", questionnaire);
+
 const roles = computed(
   () =>
     questionnaire.value?.participants.find(
-      (participant) => participant.username === user.value?.preferred_username,
+      (participant) => participant.username === user?.value?.preferred_username,
     )?.roles ?? [],
 );
 
@@ -37,7 +39,7 @@ const uncorrected = computed(
   () =>
     elements.value.flatMap((e) =>
       e.annotations.filter(
-        (a) => a.status === Status.OPEN && a.authorName !== user.value?.preferred_username,
+        (a) => a.status === Status.OPEN && a.authorName !== user?.value?.preferred_username,
       ),
     ) ?? [],
 );
