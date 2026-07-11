@@ -37,9 +37,11 @@ const load = async () => {
 
 <template>
   <div @click="depth === 0 ? undefined : $emit('focus', toFhirCode(info))">
-    <b v-if="depth === 0">{{ info.self.display }}</b
-    ><span v-else>{{ info.self.display }}</span> (<var>{{ info.self.code }}</var
-    >)<br />
+    <b v-if="depth === 0">{{ info.self.display }}</b>
+    <span v-else>{{ info.self.display }}</span>
+    (<var>{{ info.self.code }}</var
+    >)
+    <br />
   </div>
   <!-- TODO: value set display? only if depth > 0?-->
   <!-- only display children if we have enough space, requires 1col for new spacer and 1col for content at least -->
@@ -57,7 +59,8 @@ const load = async () => {
     <v-btn
       v-if="!loaded && allChildren?.length"
       @click="load"
-      variant="text"
+      variant="outlined"
+      color="primary"
       :disabled="loading"
       :loading="loading"
       block

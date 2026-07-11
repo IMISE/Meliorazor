@@ -75,7 +75,8 @@ watch(
     <v-btn
       v-if="parents[0]?.parents[0]"
       @click="loadParent(parents[0].parents[0])"
-      variant="text"
+      variant="outlined"
+      color="primary"
       :disabled="loadingParent"
       :loading="loadingParent"
       block
@@ -88,8 +89,10 @@ watch(
       :key="`${codeInfo.self.system}-${codeInfo.self.code}-${i}-${parent.self.system}-${parent.self.code}`"
     >
       <v-row v-if="i !== parents.length - 1" @click="$emit('focus', toFhirCode(parent))">
-        {{ parent.self.display }} (<var>{{ parent.self.code }}</var
-        >)
+        <div>
+          {{ parent.self.display }} (<var>{{ parent.self.code }}</var
+          >)
+        </div>
       </v-row>
     </template>
     <!-- Current selection & Children -->
