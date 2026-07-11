@@ -2,12 +2,7 @@
 import { computed, inject, ref, shallowRef, watch, type Ref } from "vue";
 import Papa from "papaparse";
 import { mdiAccountMinus, mdiAccountPlus, mdiAlertCircleOutline, mdiMinus, mdiPlus } from "@mdi/js";
-import type {
-  FhirValueSetDefinition,
-  Participant,
-  QuestionnaireOptions,
-  Variable,
-} from "@/types/types";
+import type { Participant, QuestionnaireOptions, Variable } from "@/types/types";
 import auth from "@/auth";
 import { roles } from "@/types/enums";
 import { useRouter } from "vue-router";
@@ -16,6 +11,7 @@ import getEnv from "@/utils/env";
 import type { IdTokenClaims } from "oidc-client-ts";
 import ValueSetSelector from "@/components/ValueSetSelector.vue";
 import { clean } from "@/utils/utils";
+import type { FhirValueSetDefinition } from "@/types/fhir";
 
 const step = shallowRef([1]);
 const itemsPerPage = ref(25);

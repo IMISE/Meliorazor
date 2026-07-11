@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import type { FhirTerminologyCode } from "@/types/fhir.js";
 import CodeChildren from "./CodeChildren.vue";
-import type { CodeInfo, FhirTerminologyCode } from "@/types/types";
+import type { CodeInfo } from "@/types/types";
 import { getCode } from "@/utils/fhirApi";
 import { toFhirCode } from "@/utils/fhirUtils.ts";
 import { compareCodes } from "@/utils/terminologyCodes";
@@ -25,7 +26,12 @@ const loadingParent = ref(false);
 const loadParent = async (parentCode: string) => {
   loadingParent.value = true;
   try {
-    const response = await getCode(parentCode, codeInfo.self.system, server);
+    const response = await getCode(
+      parentCode,
+      codeInfo.self.system,
+      codeInfo.self.systemVersion,
+      server,
+    );
     if (!response) return;
     parents.value.unshift(response);
   } catch (e) {

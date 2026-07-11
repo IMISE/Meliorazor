@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import CodeDisplay from "./CodeDisplay.vue";
 import { Status } from "@/types/enums";
-import type { Annotation, CodeInfo, FhirValueSetDefinition } from "@/types/types";
+import type { Annotation, CodeInfo } from "@/types/types";
 import { findCode } from "@/utils/fhirApi";
 import { ref, type Ref } from "vue";
 import { computed } from "vue";
 import SingleComment from "./SingleComment.vue";
+import type { FhirValueSetDefinition } from "@/types/fhir.js";
 
 const { annotation, valueSets } = defineProps<{
   annotation: Annotation;
@@ -35,6 +36,7 @@ const getAnnotatedCode = async () => {
     const result = await findCode(
       annotation.code.code,
       annotation.code.system,
+      annotation.code.systemVersion,
       valueSets.map((set) => set.server),
     );
     code.value = result.code;

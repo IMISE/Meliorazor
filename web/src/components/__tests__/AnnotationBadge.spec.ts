@@ -21,6 +21,7 @@ describe("AnnotationBadge", () => {
           authorName: "TestUser",
           code: {
             system: "http://example.com/codes",
+            systemVersion: "http://example.com/codes/12345",
             code: "XYZ",
             display: "X, Y and Z",
           },

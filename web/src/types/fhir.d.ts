@@ -1,3 +1,5 @@
+import type { CodeMapping } from "./types";
+
 export type Parameters = { resourceType: "Parameters"; parameter: FhirKeyValue[] };
 export type Properties = { code: string | undefined; part: FhirKeyValue[] };
 export type FhirKeyValue = {
@@ -12,6 +14,15 @@ export type FhirKeyValue = {
   valueDateTime: string | undefined;
   part: FhirKeyValue[] | undefined;
 };
+
+export type VersionlessFhirTerminologyCode = CodeMapping & { inactive: true | undefined };
+export type FhirTerminologyCode = VersionlessFhirTerminologyCode & { systemVersion: string };
+export type FhirValueSetDefinition = {
+  display: string;
+  server: string;
+  valueSet: string;
+};
+
 /** https://fhir.hl7.org/fhir/valueset-operation-validate-code.html */
 export type ValidateCode = {
   parameter: FhirKeyValue[];

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { CodeMapping, FhirValueSetDefinition, InformedCodeMapping } from "@/types/types";
+import type { FhirValueSetDefinition } from "@/types/fhir";
+import type { CodeMapping, InformedCodeMapping } from "@/types/types";
 import { expandValueSet } from "@/utils/fhirApi";
 import { mdiCheck, mdiClose, mdiMagnify } from "@mdi/js";
 import { ref, type Ref } from "vue";
@@ -75,7 +76,7 @@ const itemsPerPage = ref(15);
 
 <template>
   <v-row fluid>
-    <v-text-field v-model="search" hint="Code suchen …">
+    <v-text-field v-model="search" hint="Code suchen …" @keydown.enter="go(search)">
       <template #append-inner>
         <v-btn
           :loading="loading"

@@ -17,6 +17,9 @@ public class Code {
     /** URL of CodeSystem. */
     private String system;
 
+    /** Version of the CodeSystem. */
+    private String systemVersion;
+
     /** Identifier of code. */
     private String code;
 

@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { FhirKeyValue } from "@/types/fhir";
-import type { FhirValueSetDefinition } from "@/types/types";
+import type { FhirKeyValue, FhirValueSetDefinition } from "@/types/fhir";
 import { allValueSets } from "@/utils/fhirApi";
 import { isFhirServer, isUrl } from "@/utils/utils";
 import {

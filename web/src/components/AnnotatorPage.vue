@@ -3,17 +3,12 @@ import CodeAnnotator from "@/components/CodeAnnotator.vue";
 import CodeDisplay from "@/components/CodeDisplay.vue";
 import CodeSearch from "@/components/CodeSearch.vue";
 import DataElementSummary from "@/components/DataElementSummary.vue";
-import type {
-  CodeInfo,
-  FhirTerminologyCode,
-  FhirValueSetDefinition,
-  InformedCodeMapping,
-  Variable,
-} from "@/types/types";
+import type { CodeInfo, InformedCodeMapping, Variable } from "@/types/types";
 import { mdiArrowLeft, mdiArrowRight } from "@mdi/js";
 import { ref, watch, type Ref } from "vue";
 import { getCode } from "@/utils/fhirApi.ts";
 import { codeEquals } from "@/utils/fhirUtils";
+import type { FhirTerminologyCode, FhirValueSetDefinition } from "@/types/fhir";
 
 const { dataElement } = defineProps<{
   valueSets: FhirValueSetDefinition[];
@@ -55,7 +50,12 @@ watch(focusCode, async (newCode, oldCode) => {
   focusCodeInfo.value = undefined;
 
   try {
-    const response = await getCode(newCode.code, newCode.system, newCode.valueSet.server);
+    const response = await getCode(
+      newCode.code,
+      newCode.system,
+      newCode.systemVersion,
+      newCode.valueSet.server,
+    );
     if (!response) return;
     focusCodeInfo.value = response;
   } catch (e) {

@@ -1,11 +1,13 @@
-import type { Parameters, Properties, ValidateCode, ValueSetIndex } from "@/types/fhir";
 import type {
-  CodeInfo,
-  CodeMapping,
-  FhirTerminologyCode,
+  FhirKeyValue,
   FhirValueSetDefinition,
-  InformedCodeMapping,
-} from "@/types/types";
+  Parameters,
+  Properties,
+  ValidateCode,
+  ValueSetIndex,
+  VersionlessFhirTerminologyCode,
+} from "@/types/fhir";
+import type { CodeInfo, CodeMapping, InformedCodeMapping } from "@/types/types";
 import { isUrl } from "./utils";
 
 async function fetchFhir(url: string, expectedResourceType: string) {
@@ -67,17 +69,33 @@ export async function expandValueSet(
       (limit !== undefined ? `&limit=${limit}` : ""),
     "ValueSet",
   );
-  return response?.expansion?.contains?.length
-    ? (response.expansion.contains.map((e: FhirTerminologyCode) => ({
-        ...e,
-        valueSet: { display: "", server, valueSet } as FhirValueSetDefinition,
-      })) as InformedCodeMapping[])
-    : [];
+  if (response?.expansion?.contains?.length) {
+    // build CodeSystem => Version map
+    const versionMap = new Map<string, string>();
+    response.expansion.parameter
+      ?.filter(
+        (entry: FhirKeyValue) =>
+          entry.valueUri?.includes("|") && ["used-codesystem", "version"].includes(entry.name),
+      )
+      .map((entry: FhirKeyValue) => entry.valueUri?.split("|"))
+      .forEach((entry: string[]) => {
+        versionMap.set(entry[0]!, entry[1]!);
+      });
+    return response.expansion.contains.map((e: VersionlessFhirTerminologyCode) => ({
+      code: e.code,
+      display: e.display,
+      system: e.system,
+      systemVersion: versionMap.get(e.system),
+      inactive: e.inactive,
+      valueSet: { display: "", server, valueSet } as FhirValueSetDefinition,
+    })) as InformedCodeMapping[];
+  } else return [];
 }
 
 export async function getCode(
   code: string,
   system: string,
+  version: string,
   server: string,
 ): Promise<CodeInfo | undefined> {
   const response = (await fetchFhir(
@@ -85,17 +103,17 @@ export async function getCode(
     "Parameters",
   )) as Parameters;
   if (!response.parameter?.length) return undefined;
-  return toCodeInfo(code, system, response);
+  return toCodeInfo(code, system, version, response);
 }
 
-export async function findCode(code: string, system: string, servers: string[]) {
+export async function findCode(code: string, system: string, version: string, servers: string[]) {
   // filter out duplicate servers
   const deduped = [...new Set(servers)];
 
   // find code on servers
   const promises = deduped.map(async (server) => ({
     params: (await fetchFhir(
-      `${server}/CodeSystem/$lookup?code=${code}&system=${system}`,
+      `${server}/CodeSystem/$lookup?code=${code}&system=${system}&version=${version}`,
       "Parameters",
     )) as Parameters,
     server,
@@ -105,15 +123,16 @@ export async function findCode(code: string, system: string, servers: string[]) 
     .filter((result) => result.status === "fulfilled")
     .filter((result) => result.value)[0]?.value;
   return firstResult
-    ? { code: toCodeInfo(code, system, firstResult.params), server: firstResult.server }
+    ? { code: toCodeInfo(code, system, version, firstResult.params), server: firstResult.server }
     : { code: undefined, server: undefined };
 }
 
-function toCodeInfo(code: string, system: string, response: Parameters) {
+function toCodeInfo(code: string, system: string, version: string, response: Parameters) {
   const info = {} as CodeInfo;
   info.self = {
     code,
     system,
+    systemVersion: version,
     display: response.parameter.find((x) => x.name === "display")?.valueString ?? "",
   };
   const names = response.parameter

@@ -1,4 +1,5 @@
 import type { CommentType, Role, Status } from "./enums";
+import type { FhirTerminologyCode, FhirValueSetDefinition } from "./fhir";
 
 export interface Questionnaire {
   id: number;
@@ -65,14 +66,9 @@ export interface AnnotationComment {
 
 export type CodeMapping = {
   system: string;
+  systemVersion: string;
   code: string;
   display: string;
-};
-
-export type FhirValueSetDefinition = {
-  display: string;
-  server: string;
-  valueSet: string;
 };
 
 export interface Version {
@@ -108,7 +104,6 @@ export type Predicate =
   | "oboInOwl:hasDbXref"
   | "rdfs:seeAlso";
 
-export type FhirTerminologyCode = CodeMapping & { inactive: true | undefined };
 export type InformedCodeMapping = FhirTerminologyCode & { valueSet: FhirValueSetDefinition };
 
 export interface CodeInfo {

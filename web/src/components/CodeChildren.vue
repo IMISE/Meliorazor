@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { CodeInfo, CodeInfoMap, FhirTerminologyCode } from "@/types/types";
+import type { FhirTerminologyCode } from "@/types/fhir";
+import type { CodeInfo, CodeInfoMap } from "@/types/types";
 import { getCode } from "@/utils/fhirApi";
 import { toFhirCode } from "@/utils/fhirUtils";
 import { ref } from "vue";
@@ -25,7 +26,7 @@ const load = async () => {
 
   await Promise.allSettled(
     allChildren.value.map(async (code) => {
-      const response = await getCode(code, system, server);
+      const response = await getCode(code, system, props.info.self.systemVersion, server);
       if (!response) return;
       children.value[code] = response;
     }),
