@@ -3,7 +3,7 @@ import auth from "@/auth";
 import type { CodeMapping, Predicate } from "@/types/types";
 import getEnv from "@/utils/env";
 import { mdiCheck, mdiCross, mdiPencil } from "@mdi/js";
-import { ref, type Ref } from "vue";
+import { ref, watch, type Ref } from "vue";
 import type { IconValue } from "vuetify/lib/composables/icons.mjs";
 
 const { code, dataElementId } = defineProps<{
@@ -11,7 +11,8 @@ const { code, dataElementId } = defineProps<{
   dataElementId: number;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
+  (e: "success"): void;
   (e: "edit"): void;
   (e: "focus", v: CodeMapping): void;
 }>();
@@ -20,6 +21,12 @@ defineEmits<{
 const loadingCreate = ref(false);
 const response: Ref<Response | undefined> = ref();
 const loadingFeedbackIcon: Ref<IconValue | undefined> = ref();
+
+watch(loadingFeedbackIcon, (newVal, oldVal) => {
+  if (newVal === undefined && oldVal === mdiCheck) {
+    emit("success");
+  }
+});
 
 // SSSOM metadata
 const confidence: Ref<number> = ref(100);
@@ -108,7 +115,7 @@ const submitAnnotation = async () => {
       <v-textarea v-model="comment" label="Kommentar" />
       <v-btn
         :prepend-icon="loadingFeedbackIcon"
-        :disabled="loadingCreate"
+        :disabled="!!loadingFeedbackIcon || loadingCreate"
         :loading="loadingCreate"
         size="x-large"
         type="submit"

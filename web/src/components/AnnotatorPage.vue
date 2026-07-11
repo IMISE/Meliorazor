@@ -102,7 +102,12 @@ watch(focusCode, async (newCode, oldCode) => {
     </v-col>
   </v-row>
   <v-col v-else cols="12">
-    <code-annotator :data-element-id="dataElement.id!" :code="selectedCode" @edit="unselect" />
+    <code-annotator
+      :data-element-id="dataElement.id!"
+      :code="selectedCode"
+      @success="unselect"
+      @edit="unselect"
+    />
   </v-col>
 </template>
 
