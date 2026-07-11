@@ -76,7 +76,7 @@ watch(focusCode, async (newCode, oldCode) => {
     <v-col :cols="focusCode ? 6 : 12">
       <data-element-summary :data-element="dataElement" />
       <code-search
-        :initial-search="dataElement.variableName?.replaceAll('_', ' ') ?? ''"
+        :initial-search="dataElement.label?.replaceAll('_', ' ') ?? ''"
         :valueSets="valueSets"
         :focus="focusCode"
         @focus="focus"
