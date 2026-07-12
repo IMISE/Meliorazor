@@ -10,7 +10,7 @@ import { getCode } from "@/utils/fhirApi.ts";
 import { codeEquals } from "@/utils/fhirUtils";
 import type { FhirTerminologyCode, FhirValueSetDefinition } from "@/types/fhir";
 
-const { dataElement } = defineProps<{
+defineProps<{
   valueSets: FhirValueSetDefinition[];
   dataElement: Variable;
   /** url to previous data element */ prev: string;
@@ -71,10 +71,35 @@ watch(focusCode, async (newCode, oldCode) => {
 
 <template>
   <v-row cols="12" class="full-width">
-    <v-btn v-if="showPrev" :href="prev" class="navigate" :prepend-icon="mdiArrowLeft">Zurück</v-btn>
-    <v-btn v-if="showNext" :href="next" class="navigate" :append-icon="mdiArrowRight">
-      Weiter
-    </v-btn>
+    <v-col cols="6">
+      <v-btn
+        v-if="showPrev"
+        cols="6"
+        :href="prev"
+        variant="outlined"
+        color="primary"
+        :prepend-icon="mdiArrowLeft"
+        spaced="start"
+        style="padding-right: 20px"
+        block
+      >
+        Zurück
+      </v-btn>
+    </v-col>
+    <v-col>
+      <v-btn
+        v-if="showNext"
+        :href="next"
+        variant="outlined"
+        color="primary"
+        :append-icon="mdiArrowRight"
+        spaced="end"
+        style="padding-left: 20px"
+        block
+      >
+        Weiter
+      </v-btn>
+    </v-col>
   </v-row>
   <br />
   <v-row v-if="!selectedCode" size="12" class="full-width">
@@ -112,10 +137,6 @@ watch(focusCode, async (newCode, oldCode) => {
 </template>
 
 <style scoped>
-.navigate {
-  background-color: lightblue;
-  color: black;
-}
 .loading-spinner {
   position: sticky;
   left: 75%;
