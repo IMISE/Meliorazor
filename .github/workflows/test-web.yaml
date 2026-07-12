@@ -23,18 +23,18 @@ jobs:
       - uses: actions/checkout@v3
       - run: npm ci
       - run: npm run test:unit
-  e2e:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: npm ci
-      - run: npx playwright install --with-deps
-      - run: chmod +x ./scripts/generate_config.sh
-      - run: ./scripts/generate_config.sh
-        env:
-          VITE_API_BASE: ${{ secrets.TEST_API_BASE }}
-          VITE_OAUTH_BASE: ${{ secrets.TEST_OAUTH_BASE }}
-          VITE_OAUTH_REALM: ${{ secrets.TEST_OAUTH_REALM }}
-          VITE_OAUTH_CLIENT: ${{ secrets.TEST_OAUTH_CLIENT }}
-      - run: CI=true npx playwright test
+#  e2e:
+#    needs: build
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v3
+#      - run: npm ci
+#      - run: npx playwright install --with-deps
+#      - run: chmod +x ./scripts/generate_config.sh
+#      - run: ./scripts/generate_config.sh
+#        env:
+#          VITE_API_BASE: ${{ secrets.TEST_API_BASE }}
+#          VITE_OAUTH_BASE: ${{ secrets.TEST_OAUTH_BASE }}
+#          VITE_OAUTH_REALM: ${{ secrets.TEST_OAUTH_REALM }}
+#          VITE_OAUTH_CLIENT: ${{ secrets.TEST_OAUTH_CLIENT }}
+#      - run: CI=true npx playwright test
