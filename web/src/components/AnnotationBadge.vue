@@ -14,6 +14,7 @@ const props = defineProps<{
   dataElementName: string;
   allowEditSelection: boolean;
   displaySelectionIcon: boolean;
+  dashedBorder: boolean;
 }>();
 
 const router = useRouter();
@@ -70,7 +71,13 @@ const unselect = () => {
             :key="modelValue?.join(',') + '|off'"
           />
         </template>
-        <v-chip style="border-radius: 20px 0 0 20px" class="bg-info" aria-label="Prädikat" inline>
+        <v-chip
+          style="border-radius: 20px 0 0 20px"
+          class="bg-info"
+          :class="dashedBorder ? 'dashed-border' : undefined"
+          aria-label="Prädikat"
+          inline
+        >
           {{ annotation.predicate }}
         </v-chip>
         <v-divider vertical color="white" :thickness="2" />
@@ -81,6 +88,7 @@ const unselect = () => {
               @click="goToAnnotation"
               style="border-radius: 0 20px 20px 0"
               class="bg-info"
+              :class="dashedBorder ? 'dashed-border' : undefined"
               aria-label="Code"
               inline
             >
@@ -92,3 +100,9 @@ const unselect = () => {
     </template>
   </v-hover>
 </template>
+
+<style scoped>
+.dashed-border {
+  border: 2px dashed black;
+}
+</style>

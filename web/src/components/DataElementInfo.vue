@@ -180,6 +180,7 @@ const annotate = () =>
                   :project-name="projectTitle"
                   :allow-edit-selection="allowEditSelection"
                   display-selection-icon
+                  :dashed-border="false"
                 />
               </div>
             </template>
@@ -210,6 +211,7 @@ const annotate = () =>
                   :project-name="projectTitle"
                   :allow-edit-selection="allowEditSelection"
                   display-selection-icon
+                  dashed-border
                 />
               </div>
             </template>
