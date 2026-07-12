@@ -70,11 +70,7 @@ const unselect = () => {
             :key="modelValue?.join(',') + '|off'"
           />
         </template>
-        <v-chip
-          style="border-radius: 20px 0 0 20px; background-color: darkcyan"
-          aria-label="Prädikat"
-          inline
-        >
+        <v-chip style="border-radius: 20px 0 0 20px" class="bg-info" aria-label="Prädikat" inline>
           {{ annotation.predicate }}
         </v-chip>
         <v-divider vertical color="white" :thickness="2" />
@@ -83,7 +79,8 @@ const unselect = () => {
             <v-chip
               v-bind="tooltipProps"
               @click="goToAnnotation"
-              style="border-radius: 0 20px 20px 0; background-color: darkcyan"
+              style="border-radius: 0 20px 20px 0"
+              class="bg-info"
               aria-label="Code"
               inline
             >
