@@ -6,15 +6,8 @@ import AnnotationBadge from "./AnnotationBadge.vue";
 import { useRouter } from "vue-router";
 import { clean } from "@/utils/utils";
 import { mdiMagnify, mdiPencilPlus } from "@mdi/js";
-import { passthroughSelection } from "@/utils/vueUtils.ts";
 
 const model = defineModel<number[] | undefined>();
-
-const selected: Ref<number[] | undefined> = ref(
-  model.value === undefined ? undefined : model.value,
-);
-watch(selected, (newVal, oldVal) => passthroughSelection(newVal, oldVal, model));
-watch(model, (newVal, oldVal) => passthroughSelection(newVal, oldVal, selected));
 
 const {
   dataElement: data,
@@ -178,7 +171,7 @@ const annotate = () =>
               <div class="badge-container">
                 <annotation-badge
                   v-for="annotation in group"
-                  v-model="selected"
+                  v-model="model"
                   :key="`${dataElement.id}-${annotation.id}`"
                   :annotation="annotation"
                   :data-element-id="dataElement.id!"
@@ -208,7 +201,7 @@ const annotate = () =>
               <div class="badge-container">
                 <annotation-badge
                   v-for="annotation in group"
-                  v-model="selected"
+                  v-model="model"
                   :key="`${dataElement.id}-${annotation.id}`"
                   :annotation="annotation"
                   :data-element-id="dataElement.id!"

@@ -41,7 +41,7 @@ const select = () => {
 };
 const unselect = () => {
   if (props.allowEditSelection) {
-    model.value = model.value?.filter((val) => val != props.annotation.id);
+    model.value?.splice(model.value.indexOf(props.annotation.id), 1);
   }
 };
 </script>
