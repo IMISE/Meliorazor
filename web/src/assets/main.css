@@ -17,3 +17,7 @@ a, a:visited, a:hover, a:link, a:active {
   justify-content: flex-start;
   gap: 20px;
 }
+
+.v-avatar {
+  margin-right: 8px;
+}
