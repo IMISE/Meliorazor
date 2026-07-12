@@ -15,7 +15,16 @@ export type FhirKeyValue = {
   part: FhirKeyValue[] | undefined;
 };
 
+export type Designation = {
+  language: string;
+  use: Code;
+  value: string;
+};
+
 export type VersionlessFhirTerminologyCode = CodeMapping & { inactive: true | undefined };
+export type VersionlessFhirTerminologyCodeWithDesignation = VersionlessFhirTerminologyCode & {
+  designation: Designation[];
+};
 export type FhirTerminologyCode = VersionlessFhirTerminologyCode & { systemVersion: string };
 export type FhirValueSetDefinition = {
   display: string;

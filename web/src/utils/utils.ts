@@ -62,3 +62,15 @@ export async function isFhirServer(input: string | undefined) {
     return false;
   }
 }
+
+/**
+ * Gets the longest string with the specified prefix from a list.
+ * @param prefix substring at the start
+ * @param strings list of all possible strings/names/..., must not necessarily all start with the prefix
+ * @returns the longest string for which the requirements are true
+ */
+export function getLongestStartingWith(prefix: string, strings: string[]) {
+  return strings
+    .filter((s) => s.startsWith(prefix))
+    .reduce((longest, val) => (val.length > longest.length ? val : longest));
+}

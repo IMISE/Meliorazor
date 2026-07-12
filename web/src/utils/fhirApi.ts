@@ -5,10 +5,10 @@ import type {
   Properties,
   ValidateCode,
   ValueSetIndex,
-  VersionlessFhirTerminologyCode,
+  VersionlessFhirTerminologyCodeWithDesignation,
 } from "@/types/fhir";
 import type { CodeInfo, CodeMapping, InformedCodeMapping } from "@/types/types";
-import { isUrl } from "./utils";
+import { getLongestStartingWith, isUrl } from "./utils";
 
 async function fetchFhir(
   url: string,
@@ -75,7 +75,7 @@ export async function expandValueSet(
   limit: number | undefined = undefined,
 ): Promise<InformedCodeMapping[]> {
   const response = await fetchFhir(
-    `${server}/ValueSet/$expand?url=${valueSet}&filter=${filter}` +
+    `${server}/ValueSet/$expand?url=${valueSet}&filter=${filter}&includeDesignations=true` +
       (limit !== undefined ? `&limit=${limit}` : ""),
     "ValueSet",
     acceptLanguage,
@@ -101,9 +101,12 @@ export async function expandValueSet(
       }),
     );
 
-    return response.expansion.contains.map((e: VersionlessFhirTerminologyCode) => ({
+    return response.expansion.contains.map((e: VersionlessFhirTerminologyCodeWithDesignation) => ({
       code: e.code,
-      display: e.display,
+      display: getLongestStartingWith(e.display, [
+        e.display,
+        ...e.designation.map((des) => des.value),
+      ]),
       system: e.system,
       systemVersion: versionMap[e.system]!.version,
       inactive: e.inactive,

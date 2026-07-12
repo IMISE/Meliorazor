@@ -64,11 +64,13 @@ export interface AnnotationComment {
   submittedAt: number;
 }
 
-export type CodeMapping = {
+export type Code = {
   system: string;
-  systemVersion: string;
   code: string;
   display: string;
+};
+export type CodeMapping = Code & {
+  systemVersion: string;
 };
 
 export interface Version {
