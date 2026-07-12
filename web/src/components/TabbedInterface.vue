@@ -1,16 +1,17 @@
 <script setup lang="ts" generic="T extends { id: number | undefined }">
+import { ref, watch } from "vue";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 
-defineProps<{
+const { data } = defineProps<{
   data: T[];
   title: (e: T) => string;
 }>();
 
 const route = useRouter().currentRoute;
 const index = computed(() => Number(route.value.hash.substring(1)));
-const tab = computed(() => (isNaN(index.value) ? 0 : index.value));
-//const tab = computed(() => props.data.findIndex((e) => e.id === index_clean.value));
+const tab = ref();
+watch(index, (val) => (isNaN(index.value) ? data[0]?.id : (tab.value = val)), { immediate: true });
 </script>
 
 <template>
