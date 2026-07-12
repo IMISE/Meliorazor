@@ -27,6 +27,13 @@ const router = useRouter();
 
 const detailsOpenAnnotations = ref(false);
 const detailsAcceptedAnnotations = ref(false);
+const selectedAcceptedAnnotations = computed(
+  () =>
+    acceptedAnnotations.value.filter((annotation) => model.value?.includes(annotation.id)) ?? [],
+);
+const selectedOpenAnnotations = computed(
+  () => openAnnotations.value.filter((annotation) => model.value?.includes(annotation.id)) ?? [],
+);
 
 const annotations = computed(() =>
   data.annotations.reduce(
@@ -55,11 +62,19 @@ const groupedAcceptedAnnotations = computed(() =>
 );
 const groupedOpenAnnotations = computed(() => groupAnnotationsByCodeSystem(openAnnotations.value));
 
+const tooltipSelected = (count: number) =>
+  model.value?.length ? `; davon ${count > 1 ? "sind" : "ist"} ${count} ausgewählt` : "";
 const acceptedTooltip = computed(
-  () => `${acceptedAnnotations.value.length} akzeptierte  Annotationen`,
+  () =>
+    `${acceptedAnnotations.value.length} akzeptierte  Annotationen${tooltipSelected(
+      selectedAcceptedAnnotations.value.length,
+    )}`,
 );
 const openTooltip = computed(
-  () => `${openAnnotations.value.length} offene, vorgeschlagene Annotationen`,
+  () =>
+    `${openAnnotations.value.length} offene, vorgeschlagene Annotationen${tooltipSelected(
+      selectedOpenAnnotations.value.length,
+    )}`,
 );
 
 /*
@@ -109,7 +124,9 @@ const annotate = () =>
               @click="detailsAcceptedAnnotations = !detailsAcceptedAnnotations"
               class="accepted-annotations-aggregated"
             >
-              {{ acceptedAnnotations.length ? acceptedAnnotations.length : "-" }}
+              <template v-if="modelValue?.length && acceptedAnnotations.length"
+                >{{ selectedAcceptedAnnotations.length }}/</template
+              >{{ acceptedAnnotations.length ? acceptedAnnotations.length : "-" }}
             </div>
           </template>
         </v-tooltip>
@@ -120,7 +137,9 @@ const annotate = () =>
               @click="detailsOpenAnnotations = !detailsOpenAnnotations"
               class="open-annotations-aggregated"
             >
-              {{ openAnnotations.length ? openAnnotations.length : "-" }}
+              <template v-if="modelValue?.length && openAnnotations.length"
+                >{{ selectedOpenAnnotations.length }}/</template
+              >{{ openAnnotations.length ? openAnnotations.length : "-" }}
             </div>
           </template>
         </v-tooltip>
