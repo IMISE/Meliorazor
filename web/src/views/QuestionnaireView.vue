@@ -147,20 +147,24 @@ const createVersion = () => {
       <br />
       <h2>Datenelemente</h2>
       <v-text-field v-model="deSearch" label="Suche"></v-text-field>
-      <v-btn v-if="annotatable" @click="annotateAll" color="primary">
-        {{ elements.length }} Datenelemente annotieren
-      </v-btn>
-      <!-- TODO implement -->
-      <v-btn v-if="correctable" @click="correctAll" color="primary">
-        {{ toCorrect.length }} Annotationen korrigieren
-      </v-btn>
-      <v-btn
-        v-if="selected?.length && roles.includes(Role.ADMIN)"
-        @click="createVersion"
-        color="primary"
-      >
-        Version erstellen
-      </v-btn>
+      <v-row gap="8px">
+        <v-btn v-if="annotatable" @click="annotateAll" color="primary">
+          {{ elements.length }} Datenelemente annotieren
+        </v-btn>
+        <!-- TODO implement -->
+        <v-btn v-if="correctable" @click="correctAll" color="primary">
+          {{ toCorrect.length }} Annotationen korrigieren
+        </v-btn>
+        <v-btn
+          v-if="roles.includes(Role.ADMIN)"
+          @click="createVersion"
+          color="primary"
+          variant="outlined"
+          :disabled="!selected?.length"
+        >
+          Version erstellen
+        </v-btn>
+      </v-row>
       <data-element-list
         v-model="selection.data"
         :project-id="projectId"
