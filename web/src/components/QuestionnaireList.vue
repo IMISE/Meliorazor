@@ -43,7 +43,7 @@ const deleteQuestionnaire = async (q: Questionnaire) => {
 </script>
 
 <template>
-  <v-list v-if="questionnaires.length">
+  <v-list v-if="questionnaires.length" max-width="480px">
     <v-list-item
       v-for="(q, i) in questionnaires"
       :key="`${questionnaires.length}-${i}-${q.id}`"
@@ -54,15 +54,41 @@ const deleteQuestionnaire = async (q: Questionnaire) => {
         {{ q.description.length > 50 ? q.description.substring(0, 47) + "…" : q.description }}
       </v-list-item-subtitle>
       <template v-if="displayControls" #append>
-        <v-icon-btn
-          v-if="
-            q.participants
-              .find((p) => p.username === user?.preferred_username)
-              ?.roles.includes(Role.ADMIN)
-          "
-          :icon="mdiDeleteOutline"
-          @click.prevent="deleteQuestionnaire(q)"
-        />
+        <v-dialog max-width="600px">
+          <template #activator="{ props }">
+            <v-icon-btn
+              v-if="
+                q.participants
+                  .find((p) => p.username === user?.preferred_username)
+                  ?.roles.includes(Role.ADMIN)
+              "
+              v-bind="props"
+              :icon="mdiDeleteOutline"
+              @click.prevent
+            />
+          </template>
+          <template #default="{ isActive }">
+            <v-card title="Wirklich löschen?">
+              <v-card-text>Soll das Projekt wirklich gelöscht werden?</v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="primary" @click="isActive.value = false">Abbrechen</v-btn>
+                <v-btn
+                  color="error"
+                  variant="outlined"
+                  @click="
+                    () => {
+                      isActive.value = false;
+                      deleteQuestionnaire(q);
+                    }
+                  "
+                >
+                  Löschen
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </template>
+        </v-dialog>
       </template>
     </v-list-item>
   </v-list>
