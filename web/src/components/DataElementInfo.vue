@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Annotation, Variable } from "@/types/types";
-import { computed, ref, watch, type Ref } from "vue";
+import { computed, ref } from "vue";
 import { Role, status, Status } from "@/types/enums";
 import AnnotationBadge from "./AnnotationBadge.vue";
 import { useRouter } from "vue-router";

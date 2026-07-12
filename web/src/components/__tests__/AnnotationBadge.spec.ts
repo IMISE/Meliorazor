@@ -37,6 +37,7 @@ describe("AnnotationBadge", () => {
         dataElementName: "",
         allowEditSelection: true,
         displaySelectionIcon: true,
+        dashedBorder: false,
       },
       global: {
         plugins: [vuetify],

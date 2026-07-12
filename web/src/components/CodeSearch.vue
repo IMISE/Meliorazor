@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FhirValueSetDefinition } from "@/types/fhir";
-import type { CodeMapping, InformedCodeMapping } from "@/types/types";
+import type { InformedCodeMapping } from "@/types/types";
 import { expandValueSet } from "@/utils/fhirApi";
 import { mdiCheck, mdiClose, mdiMagnify, mdiWeb } from "@mdi/js";
 import { ref, watch, type Ref } from "vue";
@@ -115,6 +115,7 @@ const itemsPerPage = ref(15);
           <v-list>
             <v-list-item
               v-for="lang of langs"
+              :key="lang.longCode"
               :title="lang.display"
               :subtitle="lang.longCode"
               link
