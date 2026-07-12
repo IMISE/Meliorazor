@@ -89,9 +89,11 @@ const go = async (text: string) => {
   loading.value = false;
 };
 
-const colorFocusCode = ({ item }: { item: CodeMapping }) => {
+const colorFocusCode = ({ item }: { item: InformedCodeMapping }) => {
   if (focus && item.code === focus.code && item.system === focus.system) {
     return { class: "focus-code" };
+  } else if (item.inactive) {
+    return { class: "inactive-code" };
   }
 };
 
@@ -166,5 +168,8 @@ const itemsPerPage = ref(15);
 <style>
 .focus-code {
   background-color: skyblue;
+}
+.inactive-code {
+  opacity: 0.5;
 }
 </style>
