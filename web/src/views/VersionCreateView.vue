@@ -157,7 +157,7 @@ const keyRules = ref([
   </v-stepper>
   <h3 v-else-if="loading">Lädt &hellip;</h3>
   <template v-else>
-    <h3>Fehler!</h3>
+    <h3>Fehler</h3>
     <p>Konnte Projekt nicht laden. Versuchen Sie bitte, sich neu einzuloggen.</p>
   </template>
 </template>

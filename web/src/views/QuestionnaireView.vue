@@ -175,11 +175,9 @@ const createVersion = () => {
         show-actions
       />
     </template>
-    <template v-else-if="loading">
-      <h1>Laden...</h1>
-    </template>
+    <h3 v-else-if="loading">Lädt &hellip;</h3>
     <template v-else>
-      <h1>Fehler</h1>
+      <h3>Fehler</h3>
       <p>Fehler beim Abrufen des Projekts.</p>
     </template>
   </v-sheet>
