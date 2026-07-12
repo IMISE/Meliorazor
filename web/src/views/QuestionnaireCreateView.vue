@@ -135,14 +135,14 @@ const parsedDataREDCap = () =>
         variableName: datum["Variable / Field Name"] as string,
         label: datum["Field Label"] as string,
         type: datum["Field Type"] as string,
-        choices: ["dropdown", "checkbox", "radio"].includes(datum["Field Type"] as string)
+        choices: ["dropdown", "checkbox", "radio", "slider"].includes(datum["Field Type"] as string)
           ? (datum["Choices, Calculations, OR Slider Labels"] as string)
               .split(" | ")
               .map((choice) => choice.split(", ", 2))
               .map((choice) => ({
                 id: undefined,
                 code: choice[0],
-                name: choice[1],
+                name: choice[1] ?? choice[0],
                 annotations: [],
               }))
           : null,

@@ -111,6 +111,13 @@ const annotate = () =>
       elementIds: data.id,
     },
   });
+
+/** stuff for form view */
+const supportedFieldTypes = ["text", "dropdown", "radio", "slider", "yesno", "file"];
+const fieldChoices = computed(() => data.choices?.map((c) => c.name) ?? []);
+const required = computed(
+  () => data.metadata.find((m) => m.key === "Required Field")?.value === "y",
+);
 </script>
 
 <template>
@@ -145,11 +152,59 @@ const annotate = () =>
         </v-tooltip>
       </div>
       <v-divider vertical />
-      <div>
+      <div
+        :style="
+          'grid-column: 3 / span ' + (supportedFieldTypes.includes(dataElement.type ?? '') ? 1 : 2)
+        "
+      >
         <span class="varlabel">{{ dataElement.label }}</span>
         <br />
         <var v-if="dataElement.variableName" class="varname">{{ dataElement.variableName }}</var>
       </div>
+      <template v-if="supportedFieldTypes.includes(dataElement.type ?? '')">
+        <v-text-field
+          v-if="dataElement.type === 'text'"
+          style="grid-column: 4 / span 1"
+          :label="dataElement.label"
+          :hint="dataElement.metadata.find((e) => e.key === 'Field Note')?.value"
+          readonly
+          :required="required"
+        />
+        <v-select
+          v-else-if="dataElement.type === 'dropdown'"
+          v-model="fieldChoices"
+          :items="fieldChoices"
+          chips
+          multiple
+          readonly
+          :required="required"
+        />
+        <v-radio-group v-else-if="dataElement.type === 'radio'" readonly :required="required">
+          <v-radio v-for="choice in fieldChoices" :key="choice" :label="choice" readonly />
+        </v-radio-group>
+        <v-radio-group v-else-if="dataElement.type === 'yesno'" readonly :required="required">
+          <v-radio label="Ja" readonly />
+          <v-radio label="Nein" readonly />
+        </v-radio-group>
+        <v-slider
+          v-else-if="dataElement.type === 'slider'"
+          :min="fieldChoices[0]"
+          :max="fieldChoices[fieldChoices.length - 1]"
+          step="1"
+          :ticks="fieldChoices"
+          show-ticks="always"
+          tick-size="4"
+          readonly
+          :required="required"
+        />
+        <v-file-input
+          v-else-if="dataElement.type === 'file'"
+          :label="dataElement.label"
+          readonly
+          :required="required"
+        />
+      </template>
+
       <template v-if="showActions">
         <v-divider vertical />
         <div class="badge-container">
@@ -248,6 +303,7 @@ const annotate = () =>
 .varname {
   display: inline-block;
   font-size: small;
+  width: 100%;
 }
 .data-element-container {
   display: block;
@@ -261,7 +317,7 @@ const annotate = () =>
 .data-element-title-row {
   display: grid;
   /** open&accepted annotations; divider; name; divider; actions */
-  grid-template-columns: auto auto 4fr auto 1fr;
+  grid-template-columns: auto auto 2fr 2fr auto 1fr;
   grid-template-rows: auto;
   gap: 10px;
 }
