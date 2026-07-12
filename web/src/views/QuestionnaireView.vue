@@ -85,9 +85,13 @@ const get = async (id: number) => {
   }
 };
 
-const selected: Ref<number[] | undefined> = ref(
-  roles.value.some((role) => role == Role.ADMIN || role == Role.FEEDBACK) ? [] : undefined,
-);
+const selection: Ref<{ data: number[] | undefined }> = ref({
+  data: roles.value.some((role) => role == Role.ADMIN || role == Role.FEEDBACK) ? [] : undefined,
+});
+const selected = computed({
+  get: () => selection.value.data,
+  set: (newVal: number[] | undefined) => (selection.value.data = newVal),
+});
 watch(roles, (val) => {
   if (val.some((role) => role == Role.ADMIN || role == Role.FEEDBACK)) {
     if (!selected.value?.length) {
@@ -136,7 +140,7 @@ const createVersion = () => {
 </script>
 
 <template>
-  <v-sheet :min-height="200" :width="1000" class="sheet">
+  <v-sheet :min-height="200" class="sheet">
     <template v-if="questionnaire">
       <h1>{{ questionnaire.title }}</h1>
       <p>{{ questionnaire.description }}</p>
@@ -158,7 +162,7 @@ const createVersion = () => {
         Version erstellen
       </v-btn>
       <data-element-list
-        v-model="selected"
+        v-model="selection.data"
         :project-id="projectId"
         :project-title="questionnaire.title"
         :data-elements="elements"
@@ -179,6 +183,7 @@ const createVersion = () => {
 
 <style scoped>
 .sheet {
-  padding: 10%;
+  padding-left: 20%;
+  padding-right: 20%;
 }
 </style>

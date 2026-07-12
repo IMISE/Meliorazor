@@ -1,7 +1,6 @@
 @import './base.css';
 
 #app {
-  max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   font-weight: normal;
@@ -12,18 +11,6 @@ a, a:visited, a:hover, a:link, a:active {
   color: var(--color-text);
   transition: 0.4s;
   padding: 3px;
-}
-
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-  }
-
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
-  }
 }
 
 .v-expansion-panel-title {
