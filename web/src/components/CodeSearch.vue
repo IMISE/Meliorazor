@@ -2,7 +2,7 @@
 import type { FhirValueSetDefinition } from "@/types/fhir";
 import type { CodeMapping, InformedCodeMapping } from "@/types/types";
 import { expandValueSet } from "@/utils/fhirApi";
-import { mdiCheck, mdiClose, mdiMagnify } from "@mdi/js";
+import { mdiCheck, mdiClose, mdiMagnify, mdiWeb } from "@mdi/js";
 import { ref, watch, type Ref } from "vue";
 
 const { initialSearch, valueSets, focus } = defineProps<{
@@ -16,10 +16,24 @@ defineEmits<{
 }>();
 
 const search = ref(initialSearch ?? "");
+const selectedLang: Ref<string | undefined> = ref();
 const loading = ref(false);
 const searchedOnce = ref(false);
 const searchResults: Ref<InformedCodeMapping[] | undefined> = ref();
 watch(search, () => (searchedOnce.value = false));
+
+const langs = [
+  {
+    shortCode: "DE",
+    longCode: "de-DE",
+    display: "Deutsch (Deutschland)",
+  },
+  {
+    shortCode: "EN",
+    longCode: "en-US",
+    display: "English (USA)",
+  },
+];
 
 const searchResultHeaders = [
   {
@@ -55,7 +69,12 @@ const searchResultsGroupBy:
 const go = async (text: string) => {
   loading.value = true;
   const fetches = valueSets.map(async (set) => {
-    const response = await expandValueSet(text, set.server, set.valueSet);
+    const response = await expandValueSet(
+      text,
+      set.server,
+      set.valueSet,
+      selectedLang.value ?? "en-US",
+    );
     return response;
   });
   // no try/catch - this never fails
@@ -83,6 +102,25 @@ const itemsPerPage = ref(15);
 <template>
   <v-row fluid>
     <v-text-field v-model="search" hint="Code suchen …" @keydown.enter="go(search)">
+      <template v-if="langs.length && false" #prepend-inner>
+        <v-menu>
+          <template #activator="{ props }">
+            <v-btn v-if="selectedLang" v-bind="props" variant="plain" hide-overlay>
+              {{ selectedLang }}
+            </v-btn>
+            <v-icon-btn v-else v-bind="props" :icon="mdiWeb" variant="plain" hide-overlay />
+          </template>
+          <v-list>
+            <v-list-item
+              v-for="lang of langs"
+              :title="lang.display"
+              :subtitle="lang.longCode"
+              link
+              @click="() => (selectedLang = lang.shortCode)"
+            />
+          </v-list>
+        </v-menu>
+      </template>
       <template #append-inner>
         <v-btn
           :loading="loading"

@@ -10,8 +10,17 @@ import type {
 import type { CodeInfo, CodeMapping, InformedCodeMapping } from "@/types/types";
 import { isUrl } from "./utils";
 
-async function fetchFhir(url: string, expectedResourceType: string) {
-  const response = await fetch(url);
+async function fetchFhir(
+  url: string,
+  expectedResourceType: string,
+  acceptLanguage: string = "en-US",
+) {
+  const headers = {
+    "Content-Type": "application/json",
+    "Accept-Language": acceptLanguage,
+  };
+
+  const response = await fetch(url, { headers });
   if (!response.ok) return undefined;
   const json = await response.json();
   return json?.resourceType === expectedResourceType ? json : undefined;
@@ -62,12 +71,14 @@ export async function expandValueSet(
   filter: string,
   server: string,
   valueSet: string,
+  acceptLanguage: string,
   limit: number | undefined = undefined,
 ): Promise<InformedCodeMapping[]> {
   const response = await fetchFhir(
     `${server}/ValueSet/$expand?url=${valueSet}&filter=${filter}` +
       (limit !== undefined ? `&limit=${limit}` : ""),
     "ValueSet",
+    acceptLanguage,
   );
   if (response?.expansion?.contains?.length) {
     // build CodeSystem => Version map
