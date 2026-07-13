@@ -516,5 +516,7 @@ const fracSliderRules = ref([
 .sheet {
   padding: 20px;
   margin: 50px;
+  padding-top: 0;
+  margin-top: 20px;
 }
 </style>
