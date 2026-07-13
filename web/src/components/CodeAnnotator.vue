@@ -22,12 +22,6 @@ const loadingCreate = ref(false);
 const response: Ref<Response | undefined> = ref();
 const loadingFeedbackIcon: Ref<IconValue | undefined> = ref();
 
-watch(loadingFeedbackIcon, (newVal, oldVal) => {
-  if (newVal === undefined && oldVal === mdiCheck) {
-    emit("success");
-  }
-});
-
 // SSSOM metadata
 const confidence: Ref<number> = ref(100);
 const predicate: Ref<Predicate> = ref("skos:exactMatch");
@@ -70,8 +64,15 @@ const submitAnnotation = async () => {
         },
       },
     );
-    loadingFeedbackIcon.value = response.value.ok ? mdiCheck : mdiCross;
-    setTimeout(() => (loadingFeedbackIcon.value = undefined), 5000);
+    // keep errror state for longer so user has time to think
+    if (response.value.ok) {
+      loadingFeedbackIcon.value = mdiCheck;
+      setTimeout(() => (loadingFeedbackIcon.value = undefined), 2_000);
+      setTimeout(() => emit("success"), 500);
+    } else {
+      loadingFeedbackIcon.value = mdiCross;
+      setTimeout(() => (loadingFeedbackIcon.value = undefined), 5_000);
+    }
   } catch (e) {
     console.error(e);
   } finally {
