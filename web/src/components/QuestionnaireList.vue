@@ -92,5 +92,5 @@ const deleteQuestionnaire = async (q: Questionnaire) => {
       </template>
     </v-list-item>
   </v-list>
-  <p v-else>Keine Elemente.</p>
+  <p v-else><i>Keine Projekte gefunden.</i></p>
 </template>

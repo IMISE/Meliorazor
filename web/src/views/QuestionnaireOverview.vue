@@ -1,37 +1,15 @@
 <script setup lang="ts">
-import auth from "@/auth";
 import QuestionnaireList from "@/components/QuestionnaireList.vue";
 import type { Questionnaire } from "@/types/types";
-import getEnv from "@/utils/env";
+import { getProjects } from "@/utils/api";
 import { mdiPlus, mdiRefresh } from "@mdi/js";
 import { onMounted, ref, type Ref } from "vue";
 
 // TODO sort
 const questionnaires: Ref<Questionnaire[]> = ref([]);
 const loading = ref(false);
-const isLoggedIn = ref(false);
 
-const getQuestionnaires = async () => {
-  loading.value = true;
-  try {
-    const u = await auth.getUser();
-    if (!u?.access_token) return;
-    isLoggedIn.value = true;
-
-    const response = await fetch(`${getEnv("VITE_API_BASE")}/questionnaire`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${u.access_token}`,
-      },
-    });
-    questionnaires.value = (await response.json()) as Questionnaire[];
-  } catch (e) {
-    console.error(e);
-  } finally {
-    loading.value = false;
-  }
-};
+const getQuestionnaires = async () => (questionnaires.value = (await getProjects(loading)) ?? []);
 
 onMounted(getQuestionnaires);
 </script>
@@ -49,7 +27,6 @@ onMounted(getQuestionnaires);
   />
   <v-row>
     <v-btn
-      v-if="isLoggedIn"
       :prepend-icon="mdiPlus"
       color="primary"
       @click="$router.push({ name: 'create-project' })"

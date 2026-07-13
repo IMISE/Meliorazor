@@ -44,15 +44,22 @@ export default async function request(
   }
 }
 
+/**
+ * Get a single project, if the IDs changed.
+ * @param id new ID, required
+ * @param oldId old ID, if undefined this does nothing
+ * @param loading loading state, mutated by this
+ * @returns single questionnaire or undefined if nothing changed or ID undefined
+ */
 export async function getProject(
   id: string | number | undefined,
   oldId: string | number | undefined,
   loading: Ref<boolean> | undefined = undefined,
 ) {
-  if ((loading && loading.value) || !id || id === oldId) {
+  if ((loading && loading.value) || (oldId !== undefined && (!id || id === oldId))) {
     return;
   } else {
-    const response = await request(`/questionnaire/${id}`);
+    const response = await request(`/questionnaire/${id}`, "GET", undefined, loading);
     if (!response?.ok) {
       console.error("Project response not ok :(");
       return;
@@ -60,6 +67,23 @@ export async function getProject(
 
     return (await response.json()) as Questionnaire | undefined;
   }
+}
+
+/**
+ * Get project index.
+ * @param loading loading state, mutated by this
+ * @returns All questionnaires seen by this user
+ */
+export async function getProjects(loading: Ref<boolean> | undefined = undefined) {
+  if (loading && loading.value) return;
+
+  const response = await request("/questionnaire", "GET", undefined, loading);
+  if (!response?.ok) {
+    console.error("Project response not ok :(");
+    return;
+  }
+
+  return ((await response.json()) ?? []) as Questionnaire[];
 }
 
 export async function getVersionKeys(
