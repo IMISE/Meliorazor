@@ -179,7 +179,7 @@ public class AnnotationController {
         return service.getVersionKeys(questionnaireId);
     }
 
-    @GetMapping("questionnaire/{questionnaireId}/version/{versionId}")
+    @GetMapping("questionnaire/{questionnaireId}/version/{versionKey}")
     public VersionDto getVersion(
         final @PathVariable Long questionnaireId,
         final @PathVariable String versionKey
