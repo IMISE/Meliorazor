@@ -69,6 +69,11 @@ const router = createRouter({
       component: () => import("../views/VersionCreateView.vue"),
     },
     {
+      path: "/projects/:pid-:title/version/:key",
+      name: "version",
+      component: () => import("../views/VersionView.vue"),
+    },
+    {
       path: "/projects/:pid-:title/elements/:eid-:name/annotations/:aid-:subject",
       name: "focus-annotation",
       component: () => import("../views/AnnotationEditView.vue"),

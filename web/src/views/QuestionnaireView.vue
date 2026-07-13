@@ -5,10 +5,9 @@ import ValueSetSelector from "@/components/ValueSetSelector.vue";
 import { Role, roles, Status } from "@/types/enums";
 import type { FhirValueSetDefinition } from "@/types/fhir";
 import type { Participant, Questionnaire, QuestionnaireOut } from "@/types/types";
-import request from "@/utils/api";
+import request, { getVersionKeys } from "@/utils/api";
 import getEnv from "@/utils/env";
-import { clean } from "@/utils/utils";
-import { mdiMinus, mdiPlus } from "@mdi/js";
+import { mdiArrowRight, mdiMinus, mdiPlus } from "@mdi/js";
 import type { IdTokenClaims } from "oidc-client-ts";
 import { computed, inject, onMounted, provide, ref, watch, type Ref } from "vue";
 import { useRouter } from "vue-router";
@@ -17,7 +16,7 @@ const user = inject<Ref<IdTokenClaims | undefined>>("user");
 
 const router = useRouter();
 const projectId = computed(() => Number(router.currentRoute.value.params.pid));
-// const projectName = computed(() => String(router.currentRoute.value.params.title));
+const projectTitle = computed(() => String(router.currentRoute.value.params.title));
 
 const questionnaire: Ref<Questionnaire | undefined> = ref();
 const loading = ref(false);
@@ -141,13 +140,21 @@ const createVersion = () => {
     name: "create-version",
     params: {
       pid: projectId.value,
-      title: clean(questionnaire.value?.title),
+      title: projectTitle.value,
     },
     query: {
       annotations: toCorrect.value.join(","),
     },
   });
 };
+
+/** versions */
+const versions: Ref<string[]> = ref([]);
+watch(
+  questionnaire,
+  async (newVal) => (versions.value = newVal ? ((await getVersionKeys(newVal.id)) ?? []) : []),
+  { immediate: true },
+);
 
 /** editing */
 const participantEdit: Ref<{ id: number; participant: Participant }[]> = ref([]);
@@ -204,7 +211,7 @@ const participantUser = ref([
       <br />
       <v-tabs v-model="tab" color="primary">
         <v-tab :value="1" text="Datenelemente" />
-        <!--<v-tab :value="2" text="Versionen" />-->
+        <v-tab v-if="versions?.length" :value="2" text="Versionen" />
         <v-tab :value="3" text="Projektinformationen" />
       </v-tabs>
       <v-tabs-window v-model="tab">
@@ -241,7 +248,21 @@ const participantUser = ref([
         </v-tabs-window-item>
         <v-tabs-window-item :value="2">
           <h2>Versionen</h2>
-          TODO Versionsliste
+          <v-list>
+            <v-list-item v-for="key in versions" :key="key" :title="key">
+              <template #append>
+                <v-icon-btn
+                  :icon="mdiArrowRight"
+                  @click="
+                    router.push({
+                      name: 'version',
+                      params: { pid: projectId, title: projectTitle, key },
+                    })
+                  "
+                />
+              </template>
+            </v-list-item>
+          </v-list>
         </v-tabs-window-item>
         <v-tabs-window-item :value="3">
           <h2>Projektinformationen</h2>
