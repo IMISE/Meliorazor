@@ -26,7 +26,9 @@ defineEmits<{
 type TestResults = { ok: boolean; title: string; status: string; codes: number };
 
 const server = ref(model.value?.server ?? "");
-const selectedSet: Ref<FhirValueSetDefinition | string | undefined> = ref(model.value /* ?? undefined (implicit) */);
+const selectedSet: Ref<FhirValueSetDefinition | string | undefined> = ref(
+  model.value /* ?? undefined (implicit) */,
+);
 const testResult: Ref<TestResults | undefined> = ref();
 const testTooltip = computed(() =>
   testResult.value
@@ -174,6 +176,8 @@ const valueSetProps = (item: FhirValueSetDefinition | string) =>
                 @click="testConnection"
                 :disabled="loading"
                 :loading="loading"
+                variant="plain"
+                hide-overlay
               />
             </template>
           </v-tooltip>

@@ -129,7 +129,8 @@ const itemsPerPage = ref(15);
           :loading="loading"
           :disabled="loading"
           :icon="mdiMagnify"
-          variant="text"
+          variant="plain"
+          hide-overlay
           @click="go(search)"
         />
       </template>
