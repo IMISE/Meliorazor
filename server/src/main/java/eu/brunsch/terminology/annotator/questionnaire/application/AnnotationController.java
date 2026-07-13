@@ -1,10 +1,13 @@
 package eu.brunsch.terminology.annotator.questionnaire.application;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import eu.brunsch.terminology.annotator.questionnaire.domain.AnnotationDto;
@@ -63,6 +66,18 @@ public class AnnotationController {
     public QuestionnaireDto getQuestionnaire(final @PathVariable Long id) {
         return service.getQuestionnaire(id);
     }
+
+    /**
+     * Edit a single questionnaire.
+     * @param id identifier of the questionnaire
+     * @param dto new contents; ignores ID, data elements and empty (undefined/null) properties.
+     */
+    @PutMapping("questionnaire/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void editQuestionnaire(final @PathVariable Long id, final @RequestBody QuestionnaireDto dto) {
+        service.editQuestionnaire(id, dto);
+    }
+
 
     /**
      * Get data element with annotations and comments.

@@ -364,8 +364,9 @@ const fracSliderRules = ref([
               :disabled="loading"
               :prepend-icon="mdiPlus"
               @click="valueSets.push({ id: setKey(), set: undefined })"
-              >Hinzufügen</v-btn
             >
+              Hinzufügen
+            </v-btn>
           </v-col>
         </v-stepper-vertical-item>
         <v-stepper-vertical-item

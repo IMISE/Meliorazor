@@ -29,6 +29,7 @@ import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireOption
 import eu.brunsch.terminology.annotator.questionnaire.domain.Version;
 import eu.brunsch.terminology.annotator.questionnaire.domain.VersionCreateDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.VersionDto;
+import eu.brunsch.terminology.annotator.questionnaire.domain.Participant.Role;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.AnnotationRepository;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.ChoiceRepository;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.CommentRepository;
@@ -77,6 +78,10 @@ public class AnnotationService {
      */
     public Long importQuestionnaire(final QuestionnaireDto dto) {
         final Questionnaire questionnaire = questionnaireMapper.toEntity(dto);
+        // check if the first user is us (creator) and has admin privileges
+        if (!questionnaire.administeredBy(username()) || questionnaire.getParticipants()[0].getUsername() == username()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This participant configuration is forbidden");
+        }
         questionnaireRepository.save(questionnaire);
         for (final DataElementDto dDto : dto.getDataElements()) {
             Choice[] choices = null;
@@ -150,6 +155,59 @@ public class AnnotationService {
             }).toArray(DataElementDto[]::new);
         questionnaireDto.setDataElements(dataElemetDtos);
         return questionnaireDto;
+    }
+
+    /**
+     * Edit a single questionnaire.
+     * @param id identifier of the questionnaire
+     * @param dto new contents; ignores ID, data elements and empty (undefined/null) properties.
+     */
+    public void editQuestionnaire(final Long id, final QuestionnaireDto dto) {
+        // access & permissions stuff
+        if (dto.getId() != null && id != dto.getId()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "IDs do not match");
+        }
+        final Questionnaire q = questionnaireRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (!q.seenBy(username())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        } else if (!q.administeredBy(username())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+   
+        // the real deal
+        if (dto.getTitle() != null) {
+            q.setTitle(dto.getTitle());
+        }
+        if (dto.getDescription() != null) {
+            q.setDescription(dto.getDescription());
+        }
+        if (dto.getParticipants() != null) {
+            // participants need to still include ourselves as admins
+            // first user (creator) has to stay the same user & must be an admin, the other roles may change
+            if (
+                Arrays.stream(dto.getParticipants()).anyMatch(p -> p.getUsername() == username() &&
+                List.of(p.getRoles()).contains(Role.ADMIN)) && List.of(dto.getParticipants()[0].getRoles()).contains(Role.ADMIN) &&
+                dto.getParticipants()[0].getUsername() == q.getParticipants()[0].getUsername()
+            ) {
+                q.setParticipants(dto.getParticipants());
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This participant configuration is forbidden");
+            }
+        }
+        if (dto.getValueSets() != null) {
+            // need to have at least one valueset
+            if (dto.getValueSets().length > 0) {
+                q.setValueSets(dto.getValueSets());
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Too few ValueSets");
+            }
+        }
+        if (dto.getOptions() != null) {
+            dto.setOptions(dto.getOptions());
+        }
+
+        questionnaireRepository.save(q);
     }
 
 
@@ -421,7 +479,6 @@ public class AnnotationService {
     }
 
     /**
-     * TODO put where it belongs (if there is a better place)
      * @returns username of current user
      */
     private String username() {

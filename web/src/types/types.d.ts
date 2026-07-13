@@ -11,6 +11,16 @@ export interface Questionnaire {
   valueSets: FhirValueSetDefinition[];
 }
 
+export type QuestionnaireOut = Questionnaire & {
+  id: undefined | null;
+  title: undefined | null;
+  description: undefined | null;
+  dataElements: undefined | null;
+  options: undefined | null;
+  participants: undefined | null;
+  valueSets: undefined | null;
+};
+
 export interface QuestionnaireOptions {
   reqNegReviews: number;
   reqPosReviews: number;

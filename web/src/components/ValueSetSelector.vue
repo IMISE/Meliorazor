@@ -25,8 +25,8 @@ defineEmits<{
 
 type TestResults = { ok: boolean; title: string; status: string; codes: number };
 
-const server = ref("");
-const selectedSet: Ref<FhirValueSetDefinition | string | undefined> = ref();
+const server = ref(model.value?.server ?? "");
+const selectedSet: Ref<FhirValueSetDefinition | string | undefined> = ref(model.value /* ?? undefined (implicit) */);
 const testResult: Ref<TestResults | undefined> = ref();
 const testTooltip = computed(() =>
   testResult.value
@@ -56,6 +56,8 @@ watch(selectedSet, (val) => {
 /** value sets on `server` */
 const valueSets: Ref<FhirValueSetDefinition[]> = ref([]);
 const loading = ref(false);
+// if we were passed a server via a model, count that as selected
+// (we do that further below, because we need to load the valuesets still)
 const serverSelected = ref(false);
 const loadingSelection = ref(false);
 const loadingValueSets = ref(false);
@@ -121,6 +123,9 @@ const unselectServer = () => {
   serverSelected.value = false;
   selectedSet.value = undefined;
 };
+
+// if we started with a server in our model, select it
+selectServer();
 
 watch(loadingSelection, (val) => {
   if (val) return;
