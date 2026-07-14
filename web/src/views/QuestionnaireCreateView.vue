@@ -2,7 +2,7 @@
 import { computed, inject, ref, shallowRef, watch, type Ref } from "vue";
 import Papa from "papaparse";
 import { mdiAccountMinus, mdiAccountPlus, mdiAlertCircleOutline, mdiMinus, mdiPlus } from "@mdi/js";
-import type { Participant, QuestionnaireOptions, Variable } from "@/types/types";
+import type { Choice, Participant, QuestionnaireOptions, Variable } from "@/types/types";
 import auth from "@/auth";
 import { roles } from "@/types/enums";
 import { useRouter } from "vue-router";
@@ -155,14 +155,14 @@ const parsedDataREDCap = () =>
                 .map((choice) => ({
                   id: undefined,
                   code: choice[0],
-                  name: choice[1] ?? choice[0],
+                  label: choice[1] ?? choice[0],
                   annotations: [],
                 }))
             : (datum["Field Type"] as string) === "yesno"
               ? ["yes", "no"].map((choice, i) => ({
                   id: undefined,
                   code: i,
-                  name: choice,
+                  label: choice,
                   annotations: [],
                 }))
               : undefined,
@@ -196,7 +196,7 @@ const parsedDataOpenClinica = () =>
               .map((choice, index) => ({
                 id: undefined,
                 code: "" + index,
-                name: choice,
+                label: choice,
                 annotations: [],
               }))
           : null,
