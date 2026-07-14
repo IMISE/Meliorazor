@@ -157,12 +157,8 @@ public class AnnotationService {
         final var dataElements = dataElementRepository.findByQuestionnaire(q);
         final QuestionnaireDto questionnaireDto = questionnaireMapper.toDto(q);
         final DataElementDto[] dataElemetDtos = dataElements.stream()
-            .map(dataElementMapper::toDto)
-            .map(d -> {
-                final var annotations = getDataElementsAnnotations(d.getId());
-                d.setAnnotations(annotations);
-                return d;
-            }).toArray(DataElementDto[]::new);
+            .map(this::getDataElementWithComments)
+            .toArray(DataElementDto[]::new);
         questionnaireDto.setDataElements(dataElemetDtos);
         return questionnaireDto;
     }
@@ -255,13 +251,29 @@ public class AnnotationService {
     @Transactional(readOnly = true)
     public DataElementDto getDataElementWithComments(final Long id) {
         final DataElement variable = getDataElement(id);
-        final Stream<Annotation> annotations = getDataElementsRawAnnotations(id);
+        return getDataElementWithComments(variable);
+    }
+
+    /**
+     * Turn a Data Element into a DTO + get all its annotations, comments etc.
+     * @param id Internal ID.
+     * @return data element, including its comments.
+     */
+    @Transactional(readOnly = true)
+    public DataElementDto getDataElementWithComments(final DataElement variable) {
+        // all annotations visible to user
+        final Stream<Annotation> annotations = annotationRepository
+            .findByVariable(variable)
+            .stream()
+            .filter(a -> a.seenBy(username()));
+
+        // only annotations on the data element, NOT on choices
         final AnnotationDto[] filteredAnnotations = annotations
             .filter(a -> a.getChoice() == null)
             .map(annotationMapper::toDto)
             .toArray(AnnotationDto[]::new);
-        final List<ChoiceDto> choiceDtos = new ArrayList<>();
 
+        final List<ChoiceDto> choiceDtos = new ArrayList<>();
         // populate choices with their annotations
         for (final Choice choice :  variable.getChoices()) {
             final ChoiceDto choiceDto = choiceMapper.toDto(choice);
@@ -293,26 +305,13 @@ public class AnnotationService {
     public AnnotationDto[] getDataElementsAnnotations(
         final Long dataElementId
     ) {
-        return getDataElementsRawAnnotations(dataElementId)
-            .map(annotationMapper::toDto)
-            .toArray(AnnotationDto[]::new);
-    }
-
-    /**
-     * Get all annotations on a given data element.
-     * @param dataElementId Internal ID of the data element
-     * @return all annotations on the data element, regardless of status
-     */
-    @Transactional(readOnly = true)
-    public Stream<Annotation> getDataElementsRawAnnotations(
-        final Long dataElementId
-    ) {
         final DataElement d = getDataElement(dataElementId);
         return annotationRepository.findByVariable(d)
             .stream()
-            .filter(a -> a.seenBy(username()));
+            .filter(a -> a.seenBy(username()))
+            .map(annotationMapper::toDto)
+            .toArray(AnnotationDto[]::new);
     }
-
 
     /**
      * Add an annotation to a data element.
