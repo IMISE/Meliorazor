@@ -18,6 +18,15 @@ public interface DataElementMapper {
     DataElementDto toDto(DataElement entity);
 
     /**
+     * Map data element to its DTO, WITHOUT choices.
+     * For the case where we need to add annotations to choice DTOs.
+     * @param entity to-be-displayed entity
+     * @return DTO which can be displayed to user WITHOUT choices
+     */
+    @Mapping(target = "choices", ignore = true)
+    DataElementDto toDtoWithutChoices(DataElement entity);
+
+    /**
      * Map an incoming data element DTO to data element.
      * @param dto incoming DTO
      * @return entity which can be saved, EXCEPT choices! you need to do the choices seperately

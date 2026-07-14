@@ -1,7 +1,9 @@
 package eu.brunsch.terminology.annotator.questionnaire.application;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -246,9 +248,28 @@ public class AnnotationService {
     @Transactional(readOnly = true)
     public DataElementDto getDataElementWithComments(final Long id) {
         final DataElement variable = getDataElement(id);
-        final DataElementDto dto = dataElementMapper.toDto(variable);
-        final AnnotationDto[] annotations = getDataElementsAnnotations(id);
-        dto.setAnnotations(annotations);
+        final Stream<Annotation> annotations = getDataElementsRawAnnotations(id);
+        final AnnotationDto[] filteredAnnotations = annotations
+            .filter(a -> a.getChoice() == null)
+            .map(a -> annotationMapper.toDto(a))
+            .toArray(count -> new AnnotationDto[count]);
+        final List<ChoiceDto> choiceDtos = new ArrayList<>();
+
+        // populate choices with their annotations
+        for (final Choice choice :  variable.getChoices()) {
+            final ChoiceDto choiceDto = choiceMapper.toDto(choice);
+            final var choiceAnnotations = annotations
+                .filter(a -> a.getChoice().getId() == choice.getId())
+                .map(a -> annotationMapper.toDto(a))
+                .toArray(count -> new AnnotationDto[count]);
+            choiceDto.setAnnotations(choiceAnnotations);
+            choiceDtos.add(choiceDto);
+        }
+
+        // put it all together
+        final DataElementDto dto = dataElementMapper.toDtoWithutChoices(variable);
+        dto.setChoices(choiceDtos.toArray(count -> new ChoiceDto[count]));
+        dto.setAnnotations(filteredAnnotations);
         return dto;
     }
 
@@ -257,7 +278,7 @@ public class AnnotationService {
     ///////////////////////
 
     /**
-     * Get all annotations on a given data element.
+     * Get all annotations on a given data element as DTOs.
      * @param dataElementId Internal ID of the data element
      * @return all annotations on the data element, regardless of status
      */
@@ -265,13 +286,26 @@ public class AnnotationService {
     public AnnotationDto[] getDataElementsAnnotations(
         final Long dataElementId
     ) {
-        final DataElement d = getDataElement(dataElementId);
-        return annotationRepository.findByVariable(d)
-            .stream()
-            .filter(a -> a.getChoice() == null && a.seenBy(username()))
+        return getDataElementsRawAnnotations(dataElementId)
             .map(annotationMapper::toDto)
             .toArray(AnnotationDto[]::new);
     }
+
+    /**
+     * Get all annotations on a given data element.
+     * @param dataElementId Internal ID of the data element
+     * @return all annotations on the data element, regardless of status
+     */
+    @Transactional(readOnly = true)
+    public Stream<Annotation> getDataElementsRawAnnotations(
+        final Long dataElementId
+    ) {
+        final DataElement d = getDataElement(dataElementId);
+        return annotationRepository.findByVariable(d)
+            .stream()
+            .filter(a -> a.seenBy(username()));
+    }
+
 
     /**
      * Add an annotation to a data element.
