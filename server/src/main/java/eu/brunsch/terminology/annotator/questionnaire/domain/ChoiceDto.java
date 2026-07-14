@@ -20,8 +20,8 @@ public class ChoiceDto {
 
     /**
      * Human-readable label.
-    */
-    private String name;
+     */
+    private String label;
 
     /**
      * Optionally, annotations of this data element.

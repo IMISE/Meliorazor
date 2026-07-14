@@ -7,7 +7,7 @@ import { computed } from "vue";
 import { ref, type Ref } from "vue";
 import type { IconValue } from "vuetify/lib/composables/icons.mjs";
 
-const annotatable = defineModel<Annotatable>();
+defineModel<Annotatable>();
 const { code, dataElement } = defineProps<{
   code: CodeMapping;
   dataElement: Variable;
