@@ -9,6 +9,9 @@ const router = createRouter({
       path: "/",
       name: "home",
       component: HomeView,
+      meta: {
+        disableBackButton: true,
+      },
     },
     {
       path: "/about",
@@ -27,6 +30,9 @@ const router = createRouter({
       path: "/projects",
       name: "projects",
       component: () => import("../views/QuestionnaireOverview.vue"),
+      meta: {
+        disableBackButton: true,
+      },
     },
     {
       path: "/projects/create",
@@ -92,6 +98,9 @@ const router = createRouter({
       path: "/afterauth",
       name: "post-login",
       component: () => import("../views/AuthView.vue"),
+      meta: {
+        disableBackButton: true,
+      },
     },
   ],
 });
