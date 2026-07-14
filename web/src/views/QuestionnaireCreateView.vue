@@ -145,24 +145,26 @@ const parsedDataREDCap = () =>
         variableName: datum["Variable / Field Name"] as string,
         label: datum["Field Label"] as string,
         type: redcapFieldType(datum),
-        choices: ["dropdown", "checkbox", "radio", "slider"].includes(datum["Field Type"] as string)
-          ? (datum["Choices, Calculations, OR Slider Labels"] as string)
-              .split(" | ")
-              .map((choice) => choice.split(", ", 2))
-              .map((choice) => ({
-                id: undefined,
-                code: choice[0],
-                name: choice[1] ?? choice[0],
-                annotations: [],
-              }))
-          : (datum["Field Type"] as string) === "yesno"
-            ? ["yes", "no"].map((choice, i) => ({
-                id: undefined,
-                code: i,
-                name: choice,
-                annotations: [],
-              }))
-            : undefined,
+        choices:
+          datum["Choices, Calculations, OR Slider Labels"] &&
+          ["dropdown", "checkbox", "radio", "slider"].includes(datum["Field Type"] as string)
+            ? (datum["Choices, Calculations, OR Slider Labels"] as string)
+                .split(" | ")
+                .map((choice) => choice.split(", ", 2))
+                .map((choice) => ({
+                  id: undefined,
+                  code: choice[0],
+                  name: choice[1] ?? choice[0],
+                  annotations: [],
+                }))
+            : (datum["Field Type"] as string) === "yesno"
+              ? ["yes", "no"].map((choice, i) => ({
+                  id: undefined,
+                  code: i,
+                  name: choice,
+                  annotations: [],
+                }))
+              : undefined,
         metadata: Object.keys(datum)
           .filter(
             (key) =>
