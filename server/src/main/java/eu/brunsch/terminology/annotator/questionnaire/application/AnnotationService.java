@@ -305,7 +305,6 @@ public class AnnotationService {
      * @param dto choice by which to create the annotation
      * @return ID of the created annotation
      */
-    @Transactional(readOnly = true)
     public Long createAnnotation(
         final Long dataElementId,
         final Long choiceId,

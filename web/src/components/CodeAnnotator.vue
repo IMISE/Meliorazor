@@ -2,7 +2,7 @@
 import auth from "@/auth";
 import type { Annotatable, Choice, CodeMapping, Predicate, Variable } from "@/types/types";
 import { createAnnotation } from "@/utils/api";
-import { mdiCheck, mdiCross, mdiPencil } from "@mdi/js";
+import { mdiCheck, mdiClose, mdiPencil } from "@mdi/js";
 import { computed } from "vue";
 import { ref, type Ref } from "vue";
 import type { IconValue } from "vuetify/lib/composables/icons.mjs";
@@ -67,7 +67,7 @@ const submitAnnotation = async () => {
       setTimeout(() => (loadingFeedbackIcon.value = undefined), 2_000);
       setTimeout(() => emit("success"), 500);
     } else {
-      loadingFeedbackIcon.value = mdiCross;
+      loadingFeedbackIcon.value = mdiClose;
       setTimeout(() => (loadingFeedbackIcon.value = undefined), 5_000);
     }
   } catch (e) {
@@ -101,8 +101,11 @@ const submitAnnotation = async () => {
                 <v-list-item-title>{{ item.label }}</v-list-item-title>
                 <v-list-item-subtitle v-if="i === 0">Variable selbst</v-list-item-subtitle>
                 <template #append>
-                  <v-chip v-if="item?.annotations?.length">
-                    {{ item?.annotations }} vorgeschlagene Annotationen
+                  <v-chip v-if="item.value?.annotations?.length">
+                    {{ item.value.annotations.length }} vorgeschlagene Annotation<template
+                      v-if="item.value.annotations.length > 1"
+                      >en
+                    </template>
                   </v-chip>
                 </template>
               </v-list-item>

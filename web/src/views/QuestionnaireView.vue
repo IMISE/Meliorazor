@@ -7,7 +7,7 @@ import type { FhirValueSetDefinition } from "@/types/fhir";
 import type { Participant, Questionnaire, QuestionnaireOut } from "@/types/types";
 import request, { getVersionKeys } from "@/utils/api";
 import getEnv from "@/utils/env";
-import { mdiArrowRight, mdiCheck, mdiCross, mdiMinus, mdiPlus } from "@mdi/js";
+import { mdiArrowRight, mdiCheck, mdiClose, mdiMinus, mdiPlus } from "@mdi/js";
 import type { IdTokenClaims } from "oidc-client-ts";
 import { computed, inject, onMounted, provide, ref, watch, type Ref } from "vue";
 import { useRouter } from "vue-router";
@@ -202,7 +202,7 @@ const saveEdits = async () => {
     setTimeout(() => (editFeedbackIcon.value = undefined), 2_000);
     await get(projectId.value);
   } else {
-    editFeedbackIcon.value = mdiCross;
+    editFeedbackIcon.value = mdiClose;
     setTimeout(() => (editFeedbackIcon.value = undefined), 5_000);
   }
 };
