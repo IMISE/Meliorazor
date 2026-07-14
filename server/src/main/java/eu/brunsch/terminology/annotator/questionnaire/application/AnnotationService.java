@@ -99,6 +99,7 @@ public class AnnotationService {
                 for (int i = 0; i < dDto.getChoices().length; i++) {
                     final ChoiceDto cDto = dDto.getChoices()[i];
                     final Choice choice = choiceMapper.toEntity(cDto);
+                    choice.setVariable(dataElement);
                     choices[i] = choice;
                     choiceRepository.save(choice);
                 }

@@ -2,7 +2,7 @@
 import { computed, inject, ref, shallowRef, watch, type Ref } from "vue";
 import Papa from "papaparse";
 import { mdiAccountMinus, mdiAccountPlus, mdiAlertCircleOutline, mdiMinus, mdiPlus } from "@mdi/js";
-import type { Choice, Participant, QuestionnaireOptions, Variable } from "@/types/types";
+import type { Participant, QuestionnaireOptions, Variable } from "@/types/types";
 import auth from "@/auth";
 import { roles } from "@/types/enums";
 import { useRouter } from "vue-router";
