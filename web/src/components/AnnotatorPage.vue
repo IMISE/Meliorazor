@@ -30,6 +30,9 @@ const loadingFocus = ref(false);
 /** selected to-annotate; data element itself or choice */
 const selectedElement: Ref<Annotatable> = ref(dataElement);
 
+const search = ref("");
+watch(selectedElement, (val) => search.value = val.label, { immediate: true });
+
 const unselect = () => {
   focusCode.value = undefined;
   selectedCode.value = undefined;
@@ -152,8 +155,7 @@ const autocompleteChoices = computed(() => [
       </template>
       <data-element-summary :data-element="dataElement" />
       <code-search
-        :key="selectedElement?.label"
-        :initial-search="selectedElement?.label ?? dataElement.label ?? ''"
+        v-model="search"
         :valueSets="valueSets"
         :focus="focusCode"
         @focus="focus"

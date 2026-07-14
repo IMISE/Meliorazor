@@ -5,8 +5,7 @@ import { expandValueSet } from "@/utils/fhirApi";
 import { mdiCheck, mdiClose, mdiMagnify, mdiWeb } from "@mdi/js";
 import { ref, watch, type Ref } from "vue";
 
-const { initialSearch, valueSets, focus } = defineProps<{
-  initialSearch: string;
+const { valueSets, focus } = defineProps<{
   valueSets: FhirValueSetDefinition[];
   focus: InformedCodeMapping | undefined;
 }>();
@@ -15,7 +14,8 @@ defineEmits<{
   (e: "focus", v: InformedCodeMapping): void;
 }>();
 
-const search = ref(initialSearch ?? "");
+const search = defineModel<string>();
+
 const selectedLang: Ref<string | undefined> = ref();
 const loading = ref(false);
 const searchedOnce = ref(false);
@@ -103,7 +103,7 @@ const itemsPerPage = ref(15);
 
 <template>
   <v-row fluid>
-    <v-text-field v-model="search" hint="Code suchen …" @keydown.enter="go(search)">
+    <v-text-field v-model="search" hint="Code suchen …" @keydown.enter="go(modelValue!)">
       <template v-if="langs.length && false" #prepend-inner>
         <v-menu>
           <template #activator="{ props }">
@@ -131,7 +131,7 @@ const itemsPerPage = ref(15);
           :icon="mdiMagnify"
           variant="plain"
           hide-overlay
-          @click="go(search)"
+          @click="go(modelValue!)"
         />
       </template>
     </v-text-field>
