@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import auth from "@/auth";
-import type { CodeMapping, Predicate } from "@/types/types";
+import type { Annotatable, CodeMapping, Predicate, Variable } from "@/types/types";
 import getEnv from "@/utils/env";
 import { mdiCheck, mdiCross, mdiPencil } from "@mdi/js";
+import { computed } from "vue";
 import { ref, type Ref } from "vue";
 import type { IconValue } from "vuetify/lib/composables/icons.mjs";
 
-const { code, dataElementId } = defineProps<{
+const annotatable = defineModel<Annotatable>();
+const { code, dataElement } = defineProps<{
   code: CodeMapping;
-  dataElementId: number;
+  dataElement: Variable;
 }>();
 
 const emit = defineEmits<{
@@ -41,6 +43,8 @@ const predicates = [
   "rdfs:seeAlso",
 ];
 
+const allAnnotatables = computed(() => [dataElement, ...(dataElement.choices ?? [])]);
+
 const submitAnnotation = async () => {
   const u = await auth.getUser();
   if (!u?.access_token) return;
@@ -48,7 +52,7 @@ const submitAnnotation = async () => {
   loadingCreate.value = true;
   try {
     response.value = await fetch(
-      `${getEnv("VITE_API_BASE")}/dataElement/${dataElementId}/annotation`,
+      `${getEnv("VITE_API_BASE")}/dataElement/${dataElement.id}/annotation`,
       {
         method: "POST",
         body: JSON.stringify({
@@ -84,17 +88,45 @@ const submitAnnotation = async () => {
 <template>
   <div class="code-annotator-container">
     <v-list lines="one">
+      <v-list-item :key="modelValue?.id">
+        <template #title>{{ modelValue?.label }}</template>
+        <template #subtitle>
+          <span color="primary">Ausgewähltes Element</span>
+        </template>
+        <template #append>
+          <v-menu>
+            <template #activator="{ props }">
+              <v-btn v-bind="props" :disabled="loadingCreate" :icon="mdiPencil" variant="plain" />
+            </template>
+            <v-list>
+              <v-list-item
+                v-for="item in allAnnotatables"
+                :key="item.id"
+                link
+                @click="() => (modelValue = item)"
+              >
+                <v-list-item-title>{{ item.label }}</v-list-item-title>
+                <template #append>
+                  <v-chip v-if="item?.annotations?.length">
+                    {{ item?.annotations }} vorgeschlagene Annotationen
+                  </v-chip>
+                </template>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </template>
+      </v-list-item>
       <v-list-item :key="code.system + code.code">
         <template #title>{{ code.display }}</template>
         <template #subtitle>
-          <span color="blue">Ausgewählter Code:</span> {{ code.code }} in {{ code.system }}
+          <span color="primary">Ausgewählter Code:</span> {{ code.code }} in {{ code.system }}
         </template>
         <template #append>
           <v-btn
             :disabled="loadingCreate"
             :icon="mdiPencil"
             @click="$emit('edit')"
-            variant="text"
+            variant="plain"
           />
         </template>
       </v-list-item>

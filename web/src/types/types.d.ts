@@ -33,14 +33,17 @@ export interface Participant {
   roles: Role[];
 }
 
-export interface Variable {
+export interface Annotatable {
   id: number | undefined;
-  variableName: string | null | undefined;
+  annotations: Annotation[];
   label: string;
+}
+
+export interface Variable extends Annotatable {
+  variableName: string | null | undefined;
   type: string | null | undefined;
   choices: Choice[] | null | undefined;
   metadata: KeyValuePair[];
-  annotations: Annotation[];
 }
 
 export interface KeyValuePair {
@@ -48,11 +51,8 @@ export interface KeyValuePair {
   value: string;
 }
 
-export interface Choice {
-  id: number | undefined;
+export interface Choice extends Annotatable {
   code: string;
-  name: string;
-  annotations: Annotation[];
 }
 
 export interface BaseAnnotation {

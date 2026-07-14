@@ -35,8 +35,8 @@ public class Choice {
 
     /**
      * Human-readable label.
-    */
-    private String name;
+     */
+    private String label;
 
     /**
      * Data element this select option belongs to.

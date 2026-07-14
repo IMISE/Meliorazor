@@ -241,7 +241,7 @@ const headers = [
     title: "Optionen",
     key: "choices",
     value: (item: Variable) =>
-      (item.choices?.map((choice) => `${choice.code}. ${choice.name}`).join("; ") ?? "-") ||
+      (item.choices?.map((choice) => `${choice.code}. ${choice.label}`).join("; ") ?? "-") ||
       "(keine)",
   },
   {

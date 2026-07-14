@@ -3,14 +3,14 @@ import CodeAnnotator from "@/components/CodeAnnotator.vue";
 import CodeDisplay from "@/components/CodeDisplay.vue";
 import CodeSearch from "@/components/CodeSearch.vue";
 import DataElementSummary from "@/components/DataElementSummary.vue";
-import type { CodeInfo, InformedCodeMapping, Variable } from "@/types/types";
+import type { Annotatable, CodeInfo, InformedCodeMapping, Variable } from "@/types/types";
 import { mdiArrowLeft, mdiArrowRight } from "@mdi/js";
-import { ref, watch, type Ref } from "vue";
+import { computed, ref, watch, type Ref } from "vue";
 import { getCode } from "@/utils/fhirApi.ts";
 import { codeEquals } from "@/utils/fhirUtils";
 import type { FhirTerminologyCode, FhirValueSetDefinition } from "@/types/fhir";
 
-defineProps<{
+const { dataElement } = defineProps<{
   valueSets: FhirValueSetDefinition[];
   dataElement: Variable;
   /** url to previous data element */ prev: string;
@@ -24,6 +24,9 @@ const focusCode: Ref<InformedCodeMapping | undefined> = ref();
 const focusCodeInfo: Ref<CodeInfo | undefined> = ref();
 const selectedCode: Ref<FhirTerminologyCode | undefined> = ref();
 const loadingFocus = ref(false);
+
+/** selected to-annotate; data element itself or choice */
+const selectedElement: Ref<Annotatable> = ref(dataElement);
 
 const unselect = () => {
   focusCode.value = undefined;
@@ -67,6 +70,14 @@ watch(focusCode, async (newCode, oldCode) => {
     loadingFocus.value = false;
   }
 });
+
+const autocompleteChoices = computed(() => [
+  { type: "subheader", title: "Variable selbst" },
+  { title: dataElement.label, value: dataElement },
+  { type: "divider" },
+  { type: "subheader", title: "Auswahloptionen" },
+  ...(dataElement.choices?.map((choice) => ({ title: choice.label, value: choice })) ?? []),
+]);
 </script>
 
 <template>
@@ -104,9 +115,34 @@ watch(focusCode, async (newCode, oldCode) => {
   <br />
   <v-row v-if="!selectedCode" size="12" class="full-width">
     <v-col :cols="focusCode ? 6 : 12">
+      <template v-if="dataElement.choices?.length">
+        <v-autocomplete
+          v-model="selectedElement"
+          :items="autocompleteChoices"
+          label="Zu annotatierendes Element"
+          item-title="title"
+          item-value="value"
+        >
+          <template #item="{ props, item }">
+            <v-list-item
+              v-if="item.value"
+              v-bind="props"
+              :title="item.title"
+              link
+              @click="() => (selectedElement = item.value)"
+            >
+              <template #append>
+                <v-chip v-if="item.value?.annotations?.length">
+                  {{ item.value?.annotations }} vorgeschlagene Annotationen
+                </v-chip>
+              </template>
+            </v-list-item>
+          </template>
+        </v-autocomplete>
+      </template>
       <data-element-summary :data-element="dataElement" />
       <code-search
-        :initial-search="dataElement.label?.replaceAll('_', ' ') ?? ''"
+        :initial-search="selectedElement?.label ?? dataElement.label ?? ''"
         :valueSets="valueSets"
         :focus="focusCode"
         @focus="focus"
@@ -128,7 +164,8 @@ watch(focusCode, async (newCode, oldCode) => {
   </v-row>
   <v-col v-else cols="12">
     <code-annotator
-      :data-element-id="dataElement.id!"
+      v-model="selectedElement"
+      :data-element="dataElement!"
       :code="selectedCode"
       @success="unselect"
       @edit="unselect"

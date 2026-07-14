@@ -18,7 +18,7 @@ defineProps<{
     Auswahlmöglichkeiten
     <ul>
       <li v-for="choice in dataElement.choices" :key="`${dataElement.id}-${choice.id}`">
-        {{ choice.name }} (<var>{{ choice.code }}</var
+        {{ choice.label }} (<var>{{ choice.code }}</var
         >)
       </li>
     </ul>

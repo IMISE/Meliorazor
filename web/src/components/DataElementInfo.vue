@@ -142,7 +142,7 @@ const annotate = () =>
   });
 
 /** stuff for form view */
-const fieldChoices = computed(() => data.choices?.map((c) => c.name) ?? []);
+const fieldChoices = computed(() => data.choices?.map((c) => c.label) ?? []);
 const required = computed(
   () => data.metadata.find((m) => m.key === "Required Field")?.value === "y",
 );
