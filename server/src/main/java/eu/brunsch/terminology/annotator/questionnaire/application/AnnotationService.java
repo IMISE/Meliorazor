@@ -251,8 +251,8 @@ public class AnnotationService {
         final Stream<Annotation> annotations = getDataElementsRawAnnotations(id);
         final AnnotationDto[] filteredAnnotations = annotations
             .filter(a -> a.getChoice() == null)
-            .map(a -> annotationMapper.toDto(a))
-            .toArray(count -> new AnnotationDto[count]);
+            .map(annotationMapper::toDto)
+            .toArray(AnnotationDto[]::new);
         final List<ChoiceDto> choiceDtos = new ArrayList<>();
 
         // populate choices with their annotations
@@ -260,15 +260,15 @@ public class AnnotationService {
             final ChoiceDto choiceDto = choiceMapper.toDto(choice);
             final var choiceAnnotations = annotations
                 .filter(a -> a.getChoice().getId() == choice.getId())
-                .map(a -> annotationMapper.toDto(a))
-                .toArray(count -> new AnnotationDto[count]);
+                .map(annotationMapper::toDto)
+                .toArray(AnnotationDto[]::new);
             choiceDto.setAnnotations(choiceAnnotations);
             choiceDtos.add(choiceDto);
         }
 
         // put it all together
         final DataElementDto dto = dataElementMapper.toDtoWithutChoices(variable);
-        dto.setChoices(choiceDtos.toArray(count -> new ChoiceDto[count]));
+        dto.setChoices(choiceDtos.toArray(ChoiceDto[]::new));
         dto.setAnnotations(filteredAnnotations);
         return dto;
     }
@@ -356,7 +356,7 @@ public class AnnotationService {
             .findById(choiceId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        // fill DTO
+        // fill object
         annotation.setVariable(parent);
         annotation.setChoice(choice);
         annotation.setStatus(Status.OPEN);
@@ -488,7 +488,7 @@ public class AnnotationService {
             // we already checked for admin, so we don't need to do this step I guess
             // but when we stream anyways ...
             .filter(a -> a.seenBy(username))
-            .toArray(size -> new Annotation[size]);
+            .toArray(Annotation[]::new);
         // check if all annotations exist
         if (annotations.length != dto.getAnnotationIds().length) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
@@ -519,10 +519,9 @@ public class AnnotationService {
         final Version v = versionRepository.findByKeyAndQuestionnaireId(versionKey, questionnaireId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         dto.setAnnotations(
-            List.of(v.getAnnotations())
-                .stream()
-                .map(a -> annotationMapper.toDto(a))
-                .toArray(size -> new AnnotationDto[size])
+            Stream.of(v.getAnnotations())
+                .map(annotationMapper::toDto)
+                .toArray(AnnotationDto[]::new)
         );
         dto.setKey(v.getKey());
         dto.setDescription(v.getDescription());
@@ -543,7 +542,7 @@ public class AnnotationService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
-        return versionRepository.findKeysByQuestionnaireId(questionnaireId).toArray(size -> new String[size]);
+        return versionRepository.findKeysByQuestionnaireId(questionnaireId).toArray(String[]::new);
     }
 
     /**
