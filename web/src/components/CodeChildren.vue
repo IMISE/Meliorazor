@@ -40,7 +40,10 @@ const load = async () => {
     /* this div is required because of the v-row this is in, else we would have weird spacing for the first element */ ""
   }}
   <div style="width: 100%">
-    <div @click="depth === 0 ? undefined : $emit('focus', toFhirCode(info))">
+    <div
+      style="cursor: pointer"
+      @click="depth === 0 ? undefined : $emit('focus', toFhirCode(info))"
+    >
       <b v-if="depth === 0">{{ info.self.display }}</b>
       <span v-else>{{ info.self.display }}</span>
       (<var>{{ info.self.code }}</var

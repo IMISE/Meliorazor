@@ -89,7 +89,7 @@ watch(
       :key="`${codeInfo.self.system}-${codeInfo.self.code}-${i}-${parent.self.system}-${parent.self.code}`"
     >
       <v-row v-if="i !== parents.length - 1" @click="$emit('focus', toFhirCode(parent))">
-        <div>
+        <div style="cursor: pointer">
           {{ parent.self.display }} (<var>{{ parent.self.code }}</var
           >)
         </div>
