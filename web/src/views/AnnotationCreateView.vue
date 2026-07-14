@@ -62,6 +62,7 @@ watch(projectId, getData);
       :prev="`#${input?.[index - 1]?.id ?? 0}`"
       :next="`#${input?.[index + 1]?.id ?? 0}`"
       class="full"
+      @success="getData"
     />
   </tabbed-interface>
 </template>

@@ -10,6 +10,8 @@ import { getCode } from "@/utils/fhirApi.ts";
 import { codeEquals } from "@/utils/fhirUtils";
 import type { FhirTerminologyCode, FhirValueSetDefinition } from "@/types/fhir";
 
+const emit = defineEmits(["success"]);
+
 const { dataElement } = defineProps<{
   valueSets: FhirValueSetDefinition[];
   dataElement: Variable;
@@ -48,6 +50,11 @@ const updateFocus = (value: FhirTerminologyCode) => {
     valueSet: focusCode.value!.valueSet,
   });
 };
+
+const reload = async () => {
+  emit("success");
+  unselect();
+}
 
 // populate focusCodeInfo
 watch(focusCode, async (newCode, oldCode) => {
@@ -171,7 +178,7 @@ const autocompleteChoices = computed(() => [
       v-model="selectedElement"
       :data-element="dataElement!"
       :code="selectedCode"
-      @success="unselect"
+      @success="reload"
       @edit="unselect"
     />
   </v-col>
