@@ -154,6 +154,7 @@ const valueSetProps = (item: FhirValueSetDefinition | string) =>
         :prepend-icon="isUrl(server) && !serverSelected ? mdiLocationEnter : undefined"
         :append-inner-icon="serverSelected ? mdiPencil : undefined"
         @click:prepend="selectServer"
+        @keydown.enter="loadingSelection ? undefined : selectServer"
         @click:append-inner="unselectServer"
       />
     </v-col>
