@@ -262,13 +262,15 @@ public class AnnotationService {
     @Transactional(readOnly = true)
     public DataElementDto getDataElementWithComments(final DataElement variable) {
         // all annotations visible to user
-        final Stream<Annotation> annotations = annotationRepository
+        final List<Annotation> annotations = annotationRepository
             .findByVariable(variable)
             .stream()
-            .filter(a -> a.seenBy(username()));
+            .filter(a -> a.seenBy(username()))
+            .toList();
 
         // only annotations on the data element, NOT on choices
         final AnnotationDto[] filteredAnnotations = annotations
+            .stream()
             .filter(a -> a.getChoice() == null)
             .map(annotationMapper::toDto)
             .toArray(AnnotationDto[]::new);
@@ -278,6 +280,7 @@ public class AnnotationService {
         for (final Choice choice :  variable.getChoices()) {
             final ChoiceDto choiceDto = choiceMapper.toDto(choice);
             final var choiceAnnotations = annotations
+                .stream()
                 .filter(a -> a.getChoice().getId().intValue() == choice.getId().intValue())
                 .map(annotationMapper::toDto)
                 .toArray(AnnotationDto[]::new);
