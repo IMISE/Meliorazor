@@ -87,20 +87,26 @@ public class AnnotationService {
         }
         questionnaireRepository.save(questionnaire);
         for (final DataElementDto dDto : dto.getDataElements()) {
-            Choice[] choices = null;
+            // save DE first, so the choices can reference its ID later
+            final DataElement dataElement = dataElementMapper.toEntity(dDto);
+            dataElement.setQuestionnaire(questionnaire);
+            dataElementRepository.save(dataElement);
+
+            // create & save choices, if required
             if (dDto.getChoices() != null) {
-                choices = new Choice[dDto.getChoices().length];
+
+                final Choice[] choices = new Choice[dDto.getChoices().length];
                 for (int i = 0; i < dDto.getChoices().length; i++) {
                     final ChoiceDto cDto = dDto.getChoices()[i];
                     final Choice choice = choiceMapper.toEntity(cDto);
                     choices[i] = choice;
                     choiceRepository.save(choice);
                 }
+
+                // set choices & save again
+                dataElement.setChoices(choices);
+                dataElementRepository.save(dataElement);
             }
-            final DataElement dataElement = dataElementMapper.toEntity(dDto);
-            dataElement.setQuestionnaire(questionnaire);
-            dataElement.setChoices(choices);
-            dataElementRepository.save(dataElement);
         }
         return questionnaire.getId();
     }
