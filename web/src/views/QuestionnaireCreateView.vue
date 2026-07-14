@@ -348,7 +348,7 @@ const fracSliderRules = ref([
           <v-select
             label="Typ vom Data Dictionary"
             :rules="notEmpty"
-            :items="['REDCap', 'OpenClinica']"
+            :items="['REDCap' /*, 'OpenClinica'*/]"
             v-model="fileType"
           ></v-select>
           <v-file-input
