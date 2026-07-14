@@ -100,12 +100,13 @@ const submitAnnotation = async () => {
             </template>
             <v-list>
               <v-list-item
-                v-for="item in allAnnotatables"
+                v-for="(item, i) in allAnnotatables"
                 :key="item.id"
                 link
-                @click="() => (modelValue = item)"
+                @click="() => $emit('update:modelValue', item)"
               >
                 <v-list-item-title>{{ item.label }}</v-list-item-title>
+                <v-list-item-subtitle v-if="i === 0">Variable selbst</v-list-item-subtitle>
                 <template #append>
                   <v-chip v-if="item?.annotations?.length">
                     {{ item?.annotations }} vorgeschlagene Annotationen
