@@ -281,7 +281,7 @@ public class AnnotationService {
             final ChoiceDto choiceDto = choiceMapper.toDto(choice);
             final var choiceAnnotations = annotations
                 .stream()
-                .filter(a -> a.getChoice().getId().intValue() == choice.getId().intValue())
+                .filter(a -> a.getChoice() != null && a.getChoice().getId().intValue() == choice.getId().intValue())
                 .map(annotationMapper::toDto)
                 .toArray(AnnotationDto[]::new);
             choiceDto.setAnnotations(choiceAnnotations);
