@@ -127,6 +127,16 @@ watch(file, () => {
   }
 });
 
+const redcapFieldType = (datum: { [index: string]: string }) => {
+  const t = datum?.["Field Type"] as string;
+  switch (t) {
+    case "yesno":
+      return "radio";
+    default:
+      return t;
+  }
+};
+
 const parsedDataREDCap = () =>
   contents.value?.data.map(
     (datum) =>
@@ -134,7 +144,7 @@ const parsedDataREDCap = () =>
         id: undefined,
         variableName: datum["Variable / Field Name"] as string,
         label: datum["Field Label"] as string,
-        type: datum["Field Type"] as string,
+        type: redcapFieldType(datum),
         choices: ["dropdown", "checkbox", "radio", "slider"].includes(datum["Field Type"] as string)
           ? (datum["Choices, Calculations, OR Slider Labels"] as string)
               .split(" | ")
@@ -145,13 +155,22 @@ const parsedDataREDCap = () =>
                 name: choice[1] ?? choice[0],
                 annotations: [],
               }))
-          : null,
+          : (datum["Field Type"] as string) === "yesno"
+            ? ["yes", "no"].map((choice, i) => ({
+                id: undefined,
+                code: i,
+                name: choice,
+                annotations: [],
+              }))
+            : undefined,
         metadata: Object.keys(datum)
           .filter(
             (key) =>
               !["Variable / Field Name", "Field Label", "Field Type"].includes(key) &&
               (key !== "Choices, Calculations, OR Slider Labels" ||
-                !["dropdown", "checkbox", "radio"].includes(datum["Field Type"] as string)),
+                !["dropdown", "checkbox", "radio", "slider"].includes(
+                  datum["Field Type"] as string,
+                )),
           )
           .filter((key) => datum[key])
           .map((key) => ({ key, value: datum[key] })),

@@ -182,10 +182,6 @@ const required = computed(
         <v-radio-group v-else-if="dataElement.type === 'radio'" readonly :required="required">
           <v-radio v-for="choice in fieldChoices" :key="choice" :label="choice" readonly />
         </v-radio-group>
-        <v-radio-group v-else-if="dataElement.type === 'yesno'" readonly :required="required">
-          <v-radio label="Ja" readonly />
-          <v-radio label="Nein" readonly />
-        </v-radio-group>
         <v-slider
           v-else-if="dataElement.type === 'slider'"
           :min="fieldChoices[0]"
