@@ -142,6 +142,7 @@ const autocompleteChoices = computed(() => [
       </template>
       <data-element-summary :data-element="dataElement" />
       <code-search
+        :key="selectedElement?.label"
         :initial-search="selectedElement?.label ?? dataElement.label ?? ''"
         :valueSets="valueSets"
         :focus="focusCode"
