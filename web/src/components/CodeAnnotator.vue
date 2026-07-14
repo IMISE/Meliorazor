@@ -3,7 +3,7 @@ import auth from "@/auth";
 import type { CodeMapping, Predicate } from "@/types/types";
 import getEnv from "@/utils/env";
 import { mdiCheck, mdiCross, mdiPencil } from "@mdi/js";
-import { ref, watch, type Ref } from "vue";
+import { ref, type Ref } from "vue";
 import type { IconValue } from "vuetify/lib/composables/icons.mjs";
 
 const { code, dataElementId } = defineProps<{
