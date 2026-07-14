@@ -29,6 +29,7 @@ import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireOption
 import eu.brunsch.terminology.annotator.questionnaire.domain.Version;
 import eu.brunsch.terminology.annotator.questionnaire.domain.VersionCreateDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.VersionDto;
+import eu.brunsch.terminology.annotator.questionnaire.domain.Annotation.Status;
 import eu.brunsch.terminology.annotator.questionnaire.domain.Participant.Role;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.AnnotationRepository;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.ChoiceRepository;
@@ -292,6 +293,7 @@ public class AnnotationService {
 
         // fill DTO
         annotation.setVariable(parent);
+        annotation.setStatus(Status.OPEN);
         annotationRepository.save(annotation);
         return annotation.getId();
     }

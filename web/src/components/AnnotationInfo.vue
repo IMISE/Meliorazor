@@ -15,13 +15,13 @@ const { annotation, valueSets } = defineProps<{
 
 const statusText = computed(() => {
   switch (annotation.status) {
-    case Status.OPEN:
-      return "Offen";
     case Status.ACCEPTED:
       return "Akzeptiert";
     case Status.REJECTED:
-    default:
       return "Abgelehnt";
+    case Status.OPEN:
+    default:
+      return "Offen";
   }
 });
 
