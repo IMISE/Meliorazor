@@ -7,10 +7,11 @@ import type { FhirValueSetDefinition } from "@/types/fhir";
 import type { Participant, Questionnaire, QuestionnaireOut } from "@/types/types";
 import request, { getVersionKeys } from "@/utils/api";
 import getEnv from "@/utils/env";
-import { mdiArrowRight, mdiMinus, mdiPlus } from "@mdi/js";
+import { mdiArrowRight, mdiCheck, mdiCross, mdiMinus, mdiPlus } from "@mdi/js";
 import type { IdTokenClaims } from "oidc-client-ts";
 import { computed, inject, onMounted, provide, ref, watch, type Ref } from "vue";
 import { useRouter } from "vue-router";
+import type { IconValue } from "vuetify/lib/composables/icons.mjs";
 
 const user = inject<Ref<IdTokenClaims | undefined>>("user");
 
@@ -161,6 +162,7 @@ const participantEdit: Ref<{ id: number; participant: Participant }[]> = ref([])
 const participantKey = ref(0);
 const valueSetEdit: Ref<{ id: number; set: FhirValueSetDefinition | undefined }[]> = ref([]);
 const valueSetKey = ref(0);
+const loadingEdits = ref(false);
 watch(
   questionnaire,
   (newVal) => {
@@ -176,9 +178,10 @@ watch(
   { deep: true, immediate: true },
 );
 
-const saveEdits = async () =>
-  questionnaire.value
-    ? request(
+const editFeedbackIcon: Ref<IconValue | undefined> = ref();
+const saveEdits = async () => {
+  const response = questionnaire.value
+    ? await request(
         `/questionnaire/${questionnaire.value.id}`,
         "PUT",
         JSON.stringify({
@@ -190,9 +193,18 @@ const saveEdits = async () =>
           valueSets: valueSetEdit.value.map((row) => row.set),
           participants: participantEdit.value.map((row) => row.participant),
         } as QuestionnaireOut),
+        loadingEdits,
       )
     : undefined;
-
+  if (response?.ok) {
+    editFeedbackIcon.value = mdiCheck;
+    setTimeout(() => (editFeedbackIcon.value = undefined), 2_000);
+    await get(projectId.value);
+  } else {
+    editFeedbackIcon.value = mdiCross;
+    setTimeout(() => (editFeedbackIcon.value = undefined), 5_000);
+  }
+};
 /* editing rules */
 const notEmpty = ref([(v: string | unknown[]) => !!v.length || "darf nicht leer sein"]);
 const participantUser = ref([
@@ -266,7 +278,7 @@ const participantUser = ref([
         </v-tabs-window-item>
         <v-tabs-window-item :value="3">
           <h2>Projektinformationen</h2>
-          <v-form @submit="saveEdits">
+          <v-form :disabled="loadingEdits" @submit.prevent="saveEdits">
             <h3>Mitwirkende</h3>
             <div>
               <v-row
@@ -345,7 +357,16 @@ const participantUser = ref([
             <h3>Akzeptanzbedingungen</h3>
             TODO
             -->
-            <v-btn v-if="isAdmin" color="primary" type="submit" block>Änderungen abschicken</v-btn>
+            <v-btn
+              v-if="isAdmin"
+              :disabled="!!editFeedbackIcon || loadingEdits"
+              :prepend-icon="editFeedbackIcon"
+              color="primary"
+              type="submit"
+              block
+            >
+              Änderungen abschicken
+            </v-btn>
           </v-form>
         </v-tabs-window-item>
       </v-tabs-window>
