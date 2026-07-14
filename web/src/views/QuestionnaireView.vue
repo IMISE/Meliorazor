@@ -153,7 +153,8 @@ const createVersion = () => {
 const versions: Ref<string[]> = ref([]);
 watch(
   questionnaire,
-  async (newVal) => (versions.value = newVal ? ((await getVersionKeys(newVal.id)) ?? []) : []),
+  async (newVal) =>
+    (versions.value = isAdmin.value && newVal ? ((await getVersionKeys(newVal.id)) ?? []) : []),
   { immediate: true },
 );
 
