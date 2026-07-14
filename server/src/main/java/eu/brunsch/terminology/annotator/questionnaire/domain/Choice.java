@@ -6,7 +6,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -44,7 +43,4 @@ public class Choice {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     private DataElement variable;
-
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "choice")
-    private Annotation[] annotations;
 }
