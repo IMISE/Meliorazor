@@ -124,6 +124,22 @@ public class AnnotationController {
     }
 
     /**
+     * Annotate an option of a data element.
+     * @param dataElementId identifier of the data element the choice belongs to
+     * @param choiceId identifier choice itself
+     * @param dto information about the annotation
+     * @return ID of the newly created annotation
+     */
+    @PostMapping("dataElement/{dataElementId}/choice/{choiceId}/annotation")
+    public Long createAnnotation(
+        final @PathVariable Long dataElementId,
+        final @PathVariable Long choiceId,
+        final @RequestBody AnnotationDto dto
+    ) {
+        return service.createAnnotation(dataElementId, choiceId, dto);
+    }
+
+    /**
      * Remove an annotation.
      * Removes associated comments as well.
      * @param id identifier of the annotation

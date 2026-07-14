@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import auth from "@/auth";
-import type { Annotatable, CodeMapping, Predicate, Variable } from "@/types/types";
-import getEnv from "@/utils/env";
+import type { Annotatable, Choice, CodeMapping, Predicate, Variable } from "@/types/types";
+import { createAnnotation } from "@/utils/api";
 import { mdiCheck, mdiCross, mdiPencil } from "@mdi/js";
 import { computed } from "vue";
 import { ref, type Ref } from "vue";
 import type { IconValue } from "vuetify/lib/composables/icons.mjs";
 
-defineModel<Annotatable>();
+const annotatable = defineModel<Annotatable>();
 const { code, dataElement } = defineProps<{
   code: CodeMapping;
   dataElement: Variable;
@@ -21,7 +21,6 @@ const emit = defineEmits<{
 
 // creation request
 const loadingCreate = ref(false);
-const response: Ref<Response | undefined> = ref();
 const loadingFeedbackIcon: Ref<IconValue | undefined> = ref();
 
 // SSSOM metadata
@@ -51,25 +50,19 @@ const submitAnnotation = async () => {
 
   loadingCreate.value = true;
   try {
-    response.value = await fetch(
-      `${getEnv("VITE_API_BASE")}/dataElement/${dataElement.id}/annotation`,
+    const response = await createAnnotation(
       {
-        method: "POST",
-        body: JSON.stringify({
-          authorName: u.profile?.preferred_username,
-          code,
-          confidence: confidence.value,
-          comment: comment.value,
-          predicate: predicate.value,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${u.access_token}`,
-        },
+        authorName: u.profile!.preferred_username!,
+        code,
+        confidence: confidence.value,
+        comment: comment.value,
+        predicate: predicate.value,
       },
+      dataElement.id!,
+      (annotatable.value as Choice & Variable)?.choices?.length ? undefined : annotatable.value!.id,
     );
     // keep errror state for longer so user has time to think
-    if (response.value.ok) {
+    if (response?.ok) {
       loadingFeedbackIcon.value = mdiCheck;
       setTimeout(() => (loadingFeedbackIcon.value = undefined), 2_000);
       setTimeout(() => emit("success"), 500);

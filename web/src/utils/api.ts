@@ -1,7 +1,7 @@
 import auth from "@/auth";
 import type { Ref } from "vue";
 import getEnv from "./env";
-import type { CreateVersion, Questionnaire } from "@/types/types";
+import type { CreateAnnotation, CreateVersion, Questionnaire } from "@/types/types";
 
 export default async function request(
   path: string,
@@ -110,5 +110,27 @@ export async function createVersion(
 ) {
   if (loading && loading.value) return;
 
-  return await request(`/questionnaire/${projectId}/version`, "POST", JSON.stringify(version));
+  return await request(
+    `/questionnaire/${projectId}/version`,
+    "POST",
+    JSON.stringify(version),
+    loading,
+  );
+}
+
+export async function createAnnotation(
+  annotation: CreateAnnotation,
+  dataElementId: number,
+  choiceId: number | undefined = undefined,
+  loading: Ref<boolean> | undefined = undefined,
+) {
+  if (loading && loading.value) {
+    return;
+  }
+
+  const path =
+    choiceId === undefined
+      ? `/dataElement/${dataElementId}/annotation`
+      : `/dataElement/${dataElementId}/choice/${choiceId}/annotation`;
+  return await request(path, "POST", JSON.stringify(annotation), loading);
 }

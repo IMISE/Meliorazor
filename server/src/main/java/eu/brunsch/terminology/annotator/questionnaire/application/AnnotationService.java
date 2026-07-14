@@ -268,14 +268,14 @@ public class AnnotationService {
         final DataElement d = getDataElement(dataElementId);
         return annotationRepository.findByVariable(d)
             .stream()
-            .filter(a -> a.seenBy(username()))
+            .filter(a -> a.getChoice() == null && a.seenBy(username()))
             .map(annotationMapper::toDto)
             .toArray(AnnotationDto[]::new);
     }
 
     /**
-     * Add annotation to data element.
-     * @param dataElementId Internal ID of the annotated data element
+     * Add an annotation to a data element.
+     * @param dataElementId Internal ID of the data element to annotate
      * @param dto information by which to create the annotation
      * @return ID of the created annotation
      */
@@ -293,6 +293,39 @@ public class AnnotationService {
 
         // fill DTO
         annotation.setVariable(parent);
+        annotation.setStatus(Status.OPEN);
+        annotationRepository.save(annotation);
+        return annotation.getId();
+    }
+
+    /**
+     * Add an annotation to a choice option of a data element.
+     * @param dataElementId Internal ID of the annotated data element
+     * @param dataElementId Internal ID of the annotated data element
+     * @param dto choice by which to create the annotation
+     * @return ID of the created annotation
+     */
+    @Transactional(readOnly = true)
+    public Long createAnnotation(
+        final Long dataElementId,
+        final Long choiceId,
+        final AnnotationDto dto
+    ) {
+        final Annotation annotation = annotationMapper.toEntity(dto);
+        final DataElement parent = getDataElement(dataElementId);
+
+        // check if we're allowed to annotate
+        if (!parent.annotatableBy(username())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        final Choice choice = choiceRepository
+            .findById(choiceId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        // fill DTO
+        annotation.setVariable(parent);
+        annotation.setChoice(choice);
         annotation.setStatus(Status.OPEN);
         annotationRepository.save(annotation);
         return annotation.getId();

@@ -55,6 +55,14 @@ export interface Choice extends Annotatable {
   code: string;
 }
 
+export interface CreateAnnotation {
+  code: CodeMapping;
+  confidence: number;
+  comment: string;
+  predicate: string;
+  authorName: string;
+}
+
 export interface BaseAnnotation {
   id: number;
   code: CodeMapping;
