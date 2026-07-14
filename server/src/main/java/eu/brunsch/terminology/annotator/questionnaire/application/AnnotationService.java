@@ -250,7 +250,7 @@ public class AnnotationService {
         final DataElement variable = getDataElement(id);
         final Stream<Annotation> annotations = getDataElementsRawAnnotations(id);
         final AnnotationDto[] filteredAnnotations = annotations
-            .filter(a -> a.getChoice() == null)
+            .filter(a -> a.getChoice() == null || a.getChoice().getId() == null)
             .map(annotationMapper::toDto)
             .toArray(AnnotationDto[]::new);
         final List<ChoiceDto> choiceDtos = new ArrayList<>();
@@ -259,7 +259,7 @@ public class AnnotationService {
         for (final Choice choice :  variable.getChoices()) {
             final ChoiceDto choiceDto = choiceMapper.toDto(choice);
             final var choiceAnnotations = annotations
-                .filter(a -> a.getChoice().getId() == choice.getId())
+                .filter(a -> a.getChoice().getId().intValue() == choice.getId().intValue())
                 .map(annotationMapper::toDto)
                 .toArray(AnnotationDto[]::new);
             choiceDto.setAnnotations(choiceAnnotations);
