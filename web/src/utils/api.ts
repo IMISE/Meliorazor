@@ -28,7 +28,7 @@ export default async function request(
       getEnv("VITE_API_BASE") + (path.startsWith("/") ? "" : "/") + path,
       options,
     );
-    if (response.status === 403) {
+    if (response.status === 401) {
       await auth.signoutRedirect();
       return;
     } else {
