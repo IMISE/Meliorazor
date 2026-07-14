@@ -79,7 +79,7 @@ public class AnnotationService {
     public Long importQuestionnaire(final QuestionnaireDto dto) {
         final Questionnaire questionnaire = questionnaireMapper.toEntity(dto);
         // check if the first user is us (creator) and has admin privileges
-        if (!questionnaire.administeredBy(username()) || questionnaire.getParticipants()[0].getUsername() == username()) {
+        if (!questionnaire.administeredBy(username()) || !username().equals(questionnaire.getParticipants()[0].getUsername())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This participant configuration is forbidden");
         }
         questionnaireRepository.save(questionnaire);
@@ -186,9 +186,9 @@ public class AnnotationService {
             // participants need to still include ourselves as admins
             // first user (creator) has to stay the same user & must be an admin, the other roles may change
             if (
-                Arrays.stream(dto.getParticipants()).anyMatch(p -> p.getUsername() == username() &&
+                Arrays.stream(dto.getParticipants()).anyMatch(p -> p.getUsername().equals(username()) &&
                 List.of(p.getRoles()).contains(Role.ADMIN)) && List.of(dto.getParticipants()[0].getRoles()).contains(Role.ADMIN) &&
-                dto.getParticipants()[0].getUsername() == q.getParticipants()[0].getUsername()
+                dto.getParticipants()[0].getUsername().equals(q.getParticipants()[0].getUsername())
             ) {
                 q.setParticipants(dto.getParticipants());
             } else {
