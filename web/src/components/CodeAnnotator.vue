@@ -101,9 +101,9 @@ const submitAnnotation = async () => {
                 <v-list-item-title>{{ item.label }}</v-list-item-title>
                 <v-list-item-subtitle v-if="i === 0">Variable selbst</v-list-item-subtitle>
                 <template #append>
-                  <v-chip v-if="item.value?.annotations?.length">
-                    {{ item.value.annotations.length }} vorgeschlagene Annotation<template
-                      v-if="item.value.annotations.length > 1"
+                  <v-chip v-if="item.annotations?.length">
+                    {{ item.annotations.length }} vorgeschlagene Annotation<template
+                      v-if="item.annotations.length > 1"
                       >en
                     </template>
                   </v-chip>
