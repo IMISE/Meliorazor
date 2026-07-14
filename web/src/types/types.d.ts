@@ -55,15 +55,22 @@ export interface Choice {
   annotations: Annotation[];
 }
 
-export interface Annotation {
+export interface BaseAnnotation {
   id: number;
-  authorName: string;
   code: CodeMapping;
   status: Status;
   comments: AnnotationComment[];
   confidence: number;
   comment: string;
   predicate: string;
+}
+
+export interface Annotation extends BaseAnnotation {
+  authorName: string;
+}
+export interface MultiAuthorAnnotation extends BaseAnnotation {
+  authorNames: string[];
+  authorNameToId: { [index: string]: number };
 }
 
 export interface AnnotationComment {

@@ -1,7 +1,7 @@
 import type { FhirTerminologyCode } from "@/types/fhir";
-import type { CodeInfo } from "@/types/types";
+import type { CodeInfo, CodeMapping } from "@/types/types";
 
-export function codeEquals(codeA: FhirTerminologyCode, codeB: FhirTerminologyCode) {
+export function codeEquals(codeA: CodeMapping, codeB: CodeMapping) {
   return (
     codeA.system === codeB.system &&
     (!codeA.systemVersion ||

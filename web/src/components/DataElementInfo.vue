@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Annotation, Variable } from "@/types/types";
+import type { Annotation, MultiAuthorAnnotation, Variable } from "@/types/types";
 import { computed, ref } from "vue";
 import { Role, status, Status } from "@/types/enums";
 import AnnotationBadge from "./AnnotationBadge.vue";
@@ -7,6 +7,7 @@ import { useRouter } from "vue-router";
 import { clean } from "@/utils/utils";
 import { mdiMagnify, mdiPencilPlus } from "@mdi/js";
 import { fieldTypesNotDisplayedWithoutChoices, supportedFieldTypes } from "@/types/redCap.ts";
+import { codeEquals } from "@/utils/fhirUtils.ts";
 
 const model = defineModel<number[] | undefined>();
 
@@ -46,14 +47,41 @@ const annotations = computed(() =>
   ),
 );
 
+/** Merge equal annotations, so that multiple equal annotations from possibly different people are displayed separately */
+const mergeEqualAnnotations = (annotations: Annotation[]) => {
+  return annotations.reduce((acc, val) => {
+    const i = acc.findIndex(
+      (group) => codeEquals(group.code, val.code) && group.predicate === val.predicate,
+    );
+    if (i < 0) {
+      const multiAuthor: MultiAuthorAnnotation = {
+        ...val,
+        authorNames: [val.authorName],
+        authorNameToId: {},
+      };
+      multiAuthor.authorNameToId[val.authorName] = val.id;
+      acc.push(multiAuthor);
+    } else {
+      acc[i]!.authorNames.push(val.authorName);
+      acc[i]!.authorNameToId[val.authorName] = val.id;
+    }
+    return acc;
+  }, [] as MultiAuthorAnnotation[]);
+};
+
 const groupAnnotationsByCodeSystem = (annotations: Annotation[]) => {
-  return annotations.reduce(
+  const groups = annotations.reduce(
     (acc, val) =>
       acc[val.code.system]
         ? (acc[val.code.system]!.push(val), acc)
         : ((acc[val.code.system] = [val]), acc),
     {} as { [index: string]: Annotation[] },
   );
+  const mergedGroups = {} as { [index: string]: MultiAuthorAnnotation[] };
+  for (const key in groups) {
+    mergedGroups[key] = mergeEqualAnnotations(groups[key]!);
+  }
+  return mergedGroups;
 };
 
 const acceptedAnnotations = computed(() => annotations.value[Status.ACCEPTED as string]!);

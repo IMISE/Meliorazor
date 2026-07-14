@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import type { Annotation } from "@/types/types";
+import type { MultiAuthorAnnotation } from "@/types/types";
 import { mdiCheckCircleOutline, mdiCircleOutline } from "@mdi/js";
-import { computed } from "vue";
+import { computed, mergeProps } from "vue";
 import { useRouter } from "vue-router";
 
 const model = defineModel<number[] | undefined>();
 
 const props = defineProps<{
-  annotation: Annotation;
+  annotation: MultiAuthorAnnotation;
   projectId: number;
   projectName: string;
   dataElementId: number;
@@ -21,11 +21,11 @@ const router = useRouter();
 
 const hint = computed(() => `${props.annotation.code.code} in ${props.annotation.code.system}`);
 
-const goToAnnotation = async () =>
+const goToAnnotation = async (author: string) =>
   router.push({
     name: "focus-annotation",
     params: {
-      aid: props.annotation.id,
+      aid: props.annotation.authorNameToId[author],
       subject: props.annotation.code.display,
       eid: props.dataElementId,
       name: props.dataElementName,
@@ -81,21 +81,40 @@ const unselect = () => {
           {{ annotation.predicate }}
         </v-chip>
         <v-divider vertical color="white" :thickness="2" />
-        <v-tooltip :text="hint">
-          <template #activator="{ props: tooltipProps }">
-            <v-chip
-              v-bind="tooltipProps"
-              @click="goToAnnotation"
-              style="border-radius: 0 20px 20px 0"
-              class="bg-info"
-              :class="dashedBorder ? 'dashed-border' : undefined"
-              aria-label="Code"
-              inline
-            >
-              {{ annotation.code.display }}
-            </v-chip>
+        <v-menu>
+          <template #activator="{ props: menuProps }">
+            <v-tooltip :text="hint">
+              <template #activator="{ props: tooltipProps }">
+                <v-chip
+                  v-bind="mergeProps(menuProps, tooltipProps)"
+                  style="border-radius: 0 20px 20px 0"
+                  class="bg-info"
+                  :class="dashedBorder ? 'dashed-border' : undefined"
+                  aria-label="Code"
+                  inline
+                  @click="
+                    () =>
+                      annotation.authorNames.length === 1
+                        ? goToAnnotation(annotation.authorNames[0]!)
+                        : undefined
+                  "
+                >
+                  {{ annotation.code.display }}
+                </v-chip>
+              </template>
+            </v-tooltip>
           </template>
-        </v-tooltip>
+          <v-list v-if="annotation.authorNames.length > 1">
+            <v-list-item
+              v-for="(author, i) of annotation.authorNames"
+              :key="author"
+              :title="author"
+              :subtitle="`Autor ${i + 1}`"
+              link
+              @click="() => goToAnnotation(author)"
+            />
+          </v-list>
+        </v-menu>
       </div>
     </template>
   </v-hover>
