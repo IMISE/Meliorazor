@@ -12,6 +12,7 @@ import type { IdTokenClaims } from "oidc-client-ts";
 import ValueSetSelector from "@/components/ValueSetSelector.vue";
 import { clean } from "@/utils/utils";
 import type { FhirValueSetDefinition } from "@/types/fhir";
+import { fieldTypesWithChoicesImport } from "@/types/redCap";
 
 const step = shallowRef([1]);
 const itemsPerPage = ref(25);
@@ -147,7 +148,7 @@ const parsedDataREDCap = () =>
         type: redcapFieldType(datum),
         choices:
           datum["Choices, Calculations, OR Slider Labels"] &&
-          ["dropdown", "checkbox", "radio", "slider"].includes(datum["Field Type"] as string)
+          fieldTypesWithChoicesImport.includes(datum["Field Type"] as string)
             ? (datum["Choices, Calculations, OR Slider Labels"] as string)
                 .split(" | ")
                 .map((choice) => choice.split(", ", 2))

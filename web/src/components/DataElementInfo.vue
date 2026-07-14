@@ -6,6 +6,7 @@ import AnnotationBadge from "./AnnotationBadge.vue";
 import { useRouter } from "vue-router";
 import { clean } from "@/utils/utils";
 import { mdiMagnify, mdiPencilPlus } from "@mdi/js";
+import { fieldTypesNotDisplayedWithoutChoices, supportedFieldTypes } from "@/types/redCap.ts";
 
 const model = defineModel<number[] | undefined>();
 
@@ -113,7 +114,6 @@ const annotate = () =>
   });
 
 /** stuff for form view */
-const supportedFieldTypes = ["text", "dropdown", "radio", "slider", "yesno", "file"];
 const fieldChoices = computed(() => data.choices?.map((c) => c.name) ?? []);
 const required = computed(
   () => data.metadata.find((m) => m.key === "Required Field")?.value === "y",
@@ -154,7 +154,12 @@ const required = computed(
       <v-divider vertical />
       <div
         :style="
-          'grid-column: 3 / span ' + (supportedFieldTypes.includes(dataElement.type ?? '') ? 1 : 2)
+          'grid-column: 3 / span ' +
+          (supportedFieldTypes.includes(dataElement.type ?? '') &&
+          (!fieldTypesNotDisplayedWithoutChoices.includes(dataElement.type ?? '') ||
+            fieldChoices.length)
+            ? 1
+            : 2)
         "
       >
         <span class="varlabel">{{ dataElement.label }}</span>
