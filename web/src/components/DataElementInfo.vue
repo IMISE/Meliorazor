@@ -146,6 +146,12 @@ const fieldChoices = computed(() => data.choices?.map((c) => c.label) ?? []);
 const required = computed(
   () => data.metadata.find((m) => m.key === "Required Field")?.value === "y",
 );
+
+const displayMockInput = computed(
+  () =>
+    supportedFieldTypes.includes(data.type ?? "") &&
+    (!fieldTypesNotDisplayedWithoutChoices.includes(data.type ?? "") || fieldChoices.value.length),
+);
 </script>
 
 <template>
@@ -154,11 +160,7 @@ const required = computed(
       <div class="annotations-aggregated">
         <v-tooltip :text="acceptedTooltip">
           <template #activator="{ props }">
-            <div
-              v-bind="props"
-              @click="detailsAcceptedAnnotations = !detailsAcceptedAnnotations"
-              class="accepted-annotations-aggregated"
-            >
+            <div v-bind="props" @click="detailsAcceptedAnnotations = !detailsAcceptedAnnotations">
               <template v-if="modelValue?.length && acceptedAnnotations.length"
                 >{{ selectedAcceptedAnnotations.length }}/</template
               >{{ acceptedAnnotations.length ? acceptedAnnotations.length : "-" }}
@@ -167,11 +169,7 @@ const required = computed(
         </v-tooltip>
         <v-tooltip :text="openTooltip">
           <template #activator="{ props }">
-            <div
-              v-bind="props"
-              @click="detailsOpenAnnotations = !detailsOpenAnnotations"
-              class="open-annotations-aggregated"
-            >
+            <div v-bind="props" @click="detailsOpenAnnotations = !detailsOpenAnnotations">
               <template v-if="modelValue?.length && openAnnotations.length"
                 >{{ selectedOpenAnnotations.length }}/</template
               >{{ openAnnotations.length ? openAnnotations.length : "-" }}
@@ -180,21 +178,12 @@ const required = computed(
         </v-tooltip>
       </div>
       <v-divider vertical />
-      <div
-        :style="
-          'grid-column: 3 / span ' +
-          (supportedFieldTypes.includes(dataElement.type ?? '') &&
-          (!fieldTypesNotDisplayedWithoutChoices.includes(dataElement.type ?? '') ||
-            fieldChoices.length)
-            ? 1
-            : 2)
-        "
-      >
+      <div :style="'grid-column: 3 / span ' + (displayMockInput ? 1 : 2)">
         <span class="varlabel">{{ dataElement.label }}</span>
         <br />
         <var v-if="dataElement.variableName" class="varname">{{ dataElement.variableName }}</var>
       </div>
-      <template v-if="supportedFieldTypes.includes(dataElement.type ?? '')">
+      <template v-if="displayMockInput">
         <v-text-field
           v-if="dataElement.type === 'text'"
           style="grid-column: 4 / span 1"
