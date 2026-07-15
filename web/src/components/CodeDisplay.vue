@@ -5,7 +5,7 @@ import type { CodeInfo } from "@/types/types";
 import { getCode } from "@/utils/fhirApi";
 import { toFhirCode } from "@/utils/fhirUtils.ts";
 import { compareCodes } from "@/utils/terminologyCodes";
-import { mdiCheck, mdiClose } from "@mdi/js";
+import { mdiClose } from "@mdi/js";
 import { watch } from "vue";
 import { ref, type Ref } from "vue";
 

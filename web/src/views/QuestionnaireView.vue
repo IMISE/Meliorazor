@@ -235,7 +235,7 @@ const participantUser = ref([
                 {{ elements.length }} Datenelemente annotieren
               </v-btn>
               <!-- TODO implement -->
-              <v-btn v-if="correctable" @click="correctAll" color="primary">
+              <v-btn v-if="correctable && false" @click="correctAll" color="primary">
                 {{ toCorrect.length }} Annotationen korrigieren
               </v-btn>
               <v-btn v-if="isAdmin" @click="createVersion" color="primary" variant="outlined">
