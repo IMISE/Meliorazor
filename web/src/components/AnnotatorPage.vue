@@ -125,37 +125,36 @@ const autocompleteChoices = computed(() => [
   <br />
   <v-row v-if="!selectedCode" size="12" class="full-width">
     <v-col :cols="focusCode ? 6 : 12">
-      <template v-if="dataElement.choices?.length">
-        <v-select
-          v-model="selectedElement"
-          :items="autocompleteChoices"
-          label="Zu annotatierendes Element"
-          item-title="title"
-          item-value="value"
-        >
-          <template #selection="{ item }">
-            {{ item.value?.label ?? (item as { [index: string]: unknown })["label"] }}
-          </template>
-          <template #item="{ props, item }">
-            <v-list-item
-              v-if="item.value"
-              v-bind="props"
-              :title="item.title"
-              link
-              @click="() => (selectedElement = item.value)"
-            >
-              <template #append>
-                <v-chip v-if="item.value?.annotations?.length">
-                  {{ item.value.annotations.length }} vorgeschlagene Annotation<template
-                    v-if="item.value.annotations.length > 1"
-                    >en
-                  </template>
-                </v-chip>
-              </template>
-            </v-list-item>
-          </template>
-        </v-select>
-      </template>
+      <v-select
+        v-model="selectedElement"
+        :items="autocompleteChoices"
+        label="Zu annotatierendes Element"
+        item-title="title"
+        item-value="value"
+        :disabled="!dataElement.choices?.length"
+      >
+        <template #selection="{ item }">
+          {{ item.value?.label ?? (item as { [index: string]: unknown })["label"] }}
+        </template>
+        <template #item="{ props, item }">
+          <v-list-item
+            v-if="item.value"
+            v-bind="props"
+            :title="item.title"
+            link
+            @click="() => (selectedElement = item.value)"
+          >
+            <template #append>
+              <v-chip v-if="item.value?.annotations?.length">
+                {{ item.value.annotations.length }} vorgeschlagene Annotation<template
+                  v-if="item.value.annotations.length > 1"
+                  >en
+                </template>
+              </v-chip>
+            </template>
+          </v-list-item>
+        </template>
+      </v-select>
       <data-element-summary :data-element="dataElement" />
       <code-search v-model="search" :valueSets="valueSets" :focus="focusCode" @focus="focus" />
     </v-col>
