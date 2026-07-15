@@ -72,7 +72,7 @@ export async function expandValueSet(
   server: string,
   valueSet: string,
   acceptLanguage: string,
-  limit: number | undefined = undefined,
+  limit: number | undefined = 1000,
 ): Promise<InformedCodeMapping[]> {
   const response = await fetchFhir(
     `${server}/ValueSet/$expand?url=${valueSet}&filter=${filter}&includeDesignations=true` +
