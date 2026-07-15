@@ -58,18 +58,14 @@ watch(
 
 <template>
   <br />
-  <h3>Info</h3>
-  <ul>
-    <li>
-      Inaktiv?
-      <template v-if="codeInfo?.inactive"> <v-icon :icon="mdiCheck" /> Ja</template>
-      <template v-else> <v-icon :icon="mdiClose" /> Nein</template>
-    </li>
-    <li v-if="codeInfo?.definition">
-      {{ codeInfo.definition }}
-    </li>
-  </ul>
-  <br />
+  <template v-if="codeInfo && (codeInfo.inactive || codeInfo.definition)">
+    <h3>Info</h3>
+    <ul>
+      <li v-if="codeInfo.inactive" class="text-error"><v-icon :icon="mdiClose" /><b>Inaktiv</b></li>
+      <li v-if="codeInfo.definition">{{ codeInfo.definition }}</li>
+    </ul>
+    <br />
+  </template>
   <h3>Hierarchie</h3>
   <div>
     <v-btn
