@@ -3,8 +3,11 @@ package eu.brunsch.terminology.annotator.questionnaire.domain;
 import java.time.Instant;
 
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
@@ -27,6 +30,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
+@EntityListeners(AuditingEntityListener.class)
 public class Comment {
 
     /** Identifier value. */
@@ -50,6 +54,7 @@ public class Comment {
 
     /** Date and time this comment was submitted at. */
     @CreatedDate
+    @Column(nullable = false, updatable = false)
     private Instant submittedAt;
 
     /**
