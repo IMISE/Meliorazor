@@ -84,25 +84,25 @@ watch(
       v-for="(parent, i) in parents"
       :key="`${codeInfo.self.system}-${codeInfo.self.code}-${i}-${parent.self.system}-${parent.self.code}`"
     >
-      <v-row v-if="i !== parents.length - 1" @click="$emit('focus', toFhirCode(parent))">
-        <div style="cursor: pointer">
-          {{ parent.self.display }} (<var>{{ parent.self.code }}</var
-          >)
-        </div>
-      </v-row>
+      <div
+        v-if="i !== parents.length - 1"
+        style="cursor: pointer"
+        @click="$emit('focus', toFhirCode(parent))"
+      >
+        {{ parent.self.display }} (<var>{{ parent.self.code }}</var
+        >)
+      </div>
     </template>
     <!-- Current selection & Children -->
-    <v-row cols="6">
-      <code-children
-        v-if="codeInfo"
-        @focus="(v: FhirTerminologyCode) => $emit('focus', v)"
-        :depth="0"
-        :max-cols="6"
-        :code="codeInfo.self"
-        :info="codeInfo"
-        :server="server"
-      />
-    </v-row>
+    <code-children
+      v-if="codeInfo"
+      @focus="(v: FhirTerminologyCode) => $emit('focus', v)"
+      :depth="0"
+      :max-cols="6"
+      :code="codeInfo.self"
+      :info="codeInfo"
+      :server="server"
+    />
   </div>
   <template v-if="codeInfo?.alternativeNames.length">
     <br />
