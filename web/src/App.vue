@@ -4,6 +4,7 @@ import auth from "./auth";
 import { computed, onMounted, onUpdated, provide, ref, type Ref } from "vue";
 import type { User } from "oidc-client-ts";
 import { watch } from "vue";
+import { mdiLogin, mdiLogout } from "@mdi/js";
 
 const login = () => auth.signinRedirect();
 const logout = () => auth.signoutRedirect();
@@ -30,8 +31,10 @@ onUpdated(() => getUser());
       <v-app-bar-title>Meliorazor</v-app-bar-title>
       <v-btn href="/">Home</v-btn>
       <v-btn href="/projects">Projekte</v-btn>
-      <v-btn v-if="user?.access_token" @click="logout()">Logout</v-btn>
-      <v-btn v-else @click="login()">Login</v-btn>
+      <v-btn v-if="user?.access_token" :append-icon="mdiLogout" @click="logout()">{{
+        user.profile.preferred_username ?? "Logout"
+      }}</v-btn>
+      <v-btn v-else :append-icon="mdiLogin" @click="login()">Login</v-btn>
     </v-app-bar>
     <v-main>
       <RouterView />
