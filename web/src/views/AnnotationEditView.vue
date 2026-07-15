@@ -6,6 +6,7 @@ import BaseComponent from "@/components/BaseComponent.vue";
 import { Role } from "@/types/enums";
 import type { Annotation, Questionnaire } from "@/types/types";
 import getEnv from "@/utils/env";
+import { getAnnotatableFromProject } from "@/utils/utils";
 import type { IdTokenClaims } from "oidc-client-ts";
 import { computed, onMounted, ref, watch, type Ref } from "vue";
 import { useRouter } from "vue-router";
@@ -122,7 +123,12 @@ onMounted(() =>
   <base-component :back-button-link="-1">
     <p v-if="loadingProject || loadingAnnotation">Lädt ...</p>
     <template v-else-if="annotation && project && dataElementId">
-      <annotation-info :annotation="annotation" :value-sets="project.valueSets" :my-roles="roles" />
+      <annotation-info
+        :annotated-element="getAnnotatableFromProject(annotation.id, project)"
+        :annotation="annotation"
+        :value-sets="project.valueSets"
+        :my-roles="roles"
+      />
       <annotation-commentor
         v-if="roles.includes(Role.FEEDBACK)"
         @reload="loadAnnotation"

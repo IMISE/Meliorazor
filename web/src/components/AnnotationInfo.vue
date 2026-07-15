@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import CodeDisplay from "./CodeDisplay.vue";
-import { Status } from "@/types/enums";
-import type { Annotation, CodeInfo } from "@/types/types";
+import type { Annotatable, Annotation, CodeInfo } from "@/types/types";
 import { findCode } from "@/utils/fhirApi";
-import { ref, type Ref } from "vue";
-import { computed } from "vue";
+import { watch, ref, type Ref } from "vue";
 import SingleComment from "./SingleComment.vue";
 import type { FhirValueSetDefinition } from "@/types/fhir.js";
 import StatusIcon from "./StatusIcon.vue";
+import CodeAnnotator from "./CodeAnnotator.vue";
 
-const { annotation, valueSets } = defineProps<{
+const props = defineProps<{
+  annotatedElement: Annotatable;
   annotation: Annotation;
   valueSets: FhirValueSetDefinition[];
 }>();
@@ -18,15 +18,18 @@ const code: Ref<CodeInfo | undefined> = ref();
 const server: Ref<string | undefined> = ref();
 const loading = ref(false);
 
+const annotatable: Ref<Annotatable | undefined> = ref();
+watch(props, (newVal) => (annotatable.value = newVal.annotatedElement), { immediate: true });
+
 const getAnnotatedCode = async () => {
   if (loading.value) return;
   if (!code.value) {
     loading.value = true;
     const result = await findCode(
-      annotation.code.code,
-      annotation.code.system,
-      annotation.code.systemVersion,
-      valueSets.map((set) => set.server),
+      props.annotation.code.code,
+      props.annotation.code.system,
+      props.annotation.code.systemVersion,
+      props.valueSets.map((set) => set.server),
     );
     code.value = result.code;
     server.value = result.server;
@@ -38,21 +41,19 @@ const getAnnotatedCode = async () => {
 <template>
   <v-row cols="12">
     <v-col :cols="code ? 6 : 12">
+      <code-annotator
+        v-model="annotatable"
+        :data-element="undefined"
+        :code="annotation.code"
+        :editable="false"
+        :initial-comment="annotation.comment"
+        :initial-confidence="annotation.confidence"
+        :initial-predicate="annotation.predicate"
+        @edit="getAnnotatedCode"
+      />
       <ul>
         <li>Status: <status-icon :status="annotation.status" include-text /></li>
         <li>Erstellt von: {{ annotation.authorName }}</li>
-        <li>Konfidenz: {{ annotation.confidence }}</li>
-        <li>
-          {{ annotation.predicate }}
-          <v-btn v-if="valueSets?.length" variant="text" @click="getAnnotatedCode">
-            {{ annotation.code.display }}
-          </v-btn>
-          <template v-else>
-            {{ annotation.code.display }}
-            ({{ annotation.code.code }} in {{ annotation.code.system }})
-          </template>
-        </li>
-        <li v-if="annotation.comment">Kommentar bei Erstellung: {{ annotation.comment }}</li>
       </ul>
       <br />
       <h3>Diskussion</h3>

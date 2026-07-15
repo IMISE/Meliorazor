@@ -2,15 +2,19 @@
 import auth from "@/auth";
 import type { Annotatable, Choice, CodeMapping, Predicate, Variable } from "@/types/types";
 import { createAnnotation } from "@/utils/api";
-import { mdiCheck, mdiClose, mdiPencil } from "@mdi/js";
+import { mdiCheck, mdiClose, mdiEye, mdiPencil } from "@mdi/js";
 import { computed } from "vue";
 import { ref, type Ref } from "vue";
 import type { IconValue } from "vuetify/lib/composables/icons.mjs";
 
 const annotatable = defineModel<Annotatable>();
-const { code, dataElement } = defineProps<{
+const { code, dataElement, initialComment, initialPredicate, initialConfidence } = defineProps<{
   code: CodeMapping;
-  dataElement: Variable;
+  dataElement: Variable | undefined;
+  editable: boolean;
+  initialComment: string | undefined;
+  initialPredicate: Predicate | undefined;
+  initialConfidence: number | undefined;
 }>();
 
 const emit = defineEmits<{
@@ -24,9 +28,9 @@ const loadingCreate = ref(false);
 const loadingFeedbackIcon: Ref<IconValue | undefined> = ref();
 
 // SSSOM metadata
-const confidence: Ref<number> = ref(100);
-const predicate: Ref<Predicate> = ref("skos:exactMatch");
-const comment = ref("");
+const confidence: Ref<number> = ref(initialConfidence ?? 100);
+const predicate: Ref<Predicate> = ref(initialPredicate ?? "skos:exactMatch");
+const comment = ref(initialComment ?? "");
 const predicates = [
   "owl:sameAs",
   "owl:equivalentClass",
@@ -42,7 +46,13 @@ const predicates = [
   "rdfs:seeAlso",
 ];
 
-const allAnnotatables = computed(() => [dataElement, ...(dataElement.choices ?? [])]);
+const allAnnotatables = computed(() =>
+  dataElement
+    ? [dataElement, ...(dataElement.choices ?? [])]
+    : annotatable.value
+      ? [annotatable.value]
+      : [],
+);
 
 const submitAnnotation = async () => {
   const u = await auth.getUser();
@@ -58,7 +68,7 @@ const submitAnnotation = async () => {
         comment: comment.value,
         predicate: predicate.value,
       },
-      dataElement.id!,
+      dataElement!.id!,
       (annotatable.value as Choice & Variable)?.choices?.length ? undefined : annotatable.value!.id,
     );
     // keep errror state for longer so user has time to think
@@ -88,7 +98,7 @@ const submitAnnotation = async () => {
             <template #subtitle>
               <span color="primary">Ausgewähltes Element</span>
             </template>
-            <template #append>
+            <template v-if="editable" #append>
               <v-menu>
                 <template #activator="{ props }">
                   <v-btn
@@ -123,7 +133,8 @@ const submitAnnotation = async () => {
         </v-list>
       </v-col>
       <v-col cols="4">
-        <v-select label="Prädikat" v-model="predicate" :items="predicates" />
+        <v-select v-if="editable" label="Prädikat" v-model="predicate" :items="predicates" />
+        <p v-else style="text-align: center; align-content: center">{{ predicate }}</p>
       </v-col>
       <v-col cols="4">
         <v-list lines="one">
@@ -142,7 +153,7 @@ const submitAnnotation = async () => {
             <template #append>
               <v-btn
                 :disabled="loadingCreate"
-                :icon="mdiPencil"
+                :icon="editable ? mdiPencil : mdiEye"
                 @click="$emit('edit')"
                 variant="plain"
               />
@@ -156,6 +167,7 @@ const submitAnnotation = async () => {
     <v-form @submit.prevent="submitAnnotation">
       <v-slider
         v-model="confidence"
+        :readonly="!editable"
         :step="5"
         show-ticks="always"
         :min="0"
@@ -173,8 +185,10 @@ const submitAnnotation = async () => {
       >
         <template #thumb-label="{ modelValue: sliderModelValue }">{{ sliderModelValue }}%</template>
       </v-slider>
-      <v-textarea v-model="comment" label="Kommentar" />
+      <v-textarea v-if="editable" v-model="comment" label="Kommentar" />
+      <p v-else-if="comment?.length">Kommentar: {{ comment }}</p>
       <v-btn
+        v-if="editable"
         :prepend-icon="loadingFeedbackIcon"
         :disabled="!!loadingFeedbackIcon || loadingCreate"
         :loading="loadingCreate"

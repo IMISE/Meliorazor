@@ -16,10 +16,11 @@ const icon = computed(() => {
   switch (props.status) {
     case Status.ACCEPTED:
       return mdiCheckCircleOutline;
-    case Status.OPEN:
-      return mdiCheckboxBlankCircleOutline;
     case Status.REJECTED:
       return mdiCloseCircleOutline;
+    case Status.OPEN:
+    default:
+      return mdiCheckboxBlankCircleOutline;
   }
 });
 

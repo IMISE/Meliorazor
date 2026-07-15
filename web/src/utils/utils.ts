@@ -1,3 +1,4 @@
+import type { Annotatable, Questionnaire, Variable } from "@/types/types";
 import type { LocationQueryValue } from "vue-router";
 
 export function clean(input: string | null | undefined, length: number | undefined = undefined) {
@@ -73,4 +74,24 @@ export function getLongestStartingWith(prefix: string, strings: string[]) {
   return strings
     .filter((s) => s.startsWith(prefix))
     .reduce((longest, val) => (val.length > longest.length ? val : longest));
+}
+
+export function getAnnotatable(annotationId: number, dataElement: Variable): Annotatable {
+  return (
+    dataElement.choices?.find((choice) =>
+      choice.annotations.some((annotation) => annotation.id === annotationId),
+    ) ?? dataElement
+  );
+}
+
+export function getAnnotatableFromProject(
+  annotationId: number,
+  project: Questionnaire,
+): Annotatable {
+  return getAnnotatable(
+    annotationId,
+    project.dataElements.find((de) =>
+      de.annotations.some((annotation) => annotation.id === annotationId),
+    )!,
+  );
 }

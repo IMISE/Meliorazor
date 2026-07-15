@@ -190,6 +190,10 @@ defineExpose({
       v-model="selectedElement"
       :data-element="dataElement!"
       :code="selectedCode"
+      :editable="false"
+      :initial-comment="undefined"
+      :initial-confidence="undefined"
+      :initial-predicate="undefined"
       @success="reload"
       @edit="unselect"
     />

@@ -65,7 +65,7 @@ export interface CreateAnnotation {
 
 export interface BaseAnnotation {
   code: CodeMapping;
-  predicate: string;
+  predicate: Predicate;
 }
 
 interface AuthorSpecificAnnotation {
