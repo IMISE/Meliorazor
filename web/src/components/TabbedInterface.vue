@@ -28,7 +28,7 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div v-if="data.length > 1" class="d-flex flex-row">
+  <div v-if="data.length > 1" class="d-flex flex-row" style="width: 100%">
     <v-tabs v-model="tab" color="primary" direction="vertical" style="width: 20%">
       <!-- v-for + v-if instead of computed + v-for so that index stays the same -->
       <template v-for="e in data" :key="e.id">
@@ -43,7 +43,7 @@ watchEffect(() => {
       </template>
     </v-tabs>
     <v-divider vertical></v-divider>
-    <v-tabs-window v-model="tab" style="width: 100%; padding: 20px">
+    <v-tabs-window v-model="tab" style="width: 100%; padding: 20px; overflow: scroll">
       <template v-for="(e, i) in data" :key="e.id">
         <v-tabs-window-item v-if="e" :value="e.id">
           <slot :element="e" :index="i" :input="data"></slot>
