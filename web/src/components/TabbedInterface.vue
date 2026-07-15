@@ -4,6 +4,7 @@ import { computed } from "vue";
 import { useRouter } from "vue-router";
 
 const model = defineModel<number>();
+model.value = 0;
 
 const { data } = defineProps<{
   data: T[];
@@ -16,11 +17,14 @@ const tab = ref(data[0]?.id);
 watch(
   index,
   (val) => {
-    tab.value = val;
+    tab.value = val ?? data[0]?.id;
   },
   { immediate: true },
 );
-watchEffect(() => (model.value = data.findIndex((ele) => ele.id === tab.value)));
+watchEffect(() => {
+  const i = data.findIndex((ele) => ele.id === tab.value);
+  model.value = i < 0 ? 0 : i;
+});
 </script>
 
 <template>
