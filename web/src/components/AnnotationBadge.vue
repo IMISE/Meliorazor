@@ -73,36 +73,40 @@ const unselect = () => {
             :key="modelValue?.join(',') + '|off'"
           />
         </template>
-        <v-chip
-          style="border-radius: 20px 0 0 20px"
-          class="bg-info"
-          :class="dashedBorder ? 'dashed-border' : undefined"
-          aria-label="Prädikat"
-          inline
-        >
-          {{ annotation.predicate }}
-        </v-chip>
-        <v-divider vertical color="white" :thickness="2" />
         <v-menu>
           <template #activator="{ props: menuProps }">
             <v-tooltip :text="hint">
               <template #activator="{ props: tooltipProps }">
-                <v-chip
+                <div
                   v-bind="mergeProps(menuProps, tooltipProps)"
-                  style="border-radius: 0 20px 20px 0"
-                  class="bg-info"
-                  :class="dashedBorder ? 'dashed-border' : undefined"
-                  aria-label="Code"
-                  inline
                   @click="
                     () =>
                       annotation.authorNames.length === 1
                         ? goToAnnotation(annotation.authorNames[0]!)
                         : undefined
                   "
+                  style="display: inline"
                 >
-                  {{ annotation.code.display }}
-                </v-chip>
+                  <v-chip
+                    style="border-radius: 20px 0 0 20px"
+                    class="bg-info"
+                    :class="dashedBorder ? 'dashed-border' : undefined"
+                    aria-label="Prädikat"
+                    inline
+                  >
+                    {{ annotation.predicate }}
+                  </v-chip>
+                  <v-divider vertical color="white" :thickness="2" />
+                  <v-chip
+                    style="border-radius: 0 20px 20px 0"
+                    class="bg-info"
+                    :class="dashedBorder ? 'dashed-border' : undefined"
+                    aria-label="Code"
+                    inline
+                  >
+                    {{ annotation.code.display }}
+                  </v-chip>
+                </div>
               </template>
             </v-tooltip>
           </template>
