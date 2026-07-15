@@ -133,6 +133,10 @@ const redcapFieldType = (datum: { [index: string]: string }) => {
   switch (t) {
     case "yesno":
       return "radio";
+    case "text":
+      if (datum?.["Text Validation Type OR Show Slider Number"] === "integer") {
+        return "number";
+      }
     default:
       return t;
   }

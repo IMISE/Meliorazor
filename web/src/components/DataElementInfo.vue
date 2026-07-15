@@ -197,8 +197,23 @@ const displayMockInput = computed(
         <var v-if="dataElement.variableName" class="varname">{{ dataElement.variableName }}</var>
       </div>
       <template v-if="displayMockInput">
+        <v-number-input
+          v-if="dataElement.type === 'integer'"
+          style="grid-column: 4 / span 1"
+          control-variant="stacked"
+          :label="dataElement.label"
+          :hint="dataElement.metadata.find((e) => e.key === 'Field Note')?.value"
+          readonly
+          :min="
+            Number(dataElement.metadata.find((pair) => pair.key === 'Text Validation Min')?.value)
+          "
+          :max="
+            Number(dataElement.metadata.find((pair) => pair.key === 'Text Validation Max')?.value)
+          "
+          :required="required"
+        />
         <v-text-field
-          v-if="dataElement.type === 'text'"
+          v-else-if="dataElement.type === 'text'"
           style="grid-column: 4 / span 1"
           :label="dataElement.label"
           :hint="dataElement.metadata.find((e) => e.key === 'Field Note')?.value"
