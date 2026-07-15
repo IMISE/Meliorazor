@@ -80,54 +80,77 @@ const submitAnnotation = async () => {
 
 <template>
   <div class="code-annotator-container">
-    <v-list lines="one">
-      <v-list-item :key="modelValue?.id">
-        <template #title>{{ modelValue?.label }}</template>
-        <template #subtitle>
-          <span color="primary">Ausgewähltes Element</span>
-        </template>
-        <template #append>
-          <v-menu>
-            <template #activator="{ props }">
-              <v-btn v-bind="props" :disabled="loadingCreate" :icon="mdiPencil" variant="plain" />
+    <v-row>
+      <v-col cols="4">
+        <v-list lines="one">
+          <v-list-item :key="modelValue?.id">
+            <template #title>{{ modelValue?.label }}</template>
+            <template #subtitle>
+              <span color="primary">Ausgewähltes Element</span>
             </template>
-            <v-list>
-              <v-list-item
-                v-for="(item, i) in allAnnotatables"
-                :key="item.id"
-                link
-                @click="() => $emit('update:modelValue', item)"
-              >
-                <v-list-item-title>{{ item.label }}</v-list-item-title>
-                <v-list-item-subtitle v-if="i === 0">Variable selbst</v-list-item-subtitle>
-                <template #append>
-                  <v-chip v-if="item.annotations?.length">
-                    {{ item.annotations.length }} vorgeschlagene Annotation<template
-                      v-if="item.annotations.length > 1"
-                      >en
-                    </template>
-                  </v-chip>
+            <template #append>
+              <v-menu>
+                <template #activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    :disabled="loadingCreate"
+                    :icon="mdiPencil"
+                    variant="plain"
+                  />
                 </template>
-              </v-list-item>
-            </v-list>
-          </v-menu>
-        </template>
-      </v-list-item>
-      <v-list-item :key="code.system + code.code">
-        <template #title>{{ code.display }}</template>
-        <template #subtitle>
-          <span color="primary">Ausgewählter Code:</span> {{ code.code }} in {{ code.system }}
-        </template>
-        <template #append>
-          <v-btn
-            :disabled="loadingCreate"
-            :icon="mdiPencil"
-            @click="$emit('edit')"
-            variant="plain"
-          />
-        </template>
-      </v-list-item>
-    </v-list>
+                <v-list>
+                  <v-list-item
+                    v-for="(item, i) in allAnnotatables"
+                    :key="item.id"
+                    link
+                    @click="() => $emit('update:modelValue', item)"
+                  >
+                    <v-list-item-title>{{ item.label }}</v-list-item-title>
+                    <v-list-item-subtitle v-if="i === 0">Variable selbst</v-list-item-subtitle>
+                    <template #append>
+                      <v-chip v-if="item.annotations?.length">
+                        {{ item.annotations.length }} vorgeschlagene Annotation<template
+                          v-if="item.annotations.length > 1"
+                          >en
+                        </template>
+                      </v-chip>
+                    </template>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </template>
+          </v-list-item>
+        </v-list>
+      </v-col>
+      <v-col cols="4">
+        <v-select label="Prädikat" v-model="predicate" :items="predicates" />
+      </v-col>
+      <v-col cols="4">
+        <v-list lines="one">
+          <v-list-item :key="code.system + code.code">
+            <template #title>{{ code.display }}</template>
+            <template #subtitle>
+              <v-tooltip :text="`${code.code} in ${code.system}`">
+                <template #activator="{ props }">
+                  <span v-bind="props">
+                    <span color="primary">Ausgewählter Code:</span>
+                    {{ code.code }} in {{ code.system }}
+                  </span>
+                </template>
+              </v-tooltip>
+            </template>
+            <template #append>
+              <v-btn
+                :disabled="loadingCreate"
+                :icon="mdiPencil"
+                @click="$emit('edit')"
+                variant="plain"
+              />
+            </template>
+          </v-list-item>
+        </v-list>
+      </v-col>
+    </v-row>
     <br />
     <!-- form to add further SSSOM metadata -->
     <v-form @submit.prevent="submitAnnotation">
@@ -150,7 +173,6 @@ const submitAnnotation = async () => {
       >
         <template #thumb-label="{ modelValue: sliderModelValue }">{{ sliderModelValue }}%</template>
       </v-slider>
-      <v-select label="Prädikat" v-model="predicate" :items="predicates" />
       <v-textarea v-model="comment" label="Kommentar" />
       <v-btn
         :prepend-icon="loadingFeedbackIcon"
@@ -169,6 +191,6 @@ const submitAnnotation = async () => {
 
 <style>
 .code-annotator-container {
-  max-width: 800px;
+  max-width: 1000px;
 }
 </style>
