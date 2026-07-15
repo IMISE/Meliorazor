@@ -38,7 +38,7 @@ const text = computed(() => {
 </script>
 
 <template>
-  <v-icon :key="status" :icon="icon" :class="status" />
+  <v-icon :key="status" :icon="icon" :class="status ?? 'OPEN'" />
   <span v-if="includeText">{{ text }}</span>
 </template>
 
