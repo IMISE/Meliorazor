@@ -12,12 +12,3 @@ a, a:visited, a:hover, a:link, a:active {
   transition: 0.4s;
   padding: 3px;
 }
-
-.v-expansion-panel-title {
-  justify-content: flex-start;
-  gap: 20px;
-}
-
-.v-avatar {
-  margin-right: 8px;
-}
