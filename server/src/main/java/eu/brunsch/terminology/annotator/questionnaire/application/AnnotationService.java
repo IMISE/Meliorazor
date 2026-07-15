@@ -271,7 +271,6 @@ public class AnnotationService {
         // only annotations on the data element, NOT on choices
         final AnnotationDto[] filteredAnnotations = annotations
             .stream()
-            .filter(a -> a.getChoice() == null)
             .map(annotationMapper::toDto)
             .toArray(AnnotationDto[]::new);
 
