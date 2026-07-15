@@ -5,7 +5,7 @@ import { Role, status, Status } from "@/types/enums";
 import AnnotationBadge from "./AnnotationBadge.vue";
 import { useRouter } from "vue-router";
 import { clean } from "@/utils/utils";
-import { mdiMagnify, mdiPencilPlus } from "@mdi/js";
+import { mdiChevronDown, mdiChevronUp, mdiMagnify, mdiPencilPlus } from "@mdi/js";
 import { fieldTypesNotDisplayedWithoutChoices, supportedFieldTypes } from "@/types/redCap.ts";
 import { codeEquals } from "@/utils/fhirUtils.ts";
 
@@ -160,20 +160,33 @@ const displayMockInput = computed(
       <div class="annotations-aggregated">
         <v-tooltip :text="acceptedTooltip">
           <template #activator="{ props }">
-            <div v-bind="props" @click="detailsAcceptedAnnotations = !detailsAcceptedAnnotations">
-              <template v-if="modelValue?.length && acceptedAnnotations.length"
+            <div
+              v-if="acceptedAnnotations?.length"
+              v-bind="props"
+              @click="detailsAcceptedAnnotations = !detailsAcceptedAnnotations"
+              style="cursor: pointer"
+            >
+              <template v-if="modelValue?.length"
                 >{{ selectedAcceptedAnnotations.length }}/</template
-              >{{ acceptedAnnotations.length ? acceptedAnnotations.length : "-" }}
+              >{{ acceptedAnnotations.length }}
+              <v-icon :icon="detailsOpenAnnotations ? mdiChevronUp : mdiChevronDown" />
             </div>
+            <div v-else v-bind="props">-</div>
           </template>
         </v-tooltip>
         <v-tooltip :text="openTooltip">
           <template #activator="{ props }">
-            <div v-bind="props" @click="detailsOpenAnnotations = !detailsOpenAnnotations">
-              <template v-if="modelValue?.length && openAnnotations.length"
-                >{{ selectedOpenAnnotations.length }}/</template
-              >{{ openAnnotations.length ? openAnnotations.length : "-" }}
+            <div
+              v-if="openAnnotations.length"
+              v-bind="props"
+              @click="detailsOpenAnnotations = !detailsOpenAnnotations"
+              style="cursor: pointer"
+            >
+              <template v-if="modelValue?.length">{{ selectedOpenAnnotations.length }}/</template
+              >{{ openAnnotations.length }}
+              <v-icon :icon="detailsOpenAnnotations ? mdiChevronUp : mdiChevronDown" />
             </div>
+            <div v-else v-bind="props">-</div>
           </template>
         </v-tooltip>
       </div>
