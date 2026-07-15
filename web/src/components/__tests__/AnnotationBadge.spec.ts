@@ -14,21 +14,22 @@ const vuetify = createVuetify({
 });
 
 const singleAuthorAnnotation: MultiAuthorAnnotation = {
-  id: 0,
-  authorNames: ["TestUser"],
-  authorNameToId: {
-    TestUser: 0,
-  },
+  authors: [
+    {
+      id: 0,
+      authorName: "TestUser",
+      status: Status.ACCEPTED,
+      comments: [],
+      confidence: 100,
+      comment: "",
+    },
+  ],
   code: {
     system: "http://example.com/codes",
     systemVersion: "http://example.com/codes/12345",
     code: "XYZ",
     display: "X, Y and Z",
   },
-  status: Status.ACCEPTED,
-  comments: [],
-  confidence: 100,
-  comment: "",
   predicate: "owl:sameAs",
 };
 

@@ -56,15 +56,13 @@ const mergeEqualAnnotations = (annotations: Annotation[]) => {
     );
     if (i < 0) {
       const multiAuthor: MultiAuthorAnnotation = {
-        ...val,
-        authorNames: [val.authorName],
-        authorNameToId: {},
+        code: val.code,
+        predicate: val.predicate,
+        authors: [val],
       };
-      multiAuthor.authorNameToId[val.authorName] = val.id;
       acc.push(multiAuthor);
     } else {
-      acc[i]!.authorNames.push(val.authorName);
-      acc[i]!.authorNameToId[val.authorName] = val.id;
+      acc[i]!.authors.push(val);
     }
     return acc;
   }, [] as MultiAuthorAnnotation[]);
@@ -316,7 +314,7 @@ const displayMockInput = computed(
                 <annotation-badge
                   v-for="annotation in group"
                   v-model="model"
-                  :key="`${dataElement.id}-${annotation.id}`"
+                  :key="`${dataElement.id}-${annotation.authors.map((a) => a.id).join()}`"
                   :annotation="annotation"
                   :data-element-id="dataElement.id!"
                   :data-element-name="dataElement.variableName!"
@@ -346,7 +344,7 @@ const displayMockInput = computed(
                 <annotation-badge
                   v-for="annotation in group"
                   v-model="model"
-                  :key="`${dataElement.id}-${annotation.id}`"
+                  :key="`${dataElement.id}-${annotation.authors.map((a) => a.id).join()}`"
                   :annotation="annotation"
                   :data-element-id="dataElement.id!"
                   :data-element-name="dataElement.variableName!"

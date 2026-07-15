@@ -24,7 +24,7 @@ const goToAnnotation = async (author: string) =>
   router.push({
     name: "focus-annotation",
     params: {
-      aid: props.annotation.authorNameToId[author],
+      aid: props.annotation.authors.find((a) => a.authorName === author)!.id,
       subject: props.annotation.code.display,
       eid: props.dataElementId,
       name: props.dataElementName,
@@ -33,16 +33,18 @@ const goToAnnotation = async (author: string) =>
     },
   });
 
-const contained = computed(() => model.value?.includes(props.annotation?.id));
+const contained = computed(() =>
+  model.value?.some((xId) => props.annotation.authors.some((y) => xId === y.id)),
+);
 const select = () => {
   if (props.allowEditSelection) {
-    model.value?.push(...Object.values(props.annotation.authorNameToId));
+    model.value?.push(...props.annotation.authors.map((annotation) => annotation.id));
   }
 };
 const unselect = () => {
   if (props.allowEditSelection) {
-    Object.values(props.annotation.authorNameToId).forEach((id) =>
-      model.value?.splice(model.value.indexOf(id), 1),
+    props.annotation.authors.forEach((annotation) =>
+      model.value?.splice(model.value.indexOf(annotation.id), 1),
     );
   }
 };
@@ -72,8 +74,8 @@ const unselect = () => {
               v-bind="mergeProps(menuProps, tooltipProps)"
               @click="
                 () =>
-                  annotation.authorNames.length === 1
-                    ? goToAnnotation(annotation.authorNames[0]!)
+                  annotation.authors.length === 1
+                    ? goToAnnotation(annotation.authors[0]!.authorName)
                     : undefined
               "
               style="display: inline"
@@ -101,15 +103,24 @@ const unselect = () => {
           </template>
         </v-tooltip>
       </template>
-      <v-list v-if="annotation.authorNames.length > 1">
+      <v-list v-if="annotation.authors.length > 1">
         <v-list-item
-          v-for="(author, i) of annotation.authorNames"
-          :key="author"
-          :title="author"
-          :subtitle="`Autor ${i + 1}`"
+          v-for="author of annotation.authors"
+          :key="author.authorName"
+          :title="author.authorName"
+          :subtitle="
+            author.comment.length > 20
+              ? author.comment.substring(0, 19) + '&hellip;'
+              : author.comment
+          "
           link
-          @click="() => goToAnnotation(author)"
-        />
+          @click="() => goToAnnotation(author.authorName)"
+        >
+          <template #append>
+            <!-- TODO: color indication? more labels? -->
+            <v-chip :text="`${author.confidence}%`" />
+          </template>
+        </v-list-item>
       </v-list>
     </v-menu>
   </div>

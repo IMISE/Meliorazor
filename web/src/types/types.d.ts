@@ -64,21 +64,22 @@ export interface CreateAnnotation {
 }
 
 export interface BaseAnnotation {
-  id: number;
   code: CodeMapping;
+  predicate: string;
+}
+
+interface AuthorSpecificAnnotation {
+  id: number;
+  authorName: string;
   status: Status;
   comments: AnnotationComment[];
   confidence: number;
   comment: string;
-  predicate: string;
 }
 
-export interface Annotation extends BaseAnnotation {
-  authorName: string;
-}
+export interface Annotation extends BaseAnnotation, AuthorSpecificAnnotation {}
 export interface MultiAuthorAnnotation extends BaseAnnotation {
-  authorNames: string[];
-  authorNameToId: { [index: string]: number };
+  authors: AuthorSpecificAnnotation[];
 }
 
 export interface AnnotationComment {
