@@ -54,17 +54,6 @@ const searchResultHeaders = [
     key: "inactive",
   },
 ];
-const searchResultsGroupBy:
-  | import("vuetify/lib/components/VDataTable/composables/sort.mjs").SortItem[]
-  | undefined =
-  valueSets.length > 1
-    ? [
-        {
-          key: "valueSetDisplayName",
-          order: "asc",
-        },
-      ]
-    : undefined;
 
 const go = async (text: string) => {
   loading.value = true;
@@ -143,7 +132,6 @@ const itemsPerPage = ref(15);
       :item-value="(item) => item"
       :items="searchResults"
       :headers="searchResultHeaders"
-      :group-by="searchResultsGroupBy"
       :row-props="colorFocusCode"
       density="compact"
       :items-per-page="itemsPerPage"
