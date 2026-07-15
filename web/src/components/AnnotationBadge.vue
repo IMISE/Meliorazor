@@ -37,12 +37,14 @@ const goToAnnotation = async (author: string) =>
 const contained = computed(() => model.value?.includes(props.annotation?.id));
 const select = () => {
   if (props.allowEditSelection) {
-    model.value?.push(props.annotation.id);
+    model.value?.push(...Object.values(props.annotation.authorNameToId));
   }
 };
 const unselect = () => {
   if (props.allowEditSelection) {
-    model.value?.splice(model.value.indexOf(props.annotation.id), 1);
+    Object.values(props.annotation.authorNameToId).forEach((id) =>
+      model.value?.splice(model.value.indexOf(id), 1),
+    );
   }
 };
 </script>
