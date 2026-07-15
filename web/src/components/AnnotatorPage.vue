@@ -126,7 +126,7 @@ const autocompleteChoices = computed(() => [
   <v-row v-if="!selectedCode" size="12" class="full-width">
     <v-col :cols="focusCode ? 6 : 12">
       <template v-if="dataElement.choices?.length">
-        <v-autocomplete
+        <v-select
           v-model="selectedElement"
           :items="autocompleteChoices"
           label="Zu annotatierendes Element"
@@ -151,7 +151,7 @@ const autocompleteChoices = computed(() => [
               </template>
             </v-list-item>
           </template>
-        </v-autocomplete>
+        </v-select>
       </template>
       <data-element-summary :data-element="dataElement" />
       <code-search
