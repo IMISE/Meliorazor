@@ -133,7 +133,8 @@ const submitAnnotation = async () => {
     <v-form @submit.prevent="submitAnnotation">
       <v-slider
         v-model="confidence"
-        :step="1"
+        :step="5"
+        show-ticks
         :min="0"
         :max="100"
         label="Konfidenz"
