@@ -7,23 +7,12 @@ import { ref, type Ref } from "vue";
 import { computed } from "vue";
 import SingleComment from "./SingleComment.vue";
 import type { FhirValueSetDefinition } from "@/types/fhir.js";
+import StatusIcon from "./StatusIcon.vue";
 
 const { annotation, valueSets } = defineProps<{
   annotation: Annotation;
   valueSets: FhirValueSetDefinition[];
 }>();
-
-const statusText = computed(() => {
-  switch (annotation.status) {
-    case Status.ACCEPTED:
-      return "Akzeptiert";
-    case Status.REJECTED:
-      return "Abgelehnt";
-    case Status.OPEN:
-    default:
-      return "Offen";
-  }
-});
 
 const code: Ref<CodeInfo | undefined> = ref();
 const server: Ref<string | undefined> = ref();
@@ -50,7 +39,7 @@ const getAnnotatedCode = async () => {
   <v-row cols="12">
     <v-col :cols="code ? 6 : 12">
       <ul>
-        <li>Status: {{ statusText }}</li>
+        <li>Status: <status-icon :status="annotation.status" include-text /></li>
         <li>Erstellt von: {{ annotation.authorName }}</li>
         <li>Konfidenz: {{ annotation.confidence }}</li>
         <li>

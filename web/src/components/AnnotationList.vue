@@ -44,7 +44,7 @@ const annotate = async () => {
       <v-list-item-title>{{ annotation.code.display }}</v-list-item-title>
       <v-list-item-subtitle>{{ annotation.authorName }}</v-list-item-subtitle>
       <template #prepend>
-        <status-icon :status="annotation.status" />
+        <status-icon :status="annotation.status" :include-text="false" />
       </template>
       <template #append>
         <router-link

@@ -5,13 +5,15 @@ import {
   mdiCheckCircleOutline,
   mdiCloseCircleOutline,
 } from "@mdi/js";
+import { computed } from "vue";
 
-defineProps<{
+const props = defineProps<{
   status: Status;
+  includeText: boolean;
 }>();
 
-const icon = (status: Status) => {
-  switch (status) {
+const icon = computed(() => {
+  switch (props.status) {
     case Status.ACCEPTED:
       return mdiCheckCircleOutline;
     case Status.OPEN:
@@ -19,11 +21,24 @@ const icon = (status: Status) => {
     case Status.REJECTED:
       return mdiCloseCircleOutline;
   }
-};
+});
+
+const text = computed(() => {
+  switch (props.status) {
+    case Status.ACCEPTED:
+      return "Akzeptiert";
+    case Status.REJECTED:
+      return "Abgelehnt";
+    case Status.OPEN:
+    default:
+      return "Offen";
+  }
+});
 </script>
 
 <template>
-  <v-icon :key="status" :icon="icon(status)" :class="status" />
+  <v-icon :key="status" :icon="icon" :class="status" />
+  <span v-if="includeText">{{ text }}</span>
 </template>
 
 <style scoped>
