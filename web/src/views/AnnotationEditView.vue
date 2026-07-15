@@ -2,6 +2,7 @@
 import auth from "@/auth";
 import AnnotationCommentor from "@/components/AnnotationCommentor.vue";
 import AnnotationInfo from "@/components/AnnotationInfo.vue";
+import BaseComponent from "@/components/BaseComponent.vue";
 import { Role } from "@/types/enums";
 import type { Annotation, Questionnaire } from "@/types/types";
 import getEnv from "@/utils/env";
@@ -118,15 +119,20 @@ onMounted(() =>
 </script>
 
 <template>
-  <p v-if="loadingProject || loadingAnnotation">Lädt ...</p>
-  <template v-else-if="annotation && project && dataElementId">
-    <annotation-info :annotation="annotation" :value-sets="project.valueSets" :my-roles="roles" />
-    <annotation-commentor
-      v-if="roles.includes(Role.FEEDBACK)"
-      @reload="loadAnnotation"
-      :annotation-id="annotation.id"
-      :data-element-id="dataElementId"
-    />
-  </template>
-  <p v-else>Nicht gefunden :-(</p>
+  <base-component :back-button-link="-1">
+    <p v-if="loadingProject || loadingAnnotation">Lädt ...</p>
+    <template v-else-if="annotation && project && dataElementId">
+      <annotation-info :annotation="annotation" :value-sets="project.valueSets" :my-roles="roles" />
+      <annotation-commentor
+        v-if="roles.includes(Role.FEEDBACK)"
+        @reload="loadAnnotation"
+        :annotation-id="annotation.id"
+        :data-element-id="dataElementId"
+      />
+    </template>
+    <template v-else>
+      <h3>Fehler</h3>
+      <p>Fehler beim Abrufen der Annotation.</p>
+    </template>
+  </base-component>
 </template>

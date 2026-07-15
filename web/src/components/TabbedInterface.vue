@@ -1,7 +1,9 @@
 <script setup lang="ts" generic="T extends { id: number | undefined }">
-import { ref, watch } from "vue";
+import { ref, watch, watchEffect } from "vue";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
+
+const model = defineModel<number>();
 
 const { data } = defineProps<{
   data: T[];
@@ -10,8 +12,15 @@ const { data } = defineProps<{
 
 const route = useRouter().currentRoute;
 const index = computed(() => Number(route.value.hash.substring(1)));
-const tab = ref();
-watch(index, (val) => (isNaN(index.value) ? data[0]?.id : (tab.value = val)), { immediate: true });
+const tab = ref(data[0]?.id);
+watch(
+  index,
+  (val) => {
+    tab.value = val;
+  },
+  { immediate: true },
+);
+watchEffect(() => (model.value = data.findIndex((ele) => ele.id === tab.value)));
 </script>
 
 <template>

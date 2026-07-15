@@ -4,7 +4,6 @@ import auth from "./auth";
 import { computed, onMounted, onUpdated, provide, ref, type Ref } from "vue";
 import type { User } from "oidc-client-ts";
 import { watch } from "vue";
-import { mdiArrowLeft } from "@mdi/js";
 
 const login = () => auth.signinRedirect();
 const logout = () => auth.signoutRedirect();
@@ -12,8 +11,6 @@ const logout = () => auth.signoutRedirect();
 const user: Ref<User | undefined> = ref();
 const profile = computed(() => user.value?.profile);
 const router = useRouter();
-
-const history = window.history.length;
 
 provide("user", profile);
 
@@ -37,12 +34,6 @@ onUpdated(() => getUser());
       <v-btn v-else @click="login()">Login</v-btn>
     </v-app-bar>
     <v-main>
-      <v-icon-btn
-        v-if="history && user && !router.currentRoute.value.meta.disableBackButton"
-        :icon="mdiArrowLeft"
-        variant="plain"
-        @click="router.go(-1)"
-      />
       <RouterView />
     </v-main>
   </v-layout>

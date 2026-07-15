@@ -10,7 +10,7 @@ import { getCode } from "@/utils/fhirApi.ts";
 import { codeEquals } from "@/utils/fhirUtils";
 import type { FhirTerminologyCode, FhirValueSetDefinition } from "@/types/fhir";
 
-const emit = defineEmits(["success"]);
+const emit = defineEmits(["success", "exit"]);
 
 const { dataElement } = defineProps<{
   valueSets: FhirValueSetDefinition[];
@@ -90,6 +90,16 @@ const autocompleteChoices = computed(() => [
   { type: "subheader", title: "Auswahloptionen" },
   ...(dataElement.choices?.map((choice) => ({ title: choice.label, value: choice })) ?? []),
 ]);
+
+defineExpose({
+  back() {
+    if (selectedCode.value) {
+      unselect();
+    } else {
+      emit("exit");
+    }
+  },
+});
 </script>
 
 <template>

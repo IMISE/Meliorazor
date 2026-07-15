@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseComponent from "@/components/BaseComponent.vue";
 import DataElementList from "@/components/DataElementList.vue";
 import QuestionnaireList from "@/components/QuestionnaireList.vue";
 import type { Questionnaire } from "@/types/types";
@@ -9,6 +10,8 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 const projectId = computed(() => Number(paramToString(router.currentRoute.value.params.pid)));
+
+const currentStep = ref(1);
 
 const selectedAnnotationIds: Ref<number[]> = ref([]);
 const project: Ref<Questionnaire | undefined> = ref();
@@ -93,73 +96,83 @@ const keyRules = ref([
 </script>
 
 <template>
-  <h1>Version erstellen</h1>
-  <v-stepper
-    v-if="project"
-    :items="['Projekt', 'Annotationen auswählen', 'Auswahl Überprüfen', 'Benennung']"
+  <base-component
+    :back-button-link="
+      currentStep > 1
+        ? undefined
+        : { name: 'single-project', params: { pid: projectId, title: clean(project?.title) } }
+    "
+    @clicked="currentStep--"
   >
-    <template #[`item.1`]>
-      <v-card title="Projekt">
-        <questionnaire-list
-          :questionnaires="project ? [project] : []"
-          :display-controls="false"
-          :display-link="false"
-        />
-      </v-card>
+    <h1>Version erstellen</h1>
+    <v-stepper
+      v-if="project"
+      v-model="currentStep"
+      :items="['Projekt', 'Annotationen auswählen', 'Auswahl Überprüfen', 'Benennung']"
+    >
+      <template #[`item.1`]>
+        <v-card title="Projekt">
+          <questionnaire-list
+            :questionnaires="project ? [project] : []"
+            :display-controls="false"
+            :display-link="false"
+          />
+        </v-card>
+      </template>
+      <template #[`item.2`]>
+        <v-card title="Annotation auswählen">
+          <data-element-list
+            v-model="selectedAnnotationIds"
+            :dataElements="project.dataElements"
+            :project-id="projectId"
+            :project-title="project.title"
+            :my-roles="[]"
+            :allow-edit-selection="true"
+            :highlight-unnanotated="false"
+            :show-actions="false"
+          />
+        </v-card>
+      </template>
+      <template #[`item.3`]>
+        <v-card title="Auswahl Überprüfen">
+          <data-element-list
+            :project-id="projectId"
+            :project-title="project.title"
+            :data-elements="onlySelectedAnnotations"
+            :my-roles="[]"
+            :allow-edit-selection="false"
+            :highlight-unnanotated="true"
+            :show-actions="false"
+          />
+        </v-card>
+      </template>
+      <template #[`item.4`]>
+        <v-form v-model="isValid" validate-on="input" @submit.prevent="create">
+          <v-text-field
+            v-model="key"
+            :rules="keyRules"
+            label="Versionsschlüssel"
+            required
+          ></v-text-field>
+          <v-textarea v-model="description" label="Beschreibung"></v-textarea>
+          <v-btn
+            :disabled="creating || !isValid"
+            :loading="creating"
+            size="x-large"
+            type="submit"
+            :color="errorState ? 'danger' : 'primary'"
+            block
+          >
+            Erstellen
+          </v-btn>
+          <template v-if="errorState">Da ist etwas schiefgelaufen.</template>
+        </v-form>
+      </template>
+    </v-stepper>
+    <h3 v-else-if="loading">Lädt &hellip;</h3>
+    <template v-else>
+      <h3>Fehler</h3>
+      <p>Konnte Projekt nicht laden. Versuchen Sie bitte, sich neu einzuloggen.</p>
     </template>
-    <template #[`item.2`]>
-      <v-card title="Annotation auswählen">
-        <data-element-list
-          v-model="selectedAnnotationIds"
-          :dataElements="project.dataElements"
-          :project-id="projectId"
-          :project-title="project.title"
-          :my-roles="[]"
-          :allow-edit-selection="true"
-          :highlight-unnanotated="false"
-          :show-actions="false"
-        />
-      </v-card>
-    </template>
-    <template #[`item.3`]>
-      <v-card title="Auswahl Überprüfen">
-        <data-element-list
-          :project-id="projectId"
-          :project-title="project.title"
-          :data-elements="onlySelectedAnnotations"
-          :my-roles="[]"
-          :allow-edit-selection="false"
-          :highlight-unnanotated="true"
-          :show-actions="false"
-        />
-      </v-card>
-    </template>
-    <template #[`item.4`]>
-      <v-form v-model="isValid" validate-on="input" @submit.prevent="create">
-        <v-text-field
-          v-model="key"
-          :rules="keyRules"
-          label="Versionsschlüssel"
-          required
-        ></v-text-field>
-        <v-textarea v-model="description" label="Beschreibung"></v-textarea>
-        <v-btn
-          :disabled="creating || !isValid"
-          :loading="creating"
-          size="x-large"
-          type="submit"
-          :color="errorState ? 'danger' : 'primary'"
-          block
-        >
-          Erstellen
-        </v-btn>
-        <template v-if="errorState">Da ist etwas schiefgelaufen.</template>
-      </v-form>
-    </template>
-  </v-stepper>
-  <h3 v-else-if="loading">Lädt &hellip;</h3>
-  <template v-else>
-    <h3>Fehler</h3>
-    <p>Konnte Projekt nicht laden. Versuchen Sie bitte, sich neu einzuloggen.</p>
-  </template>
+  </base-component>
 </template>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import auth from "@/auth";
+import BaseComponent from "@/components/BaseComponent.vue";
 import DataElementList from "@/components/DataElementList.vue";
 import ValueSetSelector from "@/components/ValueSetSelector.vue";
 import { Role, roles, Status } from "@/types/enums";
@@ -214,162 +215,164 @@ const participantUser = ref([
 </script>
 
 <template>
-  <v-sheet :min-height="200" class="sheet">
-    <template v-if="questionnaire">
-      <h1>{{ questionnaire.title }}</h1>
-      <p>{{ questionnaire.description }}</p>
-      <br />
-      <v-tabs v-model="tab" color="primary">
-        <v-tab :value="1" text="Datenelemente" />
-        <v-tab v-if="versions?.length" :value="2" text="Versionen" />
-        <v-tab :value="3" text="Projektinformationen" />
-      </v-tabs>
-      <v-tabs-window v-model="tab">
-        <v-tabs-window-item :value="1">
-          <h2>Datenelemente</h2>
-          <v-text-field v-model="deSearch" label="Suche"></v-text-field>
-          <v-row gap="8px">
-            <v-btn v-if="annotatable" @click="annotateAll" color="primary">
-              {{ elements.length }} Datenelemente annotieren
-            </v-btn>
-            <!-- TODO implement -->
-            <v-btn v-if="correctable" @click="correctAll" color="primary">
-              {{ toCorrect.length }} Annotationen korrigieren
-            </v-btn>
-            <v-btn v-if="isAdmin" @click="createVersion" color="primary" variant="outlined">
-              Version erstellen
-            </v-btn>
-          </v-row>
-          <data-element-list
-            v-model="selected"
-            :project-id="projectId"
-            :project-title="questionnaire.title"
-            :data-elements="elements"
-            :my-roles="myRoles"
-            :allow-edit-selection="false"
-            :highlight-unnanotated="false"
-            show-actions
-          />
-        </v-tabs-window-item>
-        <v-tabs-window-item :value="2">
-          <h2>Versionen</h2>
-          <v-list>
-            <v-list-item v-for="key in versions" :key="key" :title="key">
-              <template #append>
-                <v-icon-btn
-                  :icon="mdiArrowRight"
+  <base-component :back-button-link="{ name: 'projects' }">
+    <v-sheet :min-height="200" class="sheet">
+      <template v-if="questionnaire">
+        <h1>{{ questionnaire.title }}</h1>
+        <p>{{ questionnaire.description }}</p>
+        <br />
+        <v-tabs v-model="tab" color="primary">
+          <v-tab :value="1" text="Datenelemente" />
+          <v-tab v-if="versions?.length" :value="2" text="Versionen" />
+          <v-tab :value="3" text="Projektinformationen" />
+        </v-tabs>
+        <v-tabs-window v-model="tab">
+          <v-tabs-window-item :value="1">
+            <h2>Datenelemente</h2>
+            <v-text-field v-model="deSearch" label="Suche"></v-text-field>
+            <v-row gap="8px">
+              <v-btn v-if="annotatable" @click="annotateAll" color="primary">
+                {{ elements.length }} Datenelemente annotieren
+              </v-btn>
+              <!-- TODO implement -->
+              <v-btn v-if="correctable" @click="correctAll" color="primary">
+                {{ toCorrect.length }} Annotationen korrigieren
+              </v-btn>
+              <v-btn v-if="isAdmin" @click="createVersion" color="primary" variant="outlined">
+                Version erstellen
+              </v-btn>
+            </v-row>
+            <data-element-list
+              v-model="selected"
+              :project-id="projectId"
+              :project-title="questionnaire.title"
+              :data-elements="elements"
+              :my-roles="myRoles"
+              :allow-edit-selection="false"
+              :highlight-unnanotated="false"
+              show-actions
+            />
+          </v-tabs-window-item>
+          <v-tabs-window-item :value="2">
+            <h2>Versionen</h2>
+            <v-list>
+              <v-list-item v-for="key in versions" :key="key" :title="key">
+                <template #append>
+                  <v-icon-btn
+                    :icon="mdiArrowRight"
+                    @click="
+                      router.push({
+                        name: 'version',
+                        params: { pid: projectId, title: projectTitle, key },
+                      })
+                    "
+                  />
+                </template>
+              </v-list-item>
+            </v-list>
+          </v-tabs-window-item>
+          <v-tabs-window-item :value="3">
+            <h2>Projektinformationen</h2>
+            <v-form :disabled="loadingEdits" @submit.prevent="saveEdits">
+              <h3>Mitwirkende</h3>
+              <div>
+                <v-row
+                  v-for="({ id, participant }, i) in participantEdit"
+                  :key="id"
+                  class="participant-row"
+                >
+                  <div v-if="!isAdmin" style="align-self: stretch; text-align: right">
+                    {{ participant.username }}
+                  </div>
+                  <v-text-field
+                    v-else
+                    v-model="participant.username"
+                    :rules="participantUser"
+                    label="Nutzername"
+                    :disabled="i === 0 && !!user?.preferred_username"
+                  ></v-text-field>
+                  <v-select
+                    label="Rolle"
+                    :rules="notEmpty"
+                    :items="roles"
+                    v-model="participant.roles"
+                    multiple
+                    :readonly="!isAdmin"
+                  />
+                  <v-icon-btn
+                    v-if="isAdmin"
+                    :icon="mdiMinus"
+                    @click.prevent="participantEdit.splice(i, 1)"
+                  />
+                </v-row>
+                <v-btn
+                  v-if="isAdmin"
+                  variant="text"
+                  :disabled="loading"
+                  :prepend-icon="mdiPlus"
                   @click="
-                    router.push({
-                      name: 'version',
-                      params: { pid: projectId, title: projectTitle, key },
+                    participantEdit.push({
+                      id: participantKey++,
+                      participant: { username: '', roles: [] },
                     })
                   "
+                >
+                  Hinzufügen
+                </v-btn>
+              </div>
+              <h3>Value Sets</h3>
+              <div v-if="!isAdmin">
+                <template v-for="(group, key) in valueSetsByServer" :key="key">
+                  <v-list-subheader>Server {{ key }}</v-list-subheader>
+                  <v-list-item v-for="valueSet in group" :key="valueSet.valueSet">
+                    <v-list-item-title>{{ valueSet.display }}</v-list-item-title>
+                    <v-list-item-subtitle>{{ valueSet.valueSet }}</v-list-item-subtitle>
+                  </v-list-item>
+                </template>
+              </div>
+              <div v-else>
+                <value-set-selector
+                  v-for="(row, i) in valueSetEdit"
+                  :key="row.id"
+                  v-model="row.set"
+                  :disabled="false"
+                  :display-controls="valueSetEdit.length > 1"
+                  @remove="valueSetEdit.splice(i, 1)"
                 />
-              </template>
-            </v-list-item>
-          </v-list>
-        </v-tabs-window-item>
-        <v-tabs-window-item :value="3">
-          <h2>Projektinformationen</h2>
-          <v-form :disabled="loadingEdits" @submit.prevent="saveEdits">
-            <h3>Mitwirkende</h3>
-            <div>
-              <v-row
-                v-for="({ id, participant }, i) in participantEdit"
-                :key="id"
-                class="participant-row"
-              >
-                <div v-if="!isAdmin" style="align-self: stretch; text-align: right">
-                  {{ participant.username }}
-                </div>
-                <v-text-field
-                  v-else
-                  v-model="participant.username"
-                  :rules="participantUser"
-                  label="Nutzername"
-                  :disabled="i === 0 && !!user?.preferred_username"
-                ></v-text-field>
-                <v-select
-                  label="Rolle"
-                  :rules="notEmpty"
-                  :items="roles"
-                  v-model="participant.roles"
-                  multiple
-                  :readonly="!isAdmin"
-                />
-                <v-icon-btn
-                  v-if="isAdmin"
-                  :icon="mdiMinus"
-                  @click.prevent="participantEdit.splice(i, 1)"
-                />
-              </v-row>
-              <v-btn
-                v-if="isAdmin"
-                variant="text"
-                :disabled="loading"
-                :prepend-icon="mdiPlus"
-                @click="
-                  participantEdit.push({
-                    id: participantKey++,
-                    participant: { username: '', roles: [] },
-                  })
-                "
-              >
-                Hinzufügen
-              </v-btn>
-            </div>
-            <h3>Value Sets</h3>
-            <div v-if="!isAdmin">
-              <template v-for="(group, key) in valueSetsByServer" :key="key">
-                <v-list-subheader>Server {{ key }}</v-list-subheader>
-                <v-list-item v-for="valueSet in group" :key="valueSet.valueSet">
-                  <v-list-item-title>{{ valueSet.display }}</v-list-item-title>
-                  <v-list-item-subtitle>{{ valueSet.valueSet }}</v-list-item-subtitle>
-                </v-list-item>
-              </template>
-            </div>
-            <div v-else>
-              <value-set-selector
-                v-for="(row, i) in valueSetEdit"
-                :key="row.id"
-                v-model="row.set"
-                :disabled="false"
-                :display-controls="valueSetEdit.length > 1"
-                @remove="valueSetEdit.splice(i, 1)"
-              />
-              <v-btn
-                variant="text"
-                :disabled="loading"
-                :prepend-icon="mdiPlus"
-                @click="valueSetEdit.push({ id: valueSetKey++, set: undefined })"
-              >
-                Hinzufügen
-              </v-btn>
-            </div>
-            <!--
+                <v-btn
+                  variant="text"
+                  :disabled="loading"
+                  :prepend-icon="mdiPlus"
+                  @click="valueSetEdit.push({ id: valueSetKey++, set: undefined })"
+                >
+                  Hinzufügen
+                </v-btn>
+              </div>
+              <!--
             <h3>Akzeptanzbedingungen</h3>
             TODO
             -->
-            <v-btn
-              v-if="isAdmin"
-              :disabled="!!editFeedbackIcon || loadingEdits"
-              :prepend-icon="editFeedbackIcon"
-              color="primary"
-              type="submit"
-              block
-            >
-              Änderungen abschicken
-            </v-btn>
-          </v-form>
-        </v-tabs-window-item>
-      </v-tabs-window>
-    </template>
-    <h3 v-else-if="loading">Lädt &hellip;</h3>
-    <template v-else>
-      <h3>Fehler</h3>
-      <p>Fehler beim Abrufen des Projekts.</p>
-    </template>
-  </v-sheet>
+              <v-btn
+                v-if="isAdmin"
+                :disabled="!!editFeedbackIcon || loadingEdits"
+                :prepend-icon="editFeedbackIcon"
+                color="primary"
+                type="submit"
+                block
+              >
+                Änderungen abschicken
+              </v-btn>
+            </v-form>
+          </v-tabs-window-item>
+        </v-tabs-window>
+      </template>
+      <h3 v-else-if="loading">Lädt &hellip;</h3>
+      <template v-else>
+        <h3>Fehler</h3>
+        <p>Fehler beim Abrufen des Projekts.</p>
+      </template>
+    </v-sheet>
+  </base-component>
 </template>
 
 <style scoped>

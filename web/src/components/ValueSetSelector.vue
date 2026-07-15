@@ -111,6 +111,8 @@ const getValueSets = async () => {
 };
 
 const selectServer = async () => {
+  if (serverSelected.value) return;
+
   loadingSelection.value = true;
   const isValid = await isFhirServer(server.value);
   if (isValid) {

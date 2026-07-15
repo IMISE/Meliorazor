@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseComponent from "@/components/BaseComponent.vue";
 import QuestionnaireList from "@/components/QuestionnaireList.vue";
 import type { Questionnaire } from "@/types/types";
 import { getProjects } from "@/utils/api";
@@ -15,31 +16,33 @@ onMounted(getQuestionnaires);
 </script>
 
 <template>
-  <h1>Projekte (Fragebögen)</h1>
-  <br />
-  <h3 v-if="loading">Lädt &hellip;</h3>
-  <questionnaire-list
-    v-else
-    :questionnaires="questionnaires"
-    display-controls
-    display-link
-    @delete="getQuestionnaires"
-  />
-  <v-row>
-    <v-btn
-      :prepend-icon="mdiPlus"
-      color="primary"
-      @click="$router.push({ name: 'create-project' })"
-    >
-      Neu
-    </v-btn>
-    <v-btn
-      @click="getQuestionnaires"
-      :prepend-icon="mdiRefresh"
-      :disabled="loading"
-      :loading="loading"
-    >
-      Aktualisieren
-    </v-btn>
-  </v-row>
+  <base-component :back-button-link="{ name: 'home' }">
+    <h1>Projekte (Fragebögen)</h1>
+    <br />
+    <h3 v-if="loading">Lädt &hellip;</h3>
+    <questionnaire-list
+      v-else
+      :questionnaires="questionnaires"
+      display-controls
+      display-link
+      @delete="getQuestionnaires"
+    />
+    <v-row>
+      <v-btn
+        :prepend-icon="mdiPlus"
+        color="primary"
+        @click="$router.push({ name: 'create-project' })"
+      >
+        Neu
+      </v-btn>
+      <v-btn
+        @click="getQuestionnaires"
+        :prepend-icon="mdiRefresh"
+        :disabled="loading"
+        :loading="loading"
+      >
+        Aktualisieren
+      </v-btn>
+    </v-row>
+  </base-component>
 </template>
