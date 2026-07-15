@@ -4,7 +4,7 @@ import CodeDisplay from "@/components/CodeDisplay.vue";
 import CodeSearch from "@/components/CodeSearch.vue";
 import DataElementSummary from "@/components/DataElementSummary.vue";
 import type { Annotatable, CodeInfo, InformedCodeMapping, Variable } from "@/types/types";
-import { mdiArrowLeft, mdiArrowRight } from "@mdi/js";
+import { mdiArrowLeft, mdiArrowRight, mdiClose } from "@mdi/js";
 import { computed, ref, watch, type Ref } from "vue";
 import { getCode } from "@/utils/fhirApi.ts";
 import { codeEquals } from "@/utils/fhirUtils";
@@ -159,6 +159,7 @@ const autocompleteChoices = computed(() => [
       <code-search v-model="search" :valueSets="valueSets" :focus="focusCode" @focus="focus" />
     </v-col>
     <v-col v-if="focusCode && focusCodeInfo" cols="6">
+      <v-btn :prepend-icon="mdiClose" text="Schließen" variant="plain" @click="unselect" />
       <code-display
         v-if="!loadingFocus"
         :codeInfo="focusCodeInfo"
