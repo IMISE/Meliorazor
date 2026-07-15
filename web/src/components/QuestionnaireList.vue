@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { Questionnaire } from "@/types/types";
-import { inject, type Ref } from "vue";
+import { inject, mergeProps, type Ref } from "vue";
 import type { IdTokenClaims } from "oidc-client-ts";
 import auth from "@/auth.ts";
 import getEnv from "@/utils/env.ts";
 import { Role } from "@/types/enums.ts";
-import { mdiDeleteOutline } from "@mdi/js";
+import { mdiDelete, mdiDeleteOutline } from "@mdi/js";
 import { clean } from "@/utils/utils";
 
 const emit = defineEmits<{
@@ -55,17 +55,24 @@ const deleteQuestionnaire = async (q: Questionnaire) => {
       </v-list-item-subtitle>
       <template v-if="displayControls" #append>
         <v-dialog max-width="600px">
-          <template #activator="{ props }">
-            <v-icon-btn
-              v-if="
-                q.participants
-                  .find((p) => p.username === user?.preferred_username)
-                  ?.roles.includes(Role.ADMIN)
-              "
-              v-bind="props"
-              :icon="mdiDeleteOutline"
-              @click.prevent
-            />
+          <template #activator="{ props: dialogProps }">
+            <v-hover>
+              <template #default="{ isHovering, props: hoverProps }">
+                <v-icon-btn
+                  v-if="
+                    q.participants
+                      .find((p) => p.username === user?.preferred_username)
+                      ?.roles.includes(Role.ADMIN)
+                  "
+                  v-bind="mergeProps(dialogProps, hoverProps)"
+                  :icon="isHovering ? mdiDelete : mdiDeleteOutline"
+                  :color="isHovering ? 'error' : undefined"
+                  variant="plain"
+                  hide-overlay
+                  @click.prevent
+                />
+              </template>
+            </v-hover>
           </template>
           <template #default="{ isActive }">
             <v-card title="Wirklich löschen?">
