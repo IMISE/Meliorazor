@@ -12,7 +12,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
@@ -64,7 +63,6 @@ public class Annotation {
     private Integer confidence;
 
     /** Comment on creation */
-    @Lob
     private String comment;
 
     /** Predicate of mapping triple, e.g. skos:exactMatch */
