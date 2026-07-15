@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import DataElementList from "@/components/DataElementList.vue";
 import QuestionnaireList from "@/components/QuestionnaireList.vue";
-import type { Questionnaire, Variable } from "@/types/types";
+import type { Questionnaire } from "@/types/types";
 import { createVersion, getProject, getVersionKeys } from "@/utils/api";
-import { clean, paramToString, queryToStringArray } from "@/utils/utils";
+import { clean, paramToString } from "@/utils/utils";
 import { computed, onMounted, ref, watch, type Ref } from "vue";
 import { useRouter } from "vue-router";
 
