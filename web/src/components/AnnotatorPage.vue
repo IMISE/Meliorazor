@@ -31,7 +31,7 @@ const loadingFocus = ref(false);
 const selectedElement: Ref<Annotatable> = ref(dataElement);
 
 const search = ref("");
-watch(selectedElement, (val) => search.value = val.label, { immediate: true });
+watch(selectedElement, (val) => (search.value = val.label), { immediate: true });
 
 const unselect = () => {
   focusCode.value = undefined;
@@ -57,7 +57,7 @@ const updateFocus = (value: FhirTerminologyCode) => {
 const reload = async () => {
   emit("success");
   unselect();
-}
+};
 
 // populate focusCodeInfo
 watch(focusCode, async (newCode, oldCode) => {
@@ -133,6 +133,9 @@ const autocompleteChoices = computed(() => [
           item-title="title"
           item-value="value"
         >
+          <template #selection="{ item }">
+            {{ item.value?.label ?? (item as { [index: string]: unknown })["label"] }}
+          </template>
           <template #item="{ props, item }">
             <v-list-item
               v-if="item.value"
@@ -154,12 +157,7 @@ const autocompleteChoices = computed(() => [
         </v-select>
       </template>
       <data-element-summary :data-element="dataElement" />
-      <code-search
-        v-model="search"
-        :valueSets="valueSets"
-        :focus="focusCode"
-        @focus="focus"
-      />
+      <code-search v-model="search" :valueSets="valueSets" :focus="focusCode" @focus="focus" />
     </v-col>
     <v-col v-if="focusCode && focusCodeInfo" cols="6">
       <code-display

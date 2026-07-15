@@ -138,8 +138,9 @@ const submitAnnotation = async () => {
         :max="100"
         label="Konfidenz"
         thumb-label="hover"
+        color="primary"
       >
-        <template #thumb-label="{ modelValue }">{{ modelValue }}%</template>
+        <template #thumb-label="{ modelValue: sliderModelValue }">{{ sliderModelValue }}%</template>
       </v-slider>
       <v-select label="Prädikat" v-model="predicate" :items="predicates" />
       <v-textarea v-model="comment" label="Kommentar" />
