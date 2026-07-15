@@ -13,7 +13,6 @@ const props = defineProps<{
   dataElementId: number;
   dataElementName: string;
   allowEditSelection: boolean;
-  displaySelectionIcon: boolean;
   dashedBorder: boolean;
 }>();
 
@@ -50,80 +49,70 @@ const unselect = () => {
 </script>
 
 <template>
-  <v-hover>
-    <template #default="{ isHovering, props: hoverProps }">
-      <div v-bind="hoverProps">
-        <template
-          v-if="
-            displaySelectionIcon &&
-            (isHovering || contained || !allowEditSelection) &&
-            modelValue !== undefined
-          "
-        >
-          <v-icon
-            v-if="contained"
-            :icon="mdiCheckCircleOutline"
-            @click="unselect"
-            :key="modelValue?.join(',') + '|on'"
-          />
-          <v-icon
-            v-else
-            :icon="mdiCircleOutline"
-            @click="select"
-            :key="modelValue?.join(',') + '|off'"
-          />
-        </template>
-        <v-menu>
-          <template #activator="{ props: menuProps }">
-            <v-tooltip :text="hint">
-              <template #activator="{ props: tooltipProps }">
-                <div
-                  v-bind="mergeProps(menuProps, tooltipProps)"
-                  @click="
-                    () =>
-                      annotation.authorNames.length === 1
-                        ? goToAnnotation(annotation.authorNames[0]!)
-                        : undefined
-                  "
-                  style="display: inline"
-                >
-                  <v-chip
-                    style="border-radius: 20px 0 0 20px"
-                    class="bg-info"
-                    :class="dashedBorder ? 'dashed-border' : undefined"
-                    aria-label="Prädikat"
-                    inline
-                  >
-                    {{ annotation.predicate }}
-                  </v-chip>
-                  <v-divider vertical color="white" :thickness="2" />
-                  <v-chip
-                    style="border-radius: 0 20px 20px 0"
-                    class="bg-info"
-                    :class="dashedBorder ? 'dashed-border' : undefined"
-                    aria-label="Code"
-                    inline
-                  >
-                    {{ annotation.code.display }}
-                  </v-chip>
-                </div>
-              </template>
-            </v-tooltip>
-          </template>
-          <v-list v-if="annotation.authorNames.length > 1">
-            <v-list-item
-              v-for="(author, i) of annotation.authorNames"
-              :key="author"
-              :title="author"
-              :subtitle="`Autor ${i + 1}`"
-              link
-              @click="() => goToAnnotation(author)"
-            />
-          </v-list>
-        </v-menu>
-      </div>
+  <div>
+    <template v-if="allowEditSelection && modelValue !== undefined">
+      <v-icon
+        v-if="contained"
+        :icon="mdiCheckCircleOutline"
+        @click="unselect"
+        :key="modelValue?.join(',') + '|on'"
+      />
+      <v-icon
+        v-else
+        :icon="mdiCircleOutline"
+        @click="select"
+        :key="modelValue?.join(',') + '|off'"
+      />
     </template>
-  </v-hover>
+    <v-menu>
+      <template #activator="{ props: menuProps }">
+        <v-tooltip :text="hint">
+          <template #activator="{ props: tooltipProps }">
+            <div
+              v-bind="mergeProps(menuProps, tooltipProps)"
+              @click="
+                () =>
+                  annotation.authorNames.length === 1
+                    ? goToAnnotation(annotation.authorNames[0]!)
+                    : undefined
+              "
+              style="display: inline"
+            >
+              <v-chip
+                style="border-radius: 20px 0 0 20px"
+                class="bg-info"
+                :class="dashedBorder ? 'dashed-border' : undefined"
+                aria-label="Prädikat"
+                inline
+              >
+                {{ annotation.predicate }}
+              </v-chip>
+              <v-divider vertical color="white" :thickness="2" />
+              <v-chip
+                style="border-radius: 0 20px 20px 0"
+                class="bg-info"
+                :class="dashedBorder ? 'dashed-border' : undefined"
+                aria-label="Code"
+                inline
+              >
+                {{ annotation.code.display }}
+              </v-chip>
+            </div>
+          </template>
+        </v-tooltip>
+      </template>
+      <v-list v-if="annotation.authorNames.length > 1">
+        <v-list-item
+          v-for="(author, i) of annotation.authorNames"
+          :key="author"
+          :title="author"
+          :subtitle="`Autor ${i + 1}`"
+          link
+          @click="() => goToAnnotation(author)"
+        />
+      </v-list>
+    </v-menu>
+  </div>
 </template>
 
 <style scoped>

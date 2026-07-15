@@ -21,6 +21,7 @@ const {
   dataElement: Variable;
   myRoles: Role[];
   allowEditSelection: boolean;
+  highlightUnannotated: boolean;
   showActions: boolean;
 }>();
 
@@ -155,7 +156,10 @@ const displayMockInput = computed(
 </script>
 
 <template>
-  <div class="data-element-container">
+  <div
+    :class="highlightUnannotated && dataElement.annotations.length === 0 ? 'bg-error' : 'bg-mute'"
+    class="data-element-container"
+  >
     <v-row class="data-element-title-row">
       <div class="annotations-aggregated">
         <v-tooltip :text="acceptedTooltip">
@@ -224,13 +228,33 @@ const displayMockInput = computed(
           v-else-if="dataElement.type === 'dropdown'"
           v-model="fieldChoices"
           :items="fieldChoices"
-          chips
           multiple
           readonly
           :required="required"
-        />
+        >
+          <template #selection="{ item, index }">
+            <v-chip
+              :text="item"
+              :class="
+                highlightUnannotated && data.choices![index]!.annotations.length === 0
+                  ? 'bg-error'
+                  : 'bg-mute'
+              "
+            />
+          </template>
+        </v-select>
         <v-radio-group v-else-if="dataElement.type === 'radio'" readonly :required="required">
-          <v-radio v-for="choice in fieldChoices" :key="choice" :label="choice" readonly />
+          <v-radio
+            v-for="(choice, i) in fieldChoices"
+            :key="choice"
+            :label="choice"
+            :class="
+              highlightUnannotated && data.choices![i]!.annotations.length === 0
+                ? 'bg-error'
+                : 'bg-mute'
+            "
+            readonly
+          />
         </v-radio-group>
         <v-slider
           v-else-if="dataElement.type === 'slider'"
@@ -299,7 +323,6 @@ const displayMockInput = computed(
                   :project-id="projectId"
                   :project-name="projectTitle"
                   :allow-edit-selection="allowEditSelection"
-                  display-selection-icon
                   :dashed-border="false"
                 />
               </div>
@@ -330,7 +353,6 @@ const displayMockInput = computed(
                   :project-id="projectId"
                   :project-name="projectTitle"
                   :allow-edit-selection="allowEditSelection"
-                  display-selection-icon
                   dashed-border
                 />
               </div>
@@ -353,9 +375,11 @@ const displayMockInput = computed(
 }
 .data-element-container {
   display: block;
-  background-color: var(--color-background-mute);
   margin: 20px;
   padding: 10px;
+}
+.bg-mute {
+  background-color: var(--color-background-mute);
 }
 .data-element-main {
   font-size: 16pt;

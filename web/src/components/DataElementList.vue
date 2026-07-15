@@ -11,6 +11,7 @@ defineProps<{
   dataElements: Variable[];
   myRoles: Role[];
   allowEditSelection: boolean;
+  highlightUnnanotated: boolean;
   showActions: boolean;
 }>();
 </script>
@@ -25,6 +26,7 @@ defineProps<{
         :data-element="element"
         :my-roles="myRoles"
         :allow-edit-selection="allowEditSelection"
+        :highlight-unannotated="highlightUnnanotated"
         :show-actions="showActions"
       />
     </v-item>

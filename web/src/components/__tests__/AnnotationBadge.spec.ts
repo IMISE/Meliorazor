@@ -41,8 +41,7 @@ describe("AnnotationBadge", () => {
         projectName: "",
         dataElementId: 0,
         dataElementName: "",
-        allowEditSelection: true,
-        displaySelectionIcon: true,
+        allowEditSelection: false,
         dashedBorder: false,
       },
       global: {

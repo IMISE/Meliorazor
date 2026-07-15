@@ -64,6 +64,7 @@ watch(
         :data-elements="elements"
         :my-roles="[]"
         :allow-edit-selection="false"
+        :highlight-unnanotated="false"
         :show-actions="false"
       />
       <v-btn

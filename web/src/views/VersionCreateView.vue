@@ -9,10 +9,8 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 const projectId = computed(() => Number(paramToString(router.currentRoute.value.params.pid)));
-const annotationIds = computed(() =>
-  queryToStringArray(router.currentRoute.value.query?.annotations).map((id) => Number(id)),
-);
 
+const selectedAnnotationIds: Ref<number[]> = ref([]);
 const project: Ref<Questionnaire | undefined> = ref();
 const otherVersions: Ref<string[] | undefined> = ref();
 const loading = ref(true);
@@ -24,17 +22,20 @@ const errorState = ref(false);
 const key = ref("");
 const description = ref("");
 
-/** Which data elements are annotated, which aren't? */
-const groupedDEs = computed(() =>
-  (project.value?.dataElements ?? []).reduce(
-    (acc, val) => (
-      val.annotations.some((annotation) => annotationIds.value.includes(annotation.id))
-        ? acc.present.push(val)
-        : acc.missing.push(val),
-      acc
+/** Filter out every annotation not selected */
+const onlySelectedAnnotations = computed(() =>
+  (project.value?.dataElements ?? []).map((element) => ({
+    ...element,
+    annotations: element.annotations.filter((annotation) =>
+      selectedAnnotationIds.value.includes(annotation.id),
     ),
-    { present: [] as Variable[], missing: [] as Variable[] },
-  ),
+    choices: (element.choices ?? []).map((choice) => ({
+      ...choice,
+      annotations: choice.annotations.filter((annotation) =>
+        selectedAnnotationIds.value.includes(annotation.id),
+      ),
+    })),
+  })),
 );
 
 const load = async (newId: number, oldId: number | undefined = undefined) => {
@@ -55,7 +56,7 @@ const create = async () => {
     {
       key: key.value,
       description: description.value,
-      annotationIds: annotationIds.value,
+      annotationIds: selectedAnnotationIds.value,
     },
     creating,
   );
@@ -95,7 +96,7 @@ const keyRules = ref([
   <h1>Version erstellen</h1>
   <v-stepper
     v-if="project"
-    :items="['Projekt', 'Enthaltene Annotationen', 'Überprüfen', 'Benennung']"
+    :items="['Projekt', 'Annotationen auswählen', 'Auswahl Überprüfen', 'Benennung']"
   >
     <template #[`item.1`]>
       <v-card title="Projekt">
@@ -107,27 +108,28 @@ const keyRules = ref([
       </v-card>
     </template>
     <template #[`item.2`]>
-      <v-card title="Betroffene Annotationen">
+      <v-card title="Annotation auswählen">
         <data-element-list
-          v-model="annotationIds"
+          v-model="selectedAnnotationIds"
+          :dataElements="project.dataElements"
           :project-id="projectId"
           :project-title="project.title"
-          :data-elements="groupedDEs.present"
           :my-roles="[]"
-          :allow-edit-selection="false"
+          :allow-edit-selection="true"
+          :highlight-unnanotated="false"
           :show-actions="false"
         />
       </v-card>
     </template>
     <template #[`item.3`]>
-      <v-card title="Datenelemente ohne Annotationen">
+      <v-card title="Auswahl Überprüfen">
         <data-element-list
-          v-model="annotationIds"
           :project-id="projectId"
           :project-title="project.title"
-          :data-elements="groupedDEs.missing"
+          :data-elements="onlySelectedAnnotations"
           :my-roles="[]"
           :allow-edit-selection="false"
+          :highlight-unnanotated="true"
           :show-actions="false"
         />
       </v-card>

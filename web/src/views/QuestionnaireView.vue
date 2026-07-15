@@ -143,9 +143,6 @@ const createVersion = () => {
       pid: projectId.value,
       title: projectTitle.value,
     },
-    query: {
-      annotations: toCorrect.value.join(","),
-    },
   });
 };
 
@@ -239,13 +236,7 @@ const participantUser = ref([
             <v-btn v-if="correctable" @click="correctAll" color="primary">
               {{ toCorrect.length }} Annotationen korrigieren
             </v-btn>
-            <v-btn
-              v-if="isAdmin"
-              @click="createVersion"
-              color="primary"
-              variant="outlined"
-              :disabled="!selected?.length"
-            >
+            <v-btn v-if="isAdmin" @click="createVersion" color="primary" variant="outlined">
               Version erstellen
             </v-btn>
           </v-row>
@@ -255,7 +246,8 @@ const participantUser = ref([
             :project-title="questionnaire.title"
             :data-elements="elements"
             :my-roles="myRoles"
-            allow-edit-selection
+            :allow-edit-selection="false"
+            :highlight-unnanotated="false"
             show-actions
           />
         </v-tabs-window-item>
