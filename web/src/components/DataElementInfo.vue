@@ -169,7 +169,7 @@ const displayMockInput = computed(
               <template v-if="modelValue?.length"
                 >{{ selectedAcceptedAnnotations.length }}/</template
               >{{ acceptedAnnotations.length }}
-              <v-icon :icon="detailsOpenAnnotations ? mdiChevronUp : mdiChevronDown" />
+              <v-icon :icon="detailsAcceptedAnnotations ? mdiChevronUp : mdiChevronDown" />
             </div>
             <div v-else v-bind="props">-</div>
           </template>
