@@ -4,7 +4,7 @@ import CodeDisplay from "@/components/CodeDisplay.vue";
 import CodeSearch from "@/components/CodeSearch.vue";
 import DataElementSummary from "@/components/DataElementSummary.vue";
 import type { Annotatable, CodeInfo, InformedCodeMapping, Variable } from "@/types/types";
-import { mdiArrowLeft, mdiArrowRight, mdiClose } from "@mdi/js";
+import { mdiArrowLeft, mdiArrowRight, mdiCheck, mdiClose } from "@mdi/js";
 import { computed, ref, watch, type Ref } from "vue";
 import { getCode } from "@/utils/fhirApi.ts";
 import { codeEquals } from "@/utils/fhirUtils";
@@ -54,9 +54,11 @@ const updateFocus = (value: FhirTerminologyCode) => {
   });
 };
 
+const successFeedback = ref(false);
 const reload = async () => {
   emit("success");
   unselect();
+  successFeedback.value = true;
 };
 
 // populate focusCodeInfo
@@ -182,6 +184,16 @@ const autocompleteChoices = computed(() => [
       @edit="unselect"
     />
   </v-col>
+  <v-snackbar
+    v-model="successFeedback"
+    class="feedback"
+    location="bottom"
+    prepend-icon="$success"
+    color="success"
+    :timeout="2000"
+    title="Erstellen erfolgreich"
+    text="Annotation wurde erstellt."
+  />
 </template>
 
 <style scoped>
