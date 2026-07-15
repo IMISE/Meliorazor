@@ -50,9 +50,7 @@
   }
 }
 
-*,
-*::before,
-*::after {
+body *:not(b), body *:not(b)::before, body *:not(b)::after {
   font-weight: normal;
 }
 
