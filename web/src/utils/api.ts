@@ -1,7 +1,7 @@
 import auth from "@/auth";
 import type { Ref } from "vue";
 import getEnv from "./env";
-import type { CreateAnnotation, CreateVersion, Questionnaire } from "@/types/types";
+import type { Annotation, CreateAnnotation, CreateVersion, Questionnaire } from "@/types/types";
 
 export default async function request(
   path: string,
@@ -133,4 +133,26 @@ export async function createAnnotation(
       ? `/dataElement/${dataElementId}/annotation`
       : `/dataElement/${dataElementId}/choice/${choiceId}/annotation`;
   return await request(path, "POST", JSON.stringify(annotation), loading);
+}
+
+export async function getAnnotation(
+  dataElementId: number | undefined,
+  annotationId: number | undefined,
+  loading: Ref<boolean> | undefined,
+) {
+  if ((loading && loading.value) || dataElementId === undefined || annotationId === undefined)
+    return;
+
+  const response = await request(
+    `/dataElement/${dataElementId}/annotation/${annotationId}`,
+    "GET",
+    undefined,
+    loading,
+  );
+  if (!response?.ok) {
+    console.error("Annotation response not ok :(");
+    return;
+  }
+
+  return (await response.json()) as Annotation;
 }
