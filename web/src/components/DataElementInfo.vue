@@ -5,7 +5,7 @@ import { Role, status, Status } from "@/types/enums";
 import AnnotationBadge from "./AnnotationBadge.vue";
 import { useRouter } from "vue-router";
 import { clean } from "@/utils/utils";
-import { mdiChevronDown, mdiChevronUp, mdiMagnify, mdiPencilPlus } from "@mdi/js";
+import { mdiChevronDown, mdiChevronUp, mdiMenuOpen, mdiPencilPlus } from "@mdi/js";
 import { fieldTypesNotDisplayedWithoutChoices, supportedFieldTypes } from "@/types/redCap.ts";
 import { codeEquals } from "@/utils/fhirUtils.ts";
 
@@ -258,7 +258,7 @@ const displayMockInput = computed(
             <template #activator="{ props }">
               <v-chip
                 @click="openDataElement"
-                :prepend-icon="mdiMagnify"
+                :prepend-icon="mdiMenuOpen"
                 class="data-element-chip"
                 v-bind="props"
               ></v-chip>
