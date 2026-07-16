@@ -193,7 +193,7 @@ defineExpose({
       v-model="selectedElement"
       :data-element="dataElement!"
       :code="selectedCode"
-      :editable="false"
+      editable
       :initial-comment="undefined"
       :initial-confidence="undefined"
       :initial-predicate="undefined"
