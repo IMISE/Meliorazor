@@ -48,6 +48,8 @@ const annotate = async () => {
         <status-icon :status="annotation.status" :include-text="false" />
       </template>
       <template #append>
+        <v-chip style="margin: 0 4px">{{ annotation.predicate }}</v-chip>
+        <v-chip style="margin: 0 4px">{{ annotation.confidence }}%</v-chip>
         <router-link
           :to="{
             name: 'focus-annotation',
