@@ -278,22 +278,16 @@ const displayMockInput = computed(
         <div class="badge-container">
           <v-tooltip text="Öffnen">
             <template #activator="{ props }">
-              <v-chip
-                @click="openDataElement"
-                :prepend-icon="mdiMenuOpen"
-                class="data-element-chip"
-                v-bind="props"
-              ></v-chip>
+              <v-chip @click="openDataElement" class="data-element-chip" v-bind="props">
+                <v-icon :icon="mdiMenuOpen" />
+              </v-chip>
             </template>
           </v-tooltip>
           <v-tooltip v-if="myRoles.includes(Role.ANNOTATE)" text="Annotieren">
             <template #activator="{ props }">
-              <v-chip
-                @click="annotate"
-                :prepend-icon="mdiPencilPlus"
-                class="data-element-chip"
-                v-bind="props"
-              ></v-chip>
+              <v-chip @click="annotate" class="data-element-chip" v-bind="props">
+                <v-icon :icon="mdiPencilPlus" />
+              </v-chip>
             </template>
           </v-tooltip>
         </div>
