@@ -45,6 +45,16 @@ const router = createRouter({
       component: () => import("../views/QuestionnaireView.vue"),
     },
     {
+      path: "/projects/:pid-:title/version",
+      name: "project-version-index",
+      component: () => import("../views/QuestionnaireView.vue"),
+    },
+    {
+      path: "/projects/:pid-:title/admin",
+      name: "project-admin",
+      component: () => import("../views/QuestionnaireView.vue"),
+    },
+    {
       path: "/projects/:pid-:title/elements/:eid-:name",
       name: "data-element",
       component: () => import("../views/DataElementView.vue"),

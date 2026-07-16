@@ -22,7 +22,35 @@ const projectTitle = computed(() => String(router.currentRoute.value.params.titl
 
 const questionnaire: Ref<Questionnaire | undefined> = ref();
 const loading = ref(false);
-const tab = ref(1);
+const tab = ref("single-project");
+const route = computed(() => router.currentRoute.value.name?.toString() ?? "");
+watch(
+  route,
+  (name) => {
+    if (name === tab.value) {
+      return;
+    } else {
+      tab.value = name;
+    }
+  },
+  { immediate: true },
+);
+watch(
+  tab,
+  (name) => {
+    if (route.value === name) {
+      return;
+    } else {
+      router.push({
+        name,
+        params: {
+          pid: projectId.value,
+          title: projectTitle.value,
+        },
+      });
+    }
+  } /* NOT immediate! */,
+);
 
 const valueSetsByServer = computed(() =>
   questionnaire.value?.valueSets.reduce(
@@ -222,12 +250,12 @@ const participantUser = ref([
         <p>{{ questionnaire.description }}</p>
         <br />
         <v-tabs v-model="tab" color="primary">
-          <v-tab :value="1" text="Datenelemente" />
-          <v-tab v-if="versions?.length" :value="2" text="Versionen" />
-          <v-tab :value="3" text="Projektinformationen" />
+          <v-tab value="single-project" text="Datenelemente" />
+          <v-tab v-if="versions?.length" value="project-version-index" text="Versionen" />
+          <v-tab value="project-admin" text="Projektadministration" />
         </v-tabs>
         <v-tabs-window v-model="tab">
-          <v-tabs-window-item :value="1">
+          <v-tabs-window-item value="single-project">
             <h2>Datenelemente</h2>
             <v-text-field v-model="deSearch" label="Suche"></v-text-field>
             <v-row gap="8px">
@@ -253,7 +281,7 @@ const participantUser = ref([
               show-actions
             />
           </v-tabs-window-item>
-          <v-tabs-window-item :value="2">
+          <v-tabs-window-item value="project-version-index">
             <h2>Versionen</h2>
             <v-list>
               <v-list-item v-for="key in versions" :key="key" :title="key">
@@ -271,7 +299,7 @@ const participantUser = ref([
               </v-list-item>
             </v-list>
           </v-tabs-window-item>
-          <v-tabs-window-item :value="3">
+          <v-tabs-window-item value="project-admin">
             <h2>Projektinformationen</h2>
             <v-form :disabled="loadingEdits" @submit.prevent="saveEdits">
               <h3>Mitwirkende</h3>

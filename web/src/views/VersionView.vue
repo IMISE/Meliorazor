@@ -55,7 +55,10 @@ watch(
 
 <template>
   <base-component
-    :back-button-link="{ name: 'single-project', params: { pid: projectId, title: projectTitle } }"
+    :back-button-link="{
+      name: 'project-version-index',
+      params: { pid: projectId, title: projectTitle },
+    }"
   >
     <template v-if="version">
       <h2>{{ version.key }}</h2>
