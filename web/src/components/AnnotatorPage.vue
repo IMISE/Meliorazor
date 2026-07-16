@@ -147,6 +147,9 @@ defineExpose({
       >
         <template #selection="{ item }">
           {{ item.value?.label ?? (item as { [index: string]: unknown })["label"] }}
+          <v-chip v-if="item.value?.annotations?.length" style="margin-left: 4px">
+            {{ item.value.annotations.length }} vorgeschlagene Annotationen
+          </v-chip>
         </template>
         <template #item="{ props, item }">
           <v-list-item
