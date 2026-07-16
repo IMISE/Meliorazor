@@ -27,7 +27,7 @@ const annotate = async () => {
 </script>
 
 <template>
-  <v-list lines="one">
+  <v-list lines="one" stripe>
     <v-list-item
       v-if="showAddButton"
       :prepend-icon="mdiPlus"
@@ -36,7 +36,8 @@ const annotate = async () => {
     />
     <v-divider />
     <v-list-item
-      v-for="annotation in annotations"
+      v-for="(annotation, i) in annotations"
+      :class="i % 2 === 0 ? 'bg-grey-lighten-3' : undefined"
       :key="annotation.id"
       :append-icon="mdiArrowRight"
     >
