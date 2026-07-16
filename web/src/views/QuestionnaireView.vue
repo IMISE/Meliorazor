@@ -284,7 +284,12 @@ const participantUser = ref([
           <v-tabs-window-item value="project-version-index">
             <h2>Versionen</h2>
             <v-list>
-              <v-list-item v-for="key in versions" :key="key" :title="key">
+              <v-list-item
+                v-for="(key, i) in versions"
+                :key="key"
+                :title="key"
+                :class="i % 2 === 0 ? 'bg-grey-lighten-3' : undefined"
+              >
                 <template #append>
                   <v-icon-btn
                     :icon="mdiArrowRight"
