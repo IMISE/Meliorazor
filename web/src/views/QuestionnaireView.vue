@@ -208,7 +208,7 @@ watch(
   (newVal) => {
     participantEdit.value = (newVal?.participants ?? []).map((participant, id) => ({
       id,
-      participant,
+      participant: JSON.parse(JSON.stringify(participant)),
     }));
     participantKey.value = participantEdit.value.length ?? 0;
 
