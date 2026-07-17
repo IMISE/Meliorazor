@@ -19,7 +19,7 @@ public class DataElementDto extends AnnotatableDto {
     private String variableName;
 
     /** Data/field type of this variable. */
-    private String type;
+    private String fieldType;
 
     /**
      * Extra annotatable with special semantic meaning:

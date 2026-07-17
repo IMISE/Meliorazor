@@ -41,7 +41,7 @@ export interface Annotatable {
 
 export interface Variable extends Annotatable {
   variableName: string | null | undefined;
-  type: string | null | undefined;
+  fieldType: string | null | undefined;
   choices: Choice[] | null | undefined;
   metadata: KeyValuePair[];
 }

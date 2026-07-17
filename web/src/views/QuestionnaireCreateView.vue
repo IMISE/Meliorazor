@@ -150,7 +150,7 @@ const parsedDataREDCap = () =>
         id: undefined,
         variableName: datum["Variable / Field Name"] as string,
         label: datum["Field Label"] as string,
-        type: redcapFieldType(datum),
+        fieldType: redcapFieldType(datum),
         choices:
           datum["Choices, Calculations, OR Slider Labels"] &&
           fieldTypesWithChoicesImport.includes(datum["Field Type"] as string)
@@ -193,7 +193,7 @@ const parsedDataOpenClinica = () =>
         id: undefined,
         variableName: datum["ITEM_NAME*"] as string,
         label: datum["DESCRIPTION_LABEL*"] as string,
-        type: datum["DATA_TYPE*"] as string,
+        fieldType: datum["DATA_TYPE*"] as string,
         choices: datum["RESPONSE_OPTIONS_TEXT"]
           ? (datum["RESPONSE_OPTIONS_TEXT"] as string)
               .split(",")

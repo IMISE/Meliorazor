@@ -121,8 +121,8 @@ const required = computed(
 
 const displayMockInput = computed(
   () =>
-    supportedFieldTypes.includes(data.type ?? "") &&
-    (!fieldTypesNotDisplayedWithoutChoices.includes(data.type ?? "") || fieldChoices.value.length),
+    supportedFieldTypes.includes(data.fieldType ?? "") &&
+    (!fieldTypesNotDisplayedWithoutChoices.includes(data.fieldType ?? "") || fieldChoices.value.length),
 );
 </script>
 
@@ -173,7 +173,7 @@ const displayMockInput = computed(
       </div>
       <template v-if="displayMockInput">
         <v-number-input
-          v-if="dataElement.type === 'integer'"
+          v-if="dataElement.fieldType === 'integer'"
           style="grid-column: 4 / span 1"
           control-variant="stacked"
           :label="dataElement.label"
@@ -188,7 +188,7 @@ const displayMockInput = computed(
           :required="required"
         />
         <v-text-field
-          v-else-if="dataElement.type === 'text'"
+          v-else-if="dataElement.fieldType === 'text'"
           style="grid-column: 4 / span 1"
           :label="dataElement.label"
           :hint="dataElement.metadata.find((e) => e.key === 'Field Note')?.value"
@@ -196,7 +196,7 @@ const displayMockInput = computed(
           :required="required"
         />
         <v-select
-          v-else-if="dataElement.type === 'dropdown'"
+          v-else-if="dataElement.fieldType === 'dropdown'"
           v-model="fieldChoices"
           :items="fieldChoices"
           multiple
@@ -214,7 +214,7 @@ const displayMockInput = computed(
             />
           </template>
         </v-select>
-        <v-radio-group v-else-if="dataElement.type === 'radio'" readonly :required="required">
+        <v-radio-group v-else-if="dataElement.fieldType === 'radio'" readonly :required="required">
           <v-radio
             v-for="(choice, i) in fieldChoices"
             :key="choice"
@@ -228,7 +228,7 @@ const displayMockInput = computed(
           />
         </v-radio-group>
         <v-slider
-          v-else-if="dataElement.type === 'slider'"
+          v-else-if="dataElement.fieldType === 'slider'"
           :min="fieldChoices[0]"
           :max="fieldChoices[fieldChoices.length - 1]"
           step="1"
@@ -239,7 +239,7 @@ const displayMockInput = computed(
           :required="required"
         />
         <v-file-input
-          v-else-if="dataElement.type === 'file'"
+          v-else-if="dataElement.fieldType === 'file'"
           :label="dataElement.label"
           readonly
           :required="required"
