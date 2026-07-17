@@ -308,7 +308,7 @@ const participantUser = ref([
                     :icon="mdiArrowRight"
                     @click="
                       router.push({
-                        name: 'version',
+                        name: 'single-version',
                         params: { pid: projectId, title: projectTitle, key },
                       })
                     "

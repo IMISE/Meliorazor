@@ -86,7 +86,7 @@ const router = createRouter({
     },
     {
       path: "/projects/:pid-:title/version/:key",
-      name: "version",
+      name: "single-version",
       component: () => import("../views/VersionView.vue"),
     },
     {

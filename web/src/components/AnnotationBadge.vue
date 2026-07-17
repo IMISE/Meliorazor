@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Annotation } from "@/types/types";
+import { clean } from "@/utils/utils";
 import { mdiCheckCircleOutline, mdiCircleOutline } from "@mdi/js";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
@@ -25,11 +26,11 @@ const go = async () =>
     name: "focus-annotation",
     params: {
       aid: props.annotation.id,
-      subject: props.annotation.code.display,
+      subject: clean(props.annotation.code.display),
       eid: props.dataElementId,
-      name: props.dataElementName,
+      name: clean(props.dataElementName),
       pid: props.projectId,
-      title: props.projectName,
+      title: clean(props.projectName),
     },
   });
 

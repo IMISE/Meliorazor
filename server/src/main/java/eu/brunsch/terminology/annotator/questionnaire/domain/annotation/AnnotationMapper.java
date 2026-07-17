@@ -51,7 +51,10 @@ public abstract class AnnotationMapper {
      * @return Array of DTOs which can be displayed to user
      */
     public ActionDto[] toDtos(Set<Action> entities) {
-        return entities.stream().map(actionMapper::toDto).toArray(ActionDto[]::new);
+        return entities.stream()
+            .sorted((a1, a2) -> a1.getSubmittedAt().compareTo(a2.getSubmittedAt()))
+            .map(actionMapper::toDto)
+            .toArray(ActionDto[]::new);
     }
 
     /**

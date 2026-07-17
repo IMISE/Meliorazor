@@ -86,7 +86,7 @@ export interface AnnotationAction {
   authorName: string;
   actionType: "comment" | "submission" | "versioning";
   description: string;
-  submittedAt: number;
+  submittedAt: string;
 }
 
 export interface CreateAnnotationComment extends CreateAnnotationAction {
