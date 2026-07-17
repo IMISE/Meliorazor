@@ -8,6 +8,7 @@ import type {
 } from "@/types/types";
 import { clean } from "@/utils/utils";
 import {
+  mdiArrowRight,
   mdiCheckboxBlankCircleOutline,
   mdiCheckCircleOutline,
   mdiCloseCircleOutline,
@@ -26,7 +27,9 @@ defineProps<{
   <div class="comment">
     <div v-if="action.actionType === 'versioning'">
       <v-icon :icon="mdiFloppy"></v-icon>
-      <h3>Zu Version hinzugefügt</h3>
+      <h3>
+        Zu Version <var>{{ (action as AnnotationVersioning).versionKey }}</var> hinzugefügt
+      </h3>
       <router-link
         :to="{
           name: 'single-version',
@@ -36,7 +39,9 @@ defineProps<{
             key: (action as AnnotationVersioning).versionKey,
           },
         }"
-      >{{ (action as AnnotationVersioning).versionKey }}</router-link>
+      >
+        Version ansehen <v-icon :icon="mdiArrowRight" />
+      </router-link>
     </div>
     <div v-else-if="action.actionType === 'submission'">
       <v-icon :icon="mdiPencilPlus"></v-icon>
