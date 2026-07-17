@@ -41,10 +41,7 @@ defineProps<{
     <div v-else-if="action.actionType === 'submission'">
       <v-icon :icon="mdiPencilPlus"></v-icon>
       <h3>{{ action.authorName }} hat annotiert</h3>
-      <ul>
-        <li>Konfidenz: {{ (action as AnnotationSubmission).confidence }}</li>
-        <li v.if="action.description">Kommentar: {{ action.description }}</li>
-      </ul>
+      <small>{{ (action as AnnotationSubmission).confidence }}% Konfidenz</small>
     </div>
     <div v-else-if="(action as AnnotationComment).commentType === CommentType.ACCEPT">
       <v-icon :icon="mdiCheckCircleOutline" color="green"></v-icon>
