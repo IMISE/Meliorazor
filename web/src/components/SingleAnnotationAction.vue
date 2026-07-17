@@ -14,7 +14,6 @@ import {
   mdiFloppy,
   mdiPencilPlus,
 } from "@mdi/js";
-import ConfidenceSlider from "./ConfidenceSlider.vue";
 
 defineProps<{
   action: AnnotationAction;
@@ -25,7 +24,7 @@ defineProps<{
 
 <template>
   <div class="comment">
-    <div v-if="action.actionType === 'submission'">
+    <div v-if="action.actionType === 'versioning'">
       <v-icon :icon="mdiFloppy"></v-icon>
       <h3>Zu Version hinzugefügt</h3>
       <router-link
@@ -37,15 +36,17 @@ defineProps<{
             key: (action as AnnotationVersioning).versionKey,
           },
         }"
-      />
+      >{{ (action as AnnotationVersioning).versionKey }}</router-link>
     </div>
-    <div v-else-if="action.actionType === 'versioning'">
+    <div v-else-if="action.actionType === 'submission'">
       <v-icon :icon="mdiPencilPlus"></v-icon>
-      <h3>Zu Version hinzugefügt</h3>
-      <confidence-slider v-model="(action as AnnotationSubmission).confidence" :editable="false" />
-      <p v-if="action.description">Kommentar: {{ action.description }}</p>
+      <h3>{{ action.authorName }} hat annotiert</h3>
+      <ul>
+        <li>Konfidenz: {{ (action as AnnotationSubmission).confidence }}</li>
+        <li v.if="action.description">Kommentar: {{ action.description }}</li>
+      </ul>
     </div>
-    <div v-if="(action as AnnotationComment).commentType === CommentType.ACCEPT">
+    <div v-else-if="(action as AnnotationComment).commentType === CommentType.ACCEPT">
       <v-icon :icon="mdiCheckCircleOutline" color="green"></v-icon>
       <h3>Angenommen</h3>
     </div>
