@@ -6,22 +6,24 @@ import * as directives from "vuetify/directives";
 
 import AnnotationBadge from "../AnnotationBadge.vue";
 import { Status } from "@/types/enums.js";
-import type { MultiAuthorAnnotation } from "@/types/types.js";
+import type { Annotation } from "@/types/types.js";
 
 const vuetify = createVuetify({
   components,
   directives,
 });
 
-const singleAuthorAnnotation: MultiAuthorAnnotation = {
-  authors: [
+const singleAuthorAnnotation: Annotation = {
+  id: 0,
+  status: Status.ACCEPTED,
+  actions: [
     {
       id: 0,
+      actionType: "submission",
       authorName: "TestUser",
-      status: Status.ACCEPTED,
-      comments: [],
       confidence: 100,
-      comment: "",
+      description: "",
+      submittedAt: 0,
     },
   ],
   code: {

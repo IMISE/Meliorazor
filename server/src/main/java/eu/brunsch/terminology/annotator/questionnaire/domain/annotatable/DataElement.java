@@ -1,57 +1,48 @@
-package eu.brunsch.terminology.annotator.questionnaire.domain;
+package eu.brunsch.terminology.annotator.questionnaire.domain.annotatable;
 
 import java.util.List;
 
+import eu.brunsch.terminology.annotator.questionnaire.domain.Participant;
+import eu.brunsch.terminology.annotator.questionnaire.domain.Questionnaire;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
 /**
- * A single data element, questionnaire entry, question.
+ * A single data element, questionnaire entry, question, variable.
  */
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
-public class DataElement {
-
-    /** Identifier value. */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
-
+@AllArgsConstructor
+@NoArgsConstructor
+public class DataElement extends Annotatable {
     /**
      * Human-readable identifier, probably used in evaluation scripts.
      * Will be displayed in squared braces.
      */
     private String variableName;
 
-    /**
-     * Description of this field.
-     * May be empty.
-     */
-    private String label;
-
-    /**
-     * Data/field type of this variable.
-    */
+    /** Data/field type of this variable. */
     private String type;
 
     /**
-     * Distinct options which may be annotated.
+     * Extra annotatable with special semantic meaning:
+     * "Unit" of the variable, e.g. mg/ml.
      */
+    @OneToOne(fetch = FetchType.LAZY)
+    private Unit unit;
+
+    /** Distinct options which may be annotated. */
     @OneToMany
     private Choice[] choices;
 
@@ -91,6 +82,15 @@ public class DataElement {
             }
         }
         return false;
+    }
+
+    /**
+     * Visitor pattern to map DTOs using MapStruct.
+     * Stolen from https://www.baeldung.com/java-mapstruct-inheritance#1-applying-the-visitor-pattern.
+     */
+    @Override
+    public AnnotatableDto accept(Annotatable.Visitor visitor) {
+        return visitor.visit(this);
     }
 
 }

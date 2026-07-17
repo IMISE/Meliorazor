@@ -2,6 +2,7 @@ package eu.brunsch.terminology.annotator.questionnaire.domain;
 
 import java.time.Instant;
 
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.AnnotationDto;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

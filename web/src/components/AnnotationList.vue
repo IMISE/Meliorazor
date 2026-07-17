@@ -43,13 +43,21 @@ const annotate = async () => {
     >
       <!-- TODO mehr Metadaten zur Annotation anzeigen? -->
       <v-list-item-title>{{ annotation.code.display }}</v-list-item-title>
-      <v-list-item-subtitle>{{ annotation.authorName }}</v-list-item-subtitle>
+      <v-list-item-subtitle>{{
+        annotation.actions
+          .filter((action) => action.actionType === "submission")
+          .map((action) => action.authorName)
+          .join(", ")
+      }}</v-list-item-subtitle>
       <template #prepend>
         <status-icon :status="annotation.status" :include-text="false" />
       </template>
       <template #append>
         <v-chip style="margin: 0 4px">{{ annotation.predicate }}</v-chip>
-        <v-chip style="margin: 0 4px">{{ annotation.confidence }}%</v-chip>
+        <v-chip style="margin: 0 4px">
+          {{ annotation.actions.filter((action) => action.actionType === "submission").length }}x
+          annotiert
+        </v-chip>
         <router-link
           :to="{
             name: 'focus-annotation',

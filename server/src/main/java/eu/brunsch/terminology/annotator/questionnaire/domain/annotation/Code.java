@@ -1,18 +1,16 @@
-package eu.brunsch.terminology.annotator.questionnaire.domain;
+package eu.brunsch.terminology.annotator.questionnaire.domain.annotation;
 
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Lob;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
  * Groups options for configuring the annotation process for a single project.
  */
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
 @Embeddable
+@Data
+@NoArgsConstructor
 public class Code {
     /** URL of CodeSystem. */
     private String system;

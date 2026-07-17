@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import eu.brunsch.terminology.annotator.questionnaire.domain.DataElement;
 import eu.brunsch.terminology.annotator.questionnaire.domain.Questionnaire;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.DataElement;
 
 public interface DataElementRepository
     extends JpaRepository<DataElement, Long> {

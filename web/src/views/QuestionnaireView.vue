@@ -35,6 +35,7 @@ watch(
   },
   { immediate: true },
 );
+// TODO broken at the moment (see version redirect)
 watch(
   tab,
   (name) => {
@@ -71,7 +72,17 @@ const isAdmin = computed(() => myRoles.value.includes(Role.ADMIN));
 
 const unannotated = computed(
   () =>
-    elements.value.filter((e) => e.annotations.every((a) => a.status === Status.REJECTED)) ?? [],
+    elements.value.filter((e) =>
+      e.annotations.every(
+        (a) =>
+          a.status === Status.REJECTED ||
+          a.actions.every(
+            (action) =>
+              action.actionType !== "submission" ||
+              action.authorName !== user?.value?.preferred_username,
+          ),
+      ),
+    ) ?? [],
 );
 const annotatable = computed(
   () => myRoles.value?.some((role) => role === Role.ANNOTATE) && unannotated.value.length,
@@ -81,7 +92,9 @@ const uncorrected = computed(
   () =>
     elements.value.flatMap((e) =>
       e.annotations.filter(
-        (a) => a.status === Status.OPEN && a.authorName !== user?.value?.preferred_username,
+        (a) =>
+          a.status === Status.OPEN &&
+          a.actions.every((action) => action.authorName !== user?.value?.preferred_username),
       ),
     ) ?? [],
 );

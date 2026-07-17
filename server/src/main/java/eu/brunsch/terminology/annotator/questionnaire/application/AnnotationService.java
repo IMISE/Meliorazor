@@ -2,7 +2,11 @@ package eu.brunsch.terminology.annotator.questionnaire.application;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.http.HttpStatus;
@@ -12,18 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import eu.brunsch.terminology.annotator.questionnaire.domain.Annotation;
-import eu.brunsch.terminology.annotator.questionnaire.domain.AnnotationDto;
-import eu.brunsch.terminology.annotator.questionnaire.domain.AnnotationMapper;
-import eu.brunsch.terminology.annotator.questionnaire.domain.Choice;
-import eu.brunsch.terminology.annotator.questionnaire.domain.ChoiceDto;
-import eu.brunsch.terminology.annotator.questionnaire.domain.ChoiceMapper;
-import eu.brunsch.terminology.annotator.questionnaire.domain.Comment;
-import eu.brunsch.terminology.annotator.questionnaire.domain.CommentDto;
-import eu.brunsch.terminology.annotator.questionnaire.domain.CommentMapper;
-import eu.brunsch.terminology.annotator.questionnaire.domain.DataElement;
-import eu.brunsch.terminology.annotator.questionnaire.domain.DataElementDto;
-import eu.brunsch.terminology.annotator.questionnaire.domain.DataElementMapper;
 import eu.brunsch.terminology.annotator.questionnaire.domain.Questionnaire;
 import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireMapper;
@@ -31,13 +23,29 @@ import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireOption
 import eu.brunsch.terminology.annotator.questionnaire.domain.Version;
 import eu.brunsch.terminology.annotator.questionnaire.domain.VersionCreateDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.VersionDto;
-import eu.brunsch.terminology.annotator.questionnaire.domain.Annotation.Status;
 import eu.brunsch.terminology.annotator.questionnaire.domain.Participant.Role;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.Annotatable;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.AnnotatableMapper;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.Choice;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.ChoiceDto;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.DataElement;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.DataElementDto;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.Action;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.ActionMapper;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.Annotation;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.AnnotationDto;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.AnnotationMapper;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.Comment;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.CommentDto;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.Versioning;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.Annotation.Status;
+import eu.brunsch.terminology.annotator.questionnaire.infrastructure.ActionRepository;
+import eu.brunsch.terminology.annotator.questionnaire.infrastructure.AnnotatableRepository;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.AnnotationRepository;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.ChoiceRepository;
-import eu.brunsch.terminology.annotator.questionnaire.infrastructure.CommentRepository;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.DataElementRepository;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.QuestionnaireRepository;
+import eu.brunsch.terminology.annotator.questionnaire.infrastructure.UnitRepository;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.VersionRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -53,21 +61,23 @@ public class AnnotationService {
     private final DataElementRepository dataElementRepository;
     /** Choice DB access. */
     private final ChoiceRepository choiceRepository;
+    /** Unit DB access. */
+    private final UnitRepository unitRepository;
+    /** Annotatable (Data Element, Choice and Unit) unified DB access. */
+    private final AnnotatableRepository annotatableRepository;
     /** Annotation DB access. */
     private final AnnotationRepository annotationRepository;
-    /** Comment DB access. */
-    private final CommentRepository commentRepository;
+    /** Annotation Action DB access. */
+    private final ActionRepository actionRepository;
 
     /** Map Questionnaire DTOs to Questionnaire entities (and vice versa). */
     private final QuestionnaireMapper questionnaireMapper;
-    /** Map Data Element DTOs to Data Element entities (and vice versa). */
-    private final DataElementMapper dataElementMapper;
-    /** Map Choice DTOs to Choice entities (and vice versa). */
-    private final ChoiceMapper choiceMapper;
+    /** Map Annotatable DTOs to Annotatable entities (and vice versa). */
+    private final AnnotatableMapper annotatableMapper;
     /** Map Annotation DTOs to Annotation entities (and vice versa). */
     private final AnnotationMapper annotationMapper;
-    /** Map Comment DTOs to Comment entities (and vice versa). */
-    private final CommentMapper commentMapper;
+    /** Map Annotation Action DTOs to Annotation ACtion entities (and vice versa). */
+    private final ActionMapper actionMapper;
 
 
     //////////////////////////
@@ -88,7 +98,7 @@ public class AnnotationService {
         questionnaireRepository.save(questionnaire);
         for (final DataElementDto dDto : dto.getDataElements()) {
             // save DE first, so the choices can reference its ID later
-            final DataElement dataElement = dataElementMapper.toEntity(dDto);
+            final DataElement dataElement = annotatableMapper.toEntity(dDto);
             dataElement.setQuestionnaire(questionnaire);
             dataElementRepository.save(dataElement);
 
@@ -98,7 +108,7 @@ public class AnnotationService {
                 final Choice[] choices = new Choice[dDto.getChoices().length];
                 for (int i = 0; i < dDto.getChoices().length; i++) {
                     final ChoiceDto cDto = dDto.getChoices()[i];
-                    final Choice choice = choiceMapper.toEntity(cDto);
+                    final Choice choice = annotatableMapper.toEntity(cDto);
                     choice.setVariable(dataElement);
                     choices[i] = choice;
                     choiceRepository.save(choice);
@@ -219,7 +229,7 @@ public class AnnotationService {
 
     /////////////////////////
     /// DATA ELEMENT READ ///
-    ////////////////////////
+    /////////////////////////
 
     /**
      * Get a single data element by its ID.
@@ -263,7 +273,7 @@ public class AnnotationService {
     public DataElementDto getDataElementWithComments(final DataElement variable) {
         // all annotations visible to user
         final List<Annotation> annotations = annotationRepository
-            .findByVariable(variable)
+            .findByTarget(variable)
             .stream()
             .filter(a -> a.seenBy(username()))
             .toList();
@@ -277,18 +287,26 @@ public class AnnotationService {
         final List<ChoiceDto> choiceDtos = new ArrayList<>();
         // populate choices with their annotations
         for (final Choice choice :  variable.getChoices()) {
-            final ChoiceDto choiceDto = choiceMapper.toDto(choice);
-            final var choiceAnnotations = annotations
-                .stream()
-                .filter(a -> a.getChoice() != null && a.getChoice().getId().intValue() == choice.getId().intValue())
-                .map(annotationMapper::toDto)
-                .toArray(AnnotationDto[]::new);
-            choiceDto.setAnnotations(choiceAnnotations);
+            final ChoiceDto choiceDto = annotatableMapper.toDto(choice);
+            final var choiceAnnotations = annotationRepository.findByTarget(choice);
+            List<AnnotationDto> choiceAnnotationDtos = new ArrayList<>();
+            for (final Annotation choiceAnnotation : choiceAnnotations) {
+                if (!choiceAnnotation.seenBy(username())) {
+                    continue;
+                }
+
+                final AnnotationDto choiceAnnotationDto = annotationMapper.toDto(choiceAnnotation);
+                choiceAnnotationDto.setActions(
+                    annotationMapper.toDtos(
+                        choiceAnnotation.getActions(username())));
+                choiceAnnotationDtos.add(choiceAnnotationDto);
+            }
+            choiceDto.setAnnotations(choiceAnnotations.toArray(AnnotationDto[]::new));
             choiceDtos.add(choiceDto);
         }
 
         // put it all together
-        final DataElementDto dto = dataElementMapper.toDtoWithutChoices(variable);
+        final DataElementDto dto = annotatableMapper.toDto(variable);
         dto.setChoices(choiceDtos.toArray(ChoiceDto[]::new));
         dto.setAnnotations(filteredAnnotations);
         return dto;
@@ -308,7 +326,7 @@ public class AnnotationService {
         final Long dataElementId
     ) {
         final DataElement d = getDataElement(dataElementId);
-        return annotationRepository.findByVariable(d)
+        return annotationRepository.findByTarget(d)
             .stream()
             .filter(a -> a.seenBy(username()))
             .map(annotationMapper::toDto)
@@ -316,76 +334,83 @@ public class AnnotationService {
     }
 
     /**
-     * Add an annotation to a data element.
-     * @param dataElementId Internal ID of the data element to annotate
-     * @param dto information by which to create the annotation
-     * @return ID of the created annotation
-     */
-    public Long createAnnotation(
-        final Long dataElementId,
-        final AnnotationDto dto
-    ) {
-        final Annotation annotation = annotationMapper.toEntity(dto);
-        final DataElement parent = getDataElement(dataElementId);
-
-        // check if we're allowed to annotate
-        if (!parent.annotatableBy(username())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
-
-        // fill DTO
-        annotation.setVariable(parent);
-        annotation.setStatus(Status.OPEN);
-        annotationRepository.save(annotation);
-        return annotation.getId();
-    }
-
-    /**
-     * Add an annotation to a choice option of a data element.
-     * @param dataElementId Internal ID of the annotated data element
-     * @param dataElementId Internal ID of the annotated data element
+     * Add an annotation to an annotatable element.
+     * @param annotatableElementId Internal ID of the annotated element
      * @param dto choice by which to create the annotation
      * @return ID of the created annotation
      */
     public Long createAnnotation(
-        final Long dataElementId,
-        final Long choiceId,
+        final Long annotatableElementId,
         final AnnotationDto dto
     ) {
-        final Annotation annotation = annotationMapper.toEntity(dto);
-        final DataElement parent = getDataElement(dataElementId);
+        // must contain exactly one submission action
+        if (
+            dto.getActions() == null ||
+            dto.getActions().length != 1 ||
+            dto.getActions()[0] == null ||
+            !"submission".equals(dto.getActions()[0].getActionType())
+        ) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
+        final Annotatable target = annotatableRepository.findById(annotatableElementId).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        // check if we see
+        if (target.getQuestionnaire() != null && !target.getQuestionnaire().seenBy(username())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
 
         // check if we're allowed to annotate
-        if (!parent.annotatableBy(username())) {
+        if (!target.annotatableBy(username())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
-        final Choice choice = choiceRepository
-            .findById(choiceId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        // check if annotation already exists
+        // if yes, add as action
+        // if no, add annotation and add as action
+        final Optional<Annotation> existing = annotationRepository
+            .findByTargetAndPredicateAndCode(target, dto.getPredicate(), dto.getCode());
 
-        // fill object
-        annotation.setVariable(parent);
-        annotation.setChoice(choice);
-        annotation.setStatus(Status.OPEN);
-        annotationRepository.save(annotation);
-        return annotation.getId();
+        if (existing.isEmpty()) {
+            final Annotation annotation = annotationMapper.toEntity(dto);
+            // fill object
+            annotation.setTarget(target);
+            annotation.setStatus(Status.OPEN);
+            annotation.getActions().iterator().next().setAuthorName(username());
+            annotationRepository.save(annotation);
+            return annotation.getId();
+        } else {
+            final Annotation annotation = existing.get();
+            // check if author already submitted same annotation; if true, throw exception
+            if (annotation.getActions().stream().anyMatch(action -> action.getAuthorName().equals(username()))) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT);
+            }
+
+            final Action action = actionMapper.toEntity(dto.getActions()[0]);
+            actionRepository.save(action);
+            annotation.addAction(action, target.getQuestionnaire() == null ? null : target.getQuestionnaire().getOptions());
+            annotationRepository.save(annotation);
+            return annotation.getId();
+        }
     }
 
     /**
      * Delete an annotation and its comments.
-     * @param annotationId annotation to remove
+     * @param annotationId annotation to remove action from
+     * @param actionid action to remove
      */
-    public void removeAnnotation(final Long annotationId) {
+    public void removeAnnotation(final Long annotationId, final Long actionId) {
         final Annotation annotation = getAnnotation(annotationId);
-
+        final Action action = actionRepository.findById(actionId).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         // see if user is allowed to delete
         // -> either this is the user's own annotation or user has admin rights
-        final Questionnaire q = annotation.getVariable().getQuestionnaire();
-        if (!annotation.getAuthorName().equals(username()) && q != null && !q.administeredBy(username())) {
+        if (annotation.removeAction(action, username()) == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
-        annotationRepository.deleteById(annotationId);
+        actionRepository.deleteById(actionId);
+        annotationRepository.save(annotation);
     }
 
     /**
@@ -431,17 +456,15 @@ public class AnnotationService {
         if (!parent.seenBy(username())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "did not find annotation with id " + annotationId); 
         }
-        if (!parent.reviewableBy(username())) {
+        if (!parent.reviewableBy(username()) && (!parent.hasAuthor(username()) || !Comment.Type.NOTE.equals(dto.getActionType()))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN); 
         }
 
-        final Comment comment = commentMapper.toEntity(dto);
-        comment.setAnnotation(parent);
-        commentRepository.save(comment);
-        final QuestionnaireOptions req = parent.getVariable()
-            .getQuestionnaire()
-            .getOptions();
-        parent.addComment(comment, req);
+        final Comment comment = actionMapper.toEntity(dto);
+        actionRepository.save(comment);
+
+        final QuestionnaireOptions req = parent.getTarget().getQuestionnaire() == null ? null : parent.getTarget().getQuestionnaire().getOptions();
+        parent.addAction(comment, req);
         annotationRepository.save(parent);
         return comment.getId();
     }
@@ -452,22 +475,32 @@ public class AnnotationService {
      * @param id Internal ID of the comment to delete
      */
     public void deleteComment(final Long id) {
-        final Comment comment = commentRepository.findById(id)
+        final Action action = actionRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        final Annotation annotation = comment.getAnnotation();
+        if (!"comment".equals(action.getActionType())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        // access control
+        final Annotation annotation = action.getAnnotation();
         if (!annotation.seenBy(username())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND); 
         }
-        if (!comment.getAuthorName().equals(username()) && annotation.getVariable().getQuestionnaire().administeredBy(username())) {
+        if (!action.getAuthorName().equals(username()) ||
+            (annotation.getTarget().getQuestionnaire() != null &&
+            annotation.getTarget().getQuestionnaire().administeredBy(username()))
+        ) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN); 
         }
 
-        final QuestionnaireOptions req = annotation.getVariable()
-            .getQuestionnaire()
-            .getOptions();
-        annotation.removeComment(comment, req);
-        annotationRepository.save(annotation);
-        commentRepository.deleteById(id);
+        final Comment comment = (Comment) action;
+        final Boolean response = annotation.removeAction(comment, username());
+        if (response == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN); 
+        } else {
+            annotationRepository.save(annotation);
+            actionRepository.deleteById(id);
+        }
     }
 
     /**
@@ -490,15 +523,15 @@ public class AnnotationService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
-        final Annotation[] annotations = annotationRepository
+        final Set<Annotation> annotations = annotationRepository
             .findAllById(List.of(dto.getAnnotationIds()))
             .stream()
             // we already checked for admin, so we don't need to do this step I guess
             // but when we stream anyways ...
             .filter(a -> a.seenBy(username))
-            .toArray(Annotation[]::new);
+            .collect(Collectors.toSet());
         // check if all annotations exist
-        if (annotations.length != dto.getAnnotationIds().length) {
+        if (annotations.size() != dto.getAnnotationIds().length) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
@@ -507,7 +540,28 @@ public class AnnotationService {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
 
-        final Version version = new Version(null, dto.getKey(), dto.getDescription(), annotations, q, null);
+        // add versioning actions to annotations to (1) freeze them and (2) notify users
+        for (final Annotation annotation : annotations) {
+            final Versioning v = Versioning.builder()
+                .authorName(username)
+                .description(dto.getDescription())
+                .versionKey(dto.getKey())
+                .build();
+            actionRepository.save(v);
+            annotation.addAction(v, q.getOptions());
+            annotationRepository.save(annotation);
+            // TODO: I don't think this is needed
+            actionRepository.save(v);
+        }
+
+        final Version version = new Version(
+            null,
+            dto.getKey(),
+            dto.getDescription(),
+            annotations.toArray(Annotation[]::new),
+            q,
+            null
+        );
         return versionRepository.save(version).getId();
     }
 

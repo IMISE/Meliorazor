@@ -3,7 +3,7 @@ import CodeDisplay from "./CodeDisplay.vue";
 import type { Annotatable, Annotation, CodeInfo } from "@/types/types";
 import { findCode } from "@/utils/fhirApi";
 import { watch, ref, type Ref } from "vue";
-import SingleComment from "./SingleComment.vue";
+import SingleAnnotationAction from "./SingleAnnotationAction.vue";
 import type { FhirValueSetDefinition } from "@/types/fhir.js";
 import StatusIcon from "./StatusIcon.vue";
 import CodeAnnotator from "./CodeAnnotator.vue";
@@ -12,6 +12,8 @@ const props = defineProps<{
   annotatedElement: Annotatable;
   annotation: Annotation;
   valueSets: FhirValueSetDefinition[];
+  projectId: number;
+  projectTitle: string;
 }>();
 
 const code: Ref<CodeInfo | undefined> = ref();
@@ -46,22 +48,29 @@ const getAnnotatedCode = async () => {
         :data-element="undefined"
         :code="annotation.code"
         :editable="false"
-        :initial-comment="annotation.comment"
-        :initial-confidence="annotation.confidence"
-        :initial-predicate="annotation.predicate"
         @edit="getAnnotatedCode"
       />
       <ul>
         <li>Status: <status-icon :status="annotation.status" include-text /></li>
-        <li>Erstellt von: {{ annotation.authorName }}</li>
+        <li>
+          Erstellt von:
+          {{
+            annotation.actions
+              .filter((action) => action.actionType === "submission")
+              .map((action) => action.authorName)
+              .join(", ")
+          }}
+        </li>
       </ul>
       <br />
       <h3>Diskussion</h3>
-      <template v-if="annotation.comments?.length">
-        <single-comment
-          v-for="comment in annotation.comments"
-          :key="comment.id"
-          :comment="comment"
+      <template v-if="annotation.actions?.length">
+        <single-annotation-action
+          v-for="action in annotation.actions"
+          :key="action.id"
+          :action="action"
+          :project-id="projectId"
+          :project-title="projectTitle"
         />
       </template>
       <template v-else>

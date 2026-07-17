@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Annotation, MultiAuthorAnnotation, Variable } from "@/types/types";
+import type { Annotation, Variable } from "@/types/types";
 import { computed, ref } from "vue";
 import { Role, status, Status } from "@/types/enums";
 import AnnotationBadge from "./AnnotationBadge.vue";
@@ -7,7 +7,6 @@ import { useRouter } from "vue-router";
 import { clean } from "@/utils/utils";
 import { mdiChevronDown, mdiChevronUp, mdiMenuOpen, mdiPencilPlus } from "@mdi/js";
 import { fieldTypesNotDisplayedWithoutChoices, supportedFieldTypes } from "@/types/redCap.ts";
-import { codeEquals } from "@/utils/fhirUtils.ts";
 
 const model = defineModel<number[] | undefined>();
 
@@ -48,40 +47,14 @@ const annotations = computed(() =>
   ),
 );
 
-/** Merge equal annotations, so that multiple equal annotations from possibly different people are displayed separately */
-const mergeEqualAnnotations = (annotations: Annotation[]) => {
-  return annotations.reduce((acc, val) => {
-    const i = acc.findIndex(
-      (group) => codeEquals(group.code, val.code) && group.predicate === val.predicate,
-    );
-    if (i < 0) {
-      const multiAuthor: MultiAuthorAnnotation = {
-        code: val.code,
-        predicate: val.predicate,
-        authors: [val],
-      };
-      acc.push(multiAuthor);
-    } else {
-      acc[i]!.authors.push(val);
-    }
-    return acc;
-  }, [] as MultiAuthorAnnotation[]);
-};
-
-const groupAnnotationsByCodeSystem = (annotations: Annotation[]) => {
-  const groups = annotations.reduce(
+const groupAnnotationsByCodeSystem = (annotations: Annotation[]) =>
+  annotations.reduce(
     (acc, val) =>
       acc[val.code.system]
         ? (acc[val.code.system]!.push(val), acc)
         : ((acc[val.code.system] = [val]), acc),
     {} as { [index: string]: Annotation[] },
   );
-  const mergedGroups = {} as { [index: string]: MultiAuthorAnnotation[] };
-  for (const key in groups) {
-    mergedGroups[key] = mergeEqualAnnotations(groups[key]!);
-  }
-  return mergedGroups;
-};
 
 const acceptedAnnotations = computed(() => annotations.value[Status.ACCEPTED as string]!);
 const openAnnotations = computed(() => annotations.value[Status.OPEN as string]!);
@@ -308,7 +281,7 @@ const displayMockInput = computed(
                 <annotation-badge
                   v-for="annotation in group"
                   v-model="model"
-                  :key="`${dataElement.id}-${annotation.authors.map((a) => a.id).join()}`"
+                  :key="`${annotation.id}-${annotation.actions.length}`"
                   :annotation="annotation"
                   :data-element-id="dataElement.id!"
                   :data-element-name="dataElement.variableName!"
@@ -338,7 +311,7 @@ const displayMockInput = computed(
                 <annotation-badge
                   v-for="annotation in group"
                   v-model="model"
-                  :key="`${dataElement.id}-${annotation.authors.map((a) => a.id).join()}`"
+                  :key="`${annotation.id}-${annotation.actions.length}`"
                   :annotation="annotation"
                   :data-element-id="dataElement.id!"
                   :data-element-name="dataElement.variableName!"

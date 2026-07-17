@@ -1,20 +1,18 @@
 <script setup lang="ts">
 import auth from "@/auth";
-import type { Annotatable, Choice, CodeMapping, Predicate, Variable } from "@/types/types";
+import type { Annotatable, CodeMapping, Predicate, Variable } from "@/types/types";
 import { createAnnotation } from "@/utils/api";
 import { mdiCheck, mdiClose, mdiEye, mdiPencil } from "@mdi/js";
 import { computed } from "vue";
 import { ref, type Ref } from "vue";
 import type { IconValue } from "vuetify/lib/composables/icons.mjs";
+import ConfidenceSlider from "./ConfidenceSlider.vue";
 
 const annotatable = defineModel<Annotatable>();
-const { code, dataElement, initialComment, initialPredicate, initialConfidence } = defineProps<{
+const { code, dataElement } = defineProps<{
   code: CodeMapping;
   dataElement: Variable | undefined;
   editable: boolean;
-  initialComment: string | undefined;
-  initialPredicate: Predicate | undefined;
-  initialConfidence: number | undefined;
 }>();
 
 const emit = defineEmits<{
@@ -28,9 +26,9 @@ const loadingCreate = ref(false);
 const loadingFeedbackIcon: Ref<IconValue | undefined> = ref();
 
 // SSSOM metadata
-const confidence: Ref<number> = ref(initialConfidence ?? 100);
-const predicate: Ref<Predicate> = ref(initialPredicate ?? "skos:exactMatch");
-const comment = ref(initialComment ?? "");
+const confidence: Ref<number> = ref(100);
+const predicate: Ref<Predicate> = ref("skos:exactMatch");
+const comment = ref("");
 const predicates = [
   "owl:sameAs",
   "owl:equivalentClass",
@@ -62,14 +60,17 @@ const submitAnnotation = async () => {
   try {
     const response = await createAnnotation(
       {
-        authorName: u.profile!.preferred_username!,
         code,
-        confidence: confidence.value,
-        comment: comment.value,
         predicate: predicate.value,
+        actions: [
+          {
+            authorName: u.profile!.preferred_username!,
+            description: comment.value,
+            confidence: confidence.value,
+          },
+        ],
       },
-      dataElement!.id!,
-      (annotatable.value as Choice & Variable)?.choices?.length ? undefined : annotatable.value!.id,
+      annotatable.value!.id!,
     );
     // keep errror state for longer so user has time to think
     if (response?.ok) {
@@ -164,31 +165,10 @@ const submitAnnotation = async () => {
     </v-row>
     <br />
     <!-- form to add further SSSOM metadata -->
-    <v-form @submit.prevent="submitAnnotation">
-      <v-slider
-        v-model="confidence"
-        :readonly="!editable"
-        :step="5"
-        show-ticks="always"
-        :min="0"
-        :max="100"
-        :ticks="{
-          10: 'Sehr unsicher',
-          30: 'Eher unsicher',
-          50: 'Weder noch',
-          70: 'Eher sicher',
-          90: 'Sehr sicher',
-        }"
-        label="Konfidenz"
-        thumb-label="hover"
-        color="primary"
-      >
-        <template #thumb-label="{ modelValue: sliderModelValue }">{{ sliderModelValue }}%</template>
-      </v-slider>
-      <v-textarea v-if="editable" v-model="comment" label="Kommentar" />
-      <p v-else-if="comment?.length">Kommentar: {{ comment }}</p>
+    <v-form v-if="editable" @submit.prevent="submitAnnotation">
+      <confidence-slider v-model="confidence" editable />
+      <v-textarea v-model="comment" label="Kommentar" />
       <v-btn
-        v-if="editable"
         :prepend-icon="loadingFeedbackIcon"
         :disabled="!!loadingFeedbackIcon || loadingCreate"
         :loading="loadingCreate"

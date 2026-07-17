@@ -1,5 +1,6 @@
 package eu.brunsch.terminology.annotator.questionnaire.domain;
 
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.DataElementDto;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

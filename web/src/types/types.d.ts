@@ -57,37 +57,50 @@ export interface Choice extends Annotatable {
 
 export interface CreateAnnotation {
   code: CodeMapping;
-  confidence: number;
-  comment: string;
-  predicate: string;
-  authorName: string;
+  predicate: Predicate;
+  actions: [CreateAnnotationSubmission];
 }
 
-export interface BaseAnnotation {
+export interface Annotation {
+  id: number;
   code: CodeMapping;
   predicate: Predicate;
-}
-
-interface AuthorSpecificAnnotation {
-  id: number;
-  authorName: string;
+  actions: (AnnotationAction | AnnotationComment | AnnotationSubmission | AnnotationVersioning)[];
   status: Status;
-  comments: AnnotationComment[];
-  confidence: number;
-  comment: string;
 }
 
-export interface Annotation extends BaseAnnotation, AuthorSpecificAnnotation {}
-export interface MultiAuthorAnnotation extends BaseAnnotation {
-  authors: AuthorSpecificAnnotation[];
+export interface CreateAnnotationAction {
+  authorName: string;
+  description: string;
 }
 
-export interface AnnotationComment {
+export interface AnnotationAction {
   id: number;
   authorName: string;
-  contents: string;
-  type: CommentType;
+  actionType: "comment" | "submission" | "versioning";
+  description: string;
   submittedAt: number;
+}
+
+export interface CreateAnnotationComment extends CreateAnnotationAction {
+  commentType: CommentType;
+}
+export interface AnnotationComment extends AnnotationAction {
+  commentType: CommentType;
+  actionType: "comment";
+}
+
+export interface CreateAnnotationSubmission extends CreateAnnotationAction {
+  confidence: number;
+}
+export interface AnnotationSubmission extends AnnotationAction {
+  confidence: number;
+  actionType: "submission";
+}
+
+export interface AnnotationVersioning extends AnnotationAction {
+  versionKey: string;
+  actionType: "versioning";
 }
 
 export type Code = {

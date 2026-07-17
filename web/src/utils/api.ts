@@ -120,31 +120,31 @@ export async function createVersion(
 
 export async function createAnnotation(
   annotation: CreateAnnotation,
-  dataElementId: number,
-  choiceId: number | undefined = undefined,
+  annotatableId: number,
   loading: Ref<boolean> | undefined = undefined,
 ) {
   if (loading && loading.value) {
     return;
   }
 
-  const path =
-    choiceId === undefined
-      ? `/dataElement/${dataElementId}/annotation`
-      : `/dataElement/${dataElementId}/choice/${choiceId}/annotation`;
-  return await request(path, "POST", JSON.stringify(annotation), loading);
+  return await request(
+    `/annotatable/${annotatableId}/annotation`,
+    "POST",
+    JSON.stringify(annotation),
+    loading,
+  );
 }
 
 export async function getAnnotation(
-  dataElementId: number | undefined,
+  annotatableId: number | undefined,
   annotationId: number | undefined,
   loading: Ref<boolean> | undefined,
 ) {
-  if ((loading && loading.value) || dataElementId === undefined || annotationId === undefined)
+  if ((loading && loading.value) || annotatableId === undefined || annotationId === undefined)
     return;
 
   const response = await request(
-    `/dataElement/${dataElementId}/annotation/${annotationId}`,
+    `/annotatable/${annotatableId}/annotation/${annotationId}`,
     "GET",
     undefined,
     loading,

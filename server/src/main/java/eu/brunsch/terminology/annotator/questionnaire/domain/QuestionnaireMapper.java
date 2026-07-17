@@ -14,13 +14,13 @@ public interface QuestionnaireMapper {
      * @param entity to-be-displayed entity
      * @return DTO which can be displayed to user
      */
-    QuestionnaireDto toDto(Questionnaire entity);
+    public QuestionnaireDto toDto(Questionnaire entity);
 
     /**
      * Map an incoming questionnaire DTO to questionnaire.
      * @param dto incoming DTO
      * @return entity which can be saved
      */
-    Questionnaire toEntity(QuestionnaireDto dto);
+    public Questionnaire toEntity(QuestionnaireDto dto);
 
 }

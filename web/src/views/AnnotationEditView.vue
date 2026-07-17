@@ -67,6 +67,8 @@ watch(
         :annotation="annotation"
         :value-sets="project.valueSets"
         :my-roles="roles"
+        :project-id="project.id"
+        :project-title="project.title"
       />
       <annotation-commentor
         v-if="roles.includes(Role.FEEDBACK)"

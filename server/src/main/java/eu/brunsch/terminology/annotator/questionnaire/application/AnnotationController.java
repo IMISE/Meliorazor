@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import eu.brunsch.terminology.annotator.questionnaire.domain.AnnotationDto;
-import eu.brunsch.terminology.annotator.questionnaire.domain.CommentDto;
-import eu.brunsch.terminology.annotator.questionnaire.domain.DataElementDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.VersionCreateDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.VersionDto;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.DataElementDto;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.AnnotationDto;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.CommentDto;
 import lombok.RequiredArgsConstructor;
 
 
@@ -80,7 +80,7 @@ public class AnnotationController {
 
 
     /**
-     * Get data element with annotations and comments.
+     * Get a whole data element, incl. choices, units and all annotations and actions.
      * @param id identifier of the data element
      * @return data element
      */
@@ -104,39 +104,24 @@ public class AnnotationController {
      * @param id identifier of the annotation
      * @return annotation with comments
      */
-    @GetMapping("dataElement/{dataElement}/annotation/{id}")
+    @GetMapping("annotatable/{dataElement}/annotation/{id}")
     public AnnotationDto getAnnotation(final @PathVariable Long id) {
         return service.getAnnotationDto(id);
     }
 
-    /**
-     * Annotate a data element.
-     * @param id identifier of the data element
-     * @param dto information about the annotation
-     * @return ID of the newly created annotation
-     */
-    @PostMapping("dataElement/{id}/annotation")
-    public Long createAnnotation(
-        final @PathVariable Long id,
-        final @RequestBody AnnotationDto dto
-    ) {
-        return service.createAnnotation(id, dto);
-    }
 
     /**
-     * Annotate an option of a data element.
-     * @param dataElementId identifier of the data element the choice belongs to
-     * @param choiceId identifier choice itself
+     * Annotate an annotatable element.
+     * @param annotatableId identifier of the annotatable element.
      * @param dto information about the annotation
      * @return ID of the newly created annotation
      */
-    @PostMapping("dataElement/{dataElementId}/choice/{choiceId}/annotation")
+    @PostMapping("annotatable/{annotatableId}/annotation")
     public Long createAnnotation(
-        final @PathVariable Long dataElementId,
-        final @PathVariable Long choiceId,
+        final @PathVariable Long annotatableId,
         final @RequestBody AnnotationDto dto
     ) {
-        return service.createAnnotation(dataElementId, choiceId, dto);
+        return service.createAnnotation(annotatableId, dto);
     }
 
     /**
@@ -144,9 +129,9 @@ public class AnnotationController {
      * Removes associated comments as well.
      * @param id identifier of the annotation
      */
-    @DeleteMapping("dataElement/{dataElement}/annotation/{id}")
-    public void deleteAnnotation(final @PathVariable Long id) {
-        service.removeAnnotation(id);
+    @DeleteMapping("dataElement/{dataElement}/annotation/{annotationId}/action/{actionId}")
+    public void deleteAnnotation(final @PathVariable Long annotationId, final @PathVariable Long actionId) {
+        service.removeAnnotation(annotationId, actionId);
     }
 
     /**
@@ -169,7 +154,7 @@ public class AnnotationController {
      * May change the status of the annotation.
      * @param id identifier of the comment
      */
-    @DeleteMapping("dataElement/{a}/annotation/{b}/comment/{id}")
+    @DeleteMapping("annotatable/{a}/annotation/{b}/comment/{id}")
     public void deleteComment(final @PathVariable Long id) {
         service.deleteComment(id);
     }
