@@ -23,7 +23,7 @@ const singleAuthorAnnotation: Annotation = {
       authorName: "TestUser",
       confidence: 100,
       description: "",
-      submittedAt: 0,
+      submittedAt: new Date().toISOString(),
     },
   ],
   code: {
