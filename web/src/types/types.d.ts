@@ -43,6 +43,7 @@ export interface Variable extends Annotatable {
   variableName: string | null | undefined;
   fieldType: string | null | undefined;
   choices: Choice[] | null | undefined;
+  unit: Unit | null | undefined;
   metadata: KeyValuePair[];
 }
 
@@ -53,6 +54,11 @@ export interface KeyValuePair {
 
 export interface Choice extends Annotatable {
   code: string;
+}
+
+export interface Unit extends Annotatable {
+  min: number | null;
+  max: number | null;
 }
 
 export interface CreateAnnotation {

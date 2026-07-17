@@ -2,7 +2,7 @@
 import { computed, inject, ref, shallowRef, watch, type Ref } from "vue";
 import Papa from "papaparse";
 import { mdiAccountMinus, mdiAccountPlus, mdiAlertCircleOutline, mdiMinus, mdiPlus } from "@mdi/js";
-import type { Participant, QuestionnaireOptions, Variable } from "@/types/types";
+import type { Participant, QuestionnaireOptions, Unit, Variable } from "@/types/types";
 import auth from "@/auth";
 import { roles } from "@/types/enums";
 import { useRouter } from "vue-router";
@@ -151,6 +151,13 @@ const parsedDataREDCap = () =>
         variableName: datum["Variable / Field Name"] as string,
         label: datum["Field Label"] as string,
         fieldType: redcapFieldType(datum),
+        unit: {
+          id: undefined,
+          label: "Einheit",
+          min: null,
+          max: null,
+          annotations: [],
+        } as Unit,
         choices:
           datum["Choices, Calculations, OR Slider Labels"] &&
           fieldTypesWithChoicesImport.includes(datum["Field Type"] as string)
@@ -194,6 +201,13 @@ const parsedDataOpenClinica = () =>
         variableName: datum["ITEM_NAME*"] as string,
         label: datum["DESCRIPTION_LABEL*"] as string,
         fieldType: datum["DATA_TYPE*"] as string,
+        unit: {
+          id: undefined,
+          label: "Einheit",
+          min: null,
+          max: null,
+          annotations: [],
+        } as Unit,
         choices: datum["RESPONSE_OPTIONS_TEXT"]
           ? (datum["RESPONSE_OPTIONS_TEXT"] as string)
               .split(",")

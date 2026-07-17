@@ -46,7 +46,7 @@ const predicates = [
 
 const allAnnotatables = computed(() =>
   dataElement
-    ? [dataElement, ...(dataElement.choices ?? [])]
+    ? [dataElement, ...(dataElement.unit ? [dataElement.unit] : []), ...(dataElement.choices ?? [])]
     : annotatable.value
       ? [annotatable.value]
       : [],

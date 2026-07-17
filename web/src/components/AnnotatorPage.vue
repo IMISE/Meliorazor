@@ -86,9 +86,20 @@ watch(focusCode, async (newCode, oldCode) => {
 const autocompleteChoices = computed(() => [
   { type: "subheader", title: "Variable selbst" },
   { title: dataElement.label, value: dataElement },
-  { type: "divider" },
-  { type: "subheader", title: "Auswahloptionen" },
-  ...(dataElement.choices?.map((choice) => ({ title: choice.label, value: choice })) ?? []),
+  ...(dataElement.unit
+    ? [
+        { type: "divider" },
+        { type: "subheader", title: "ggf. Einheit" },
+        { title: dataElement.unit.label, value: dataElement.unit },
+      ]
+    : []),
+  ...(dataElement.choices
+    ? [
+        { type: "divider" },
+        { type: "subheader", title: "Auswahloptionen" },
+        ...dataElement.choices.map((choice) => ({ title: choice.label, value: choice })),
+      ]
+    : []),
 ]);
 
 defineExpose({
@@ -194,9 +205,6 @@ defineExpose({
       :data-element="dataElement!"
       :code="selectedCode"
       editable
-      :initial-comment="undefined"
-      :initial-confidence="undefined"
-      :initial-predicate="undefined"
       @success="reload"
       @edit="unselect"
     />
