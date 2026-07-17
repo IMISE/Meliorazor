@@ -6,9 +6,7 @@ import StatusIcon from "./StatusIcon.vue";
 
 const { projectId, dataElementId } = defineProps<{
   projectId: number;
-  projectName: string;
   dataElementId: number;
-  dataElementName: string;
   annotations: Annotation[];
   showAddButton: boolean;
 }>();
