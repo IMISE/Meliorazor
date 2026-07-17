@@ -7,7 +7,8 @@ defineProps<{
 
 <template>
   <v-slider
-    v-model="modelValue"
+    :model-value="modelValue"
+    @update:model-value="(val) => $emit('update:modelValue', val)"
     :readonly="!editable"
     :step="5"
     show-ticks="always"
