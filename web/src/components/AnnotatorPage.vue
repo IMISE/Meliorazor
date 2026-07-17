@@ -154,7 +154,7 @@ defineExpose({
         label="Zu annotatierendes Element"
         item-title="title"
         item-value="value"
-        :disabled="!dataElement.choices?.length"
+        :disabled="!dataElement.choices?.length && !dataElement.unit"
       >
         <template #selection="{ item }">
           {{ item.value?.label ?? (item as { [index: string]: unknown })["label"] }}
