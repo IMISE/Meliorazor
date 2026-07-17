@@ -370,7 +370,7 @@ public class AnnotationService {
         // if yes, add as action
         // if no, add annotation and add as action
         final Optional<Annotation> existing = annotationRepository
-            .findByTargetAndPredicateAndCode(target, dto.getPredicate(), dto.getCode());
+            .findByTargetIdAndPredicateAndCode(target.getId(), dto.getPredicate(), dto.getCode());
 
         if (existing.isEmpty()) {
             final Annotation annotation = annotationMapper.toEntity(dto);

@@ -17,5 +17,5 @@ public interface AnnotationRepository extends JpaRepository<Annotation, Long> {
      */
     List<Annotation> findByTarget(Annotatable target);
 
-    Optional<Annotation> findByTargetAndPredicateAndCode(Annotatable target, String predicate, Code code);
+    Optional<Annotation> findByTargetIdAndPredicateAndCode(Long targetId, String predicate, Code code);
 }
