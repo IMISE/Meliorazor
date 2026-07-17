@@ -19,6 +19,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -32,7 +33,7 @@ import lombok.Setter;
  * Suggests mapping a data element to a terminology code.
  */
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(name = "UniqueTriple", columnNames = { "predicate", "code", "target" }))
+@Table(uniqueConstraints = @UniqueConstraint(name = "UniqueTriple", columnNames = { "predicate", "code", "target_id" }))
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -61,7 +62,7 @@ public class Annotation {
 
     /** Annotated variable. */
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "target")
+    @JoinColumn(name = "target_id")
     private Annotatable target;
 
     /**
