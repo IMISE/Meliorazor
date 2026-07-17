@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import auth from "@/auth";
 import { CommentType } from "@/types/enums";
+import type { CreateAnnotationComment } from "@/types/types";
 import getEnv from "@/utils/env";
 import { mdiCancel, mdiCheck, mdiCircleOutline } from "@mdi/js";
 import { ref, watch, type Ref } from "vue";
@@ -31,9 +32,10 @@ const giveFeedback = async () => {
         method: "POST",
         body: JSON.stringify({
           authorName: u.profile.preferred_username,
-          type: type.value,
-          contents: comment.value,
-        }),
+          actionType: "comment",
+          commentType: type.value,
+          description: comment.value,
+        } as CreateAnnotationComment),
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${u.access_token}`,

@@ -72,6 +72,7 @@ export interface Annotation {
 export interface CreateAnnotationAction {
   authorName: string;
   description: string;
+  actionType: "comment" | "submission" | "versioning";
 }
 
 export interface AnnotationAction {
@@ -84,6 +85,7 @@ export interface AnnotationAction {
 
 export interface CreateAnnotationComment extends CreateAnnotationAction {
   commentType: CommentType;
+  actionType: "comment";
 }
 export interface AnnotationComment extends AnnotationAction {
   commentType: CommentType;
@@ -92,6 +94,7 @@ export interface AnnotationComment extends AnnotationAction {
 
 export interface CreateAnnotationSubmission extends CreateAnnotationAction {
   confidence: number;
+  actionType: "submission";
 }
 export interface AnnotationSubmission extends AnnotationAction {
   confidence: number;

@@ -67,6 +67,7 @@ const submitAnnotation = async () => {
             authorName: u.profile!.preferred_username!,
             description: comment.value,
             confidence: confidence.value,
+            actionType: "submission",
           },
         ],
       },
