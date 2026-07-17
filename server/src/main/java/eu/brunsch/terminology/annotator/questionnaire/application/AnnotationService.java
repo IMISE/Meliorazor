@@ -390,6 +390,7 @@ public class AnnotationService {
             final Action action = actionMapper.toEntity(dto.getActions()[0]);
             actionRepository.save(action);
             annotation.addAction(action, target.getQuestionnaire() == null ? null : target.getQuestionnaire().getOptions());
+            actionRepository.save(action);
             annotationRepository.save(annotation);
             return annotation.getId();
         }
@@ -466,6 +467,7 @@ public class AnnotationService {
         final QuestionnaireOptions req = parent.getTarget().getQuestionnaire() == null ? null : parent.getTarget().getQuestionnaire().getOptions();
         parent.addAction(comment, req);
         annotationRepository.save(parent);
+        actionRepository.save(comment);
         return comment.getId();
     }
 
@@ -549,6 +551,7 @@ public class AnnotationService {
                 .build();
             actionRepository.save(v);
             annotation.addAction(v, q.getOptions());
+            actionRepository.save(v);
             annotationRepository.save(annotation);
             // TODO: I don't think this is needed
             actionRepository.save(v);

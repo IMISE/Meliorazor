@@ -135,6 +135,8 @@ public class Annotation {
         }
 
         actions.add(action);
+        action.setAnnotation(this);
+
         if ("comment".equals(action.getActionType())) {
             Comment comment = (Comment) action;
             return this.updateStatus(comment.getCommentType(), req);
