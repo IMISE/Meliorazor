@@ -4,7 +4,7 @@ import Papa from "papaparse";
 import { mdiAccountMinus, mdiAccountPlus, mdiAlertCircleOutline, mdiMinus, mdiPlus } from "@mdi/js";
 import type { Participant, QuestionnaireOptions, Unit, Variable } from "@/types/types";
 import auth from "@/auth";
-import { roles } from "@/types/enums";
+import { Role, roles } from "@/types/enums";
 import { useRouter } from "vue-router";
 import { read, utils } from "xlsx";
 import getEnv from "@/utils/env";
@@ -40,7 +40,7 @@ const setKey = () => {
   return valueSetKey.value;
 };
 const participants: Ref<Participant[]> = ref([
-  { username: user?.value?.preferred_username ?? "", roles: [] },
+  { username: user?.value?.preferred_username ?? "", roles: [Role.ADMIN] },
 ]);
 const contents: Ref<
   | {
@@ -429,12 +429,24 @@ const fracSliderRules = ref([
                 </v-col>
                 <v-col :cols="participants.length > 1 ? 5 : 6">
                   <v-select
+                    v-model="row.roles"
                     label="Rolle"
                     :rules="notEmpty"
                     :items="roles"
-                    v-model="row.roles"
                     multiple
-                  ></v-select>
+                  >
+                    <template #item="{ props, item }">
+                      <v-list-item v-bind="props" :disabled="i === 0 && item.value === 'ADMIN'">
+                        <template #prepend>
+                          <v-checkbox
+                            hide-details
+                            single-line
+                            :model-value="row.roles.includes(item.value as Role)"
+                          />
+                        </template>
+                      </v-list-item>
+                    </template>
+                  </v-select>
                 </v-col>
                 <v-col v-if="participants.length > 1" cols="1">
                   <v-icon-btn :icon="mdiMinus" @click="participants.splice(i, 1)"></v-icon-btn>

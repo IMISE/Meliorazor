@@ -322,29 +322,43 @@ const participantUser = ref([
             <v-form :disabled="loadingEdits" @submit.prevent="saveEdits">
               <h3>Mitwirkende</h3>
               <div>
-                <v-row
-                  v-for="({ id, participant }, i) in participantEdit"
-                  :key="id"
-                  class="participant-row"
-                >
+                <v-row v-for="(row, i) in participantEdit" :key="row.id" class="participant-row">
                   <div v-if="!isAdmin" style="align-self: stretch; text-align: right">
-                    {{ participant.username }}
+                    {{ row.participant.username }}
                   </div>
                   <v-text-field
                     v-else
-                    v-model="participant.username"
+                    v-model="row.participant.username"
                     :rules="participantUser"
                     label="Nutzername"
-                    :disabled="i === 0 && !!user?.preferred_username"
+                    :disabled="i === 0 || user?.preferred_username === row.participant.username"
                   ></v-text-field>
                   <v-select
                     label="Rolle"
                     :rules="notEmpty"
                     :items="roles"
-                    v-model="participant.roles"
+                    v-model="row.participant.roles"
                     multiple
                     :readonly="!isAdmin"
-                  />
+                  >
+                    <template #item="{ props, item }">
+                      <v-list-item
+                        v-bind="props"
+                        :disabled="
+                          (i === 0 || user?.preferred_username === row.participant.username) &&
+                          item.value === 'ADMIN'
+                        "
+                      >
+                        <template #prepend>
+                          <v-checkbox
+                            hide-details
+                            single-line
+                            :model-value="row.participant.roles.includes(item.value as Role)"
+                          />
+                        </template>
+                      </v-list-item>
+                    </template>
+                  </v-select>
                   <v-icon-btn
                     v-if="isAdmin"
                     :icon="mdiMinus"
