@@ -11,15 +11,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@JsonTypeInfo(
-  use = JsonTypeInfo.Id.NAME, 
-  include = JsonTypeInfo.As.PROPERTY, 
-  property = "type"
-)
-@JsonSubTypes({ 
-  @Type(value = ChoiceDto.class, name = "choice"), 
-  @Type(value = DataElementDto.class, name = "dataElement"), 
-  @Type(value = UnitDto.class, name = "unit"), 
+@JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
+@JsonSubTypes({
+    @Type(value = ChoiceDto.class, name = "choice"),
+    @Type(value = DataElementDto.class, name = "dataElement"),
+    @Type(value = UnitDto.class, name = "unit"),
 })
 @Getter
 @Setter
@@ -27,32 +23,36 @@ import lombok.Setter;
 @NoArgsConstructor
 public abstract class AnnotatableDto {
 
-    /** Identifier value. */
-    private Long id;
+  /** Identifier value. */
+  private Long id;
 
-    /**
-     * Description or human-readable label of this field.
-     * May be empty, but never null.
-     */
-    private String label;
+  /**
+   * Description or human-readable label of this field.
+   * May be empty, but never null.
+   */
+  private String label;
 
-    /** Annotations on this element, including their history. */
-    private AnnotationDto[] annotations;
+  /** Annotations on this element, including their history. */
+  private AnnotationDto[] annotations;
 
-    /**
-     * Visitor pattern to map DTOs using MapStruct.
-     * Stolen from https://www.baeldung.com/java-mapstruct-inheritance#1-applying-the-visitor-pattern.
-     */
-    public abstract Annotatable accept(Visitor visitor);
+  /**
+   * Visitor pattern to map DTOs using MapStruct.
+   * Stolen from
+   * https://www.baeldung.com/java-mapstruct-inheritance#1-applying-the-visitor-pattern.
+   */
+  public abstract Annotatable accept(Visitor visitor);
 
-    /**
-     * Visitor pattern to map DTOs using MapStruct.
-     * Stolen from https://www.baeldung.com/java-mapstruct-inheritance#1-applying-the-visitor-pattern.
-     */
-    public interface Visitor {
-        public Annotatable visit(ChoiceDto choice);
-        public Annotatable visit(DataElementDto dataElement);
-        public Annotatable visit(UnitDto unit);
-    }
+  /**
+   * Visitor pattern to map DTOs using MapStruct.
+   * Stolen from
+   * https://www.baeldung.com/java-mapstruct-inheritance#1-applying-the-visitor-pattern.
+   */
+  public interface Visitor {
+    public Annotatable visit(ChoiceDto choice);
+
+    public Annotatable visit(DataElementDto dataElement);
+
+    public Annotatable visit(UnitDto unit);
+  }
 
 }
