@@ -2,7 +2,6 @@ package eu.brunsch.terminology.annotator.questionnaire.application;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,6 +34,7 @@ import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.ActionMa
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.Annotation;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.AnnotationDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.AnnotationMapper;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.Code;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.Comment;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.CommentDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.Versioning;
@@ -343,8 +343,10 @@ public class AnnotationService {
         final Long annotatableElementId,
         final AnnotationDto dto
     ) {
-        // must contain exactly one submission action
+        // must contain exactly one submission action with a code attached
+        final Code code = dto.getCode();
         if (
+            code == null ||
             dto.getActions() == null ||
             dto.getActions().length != 1 ||
             dto.getActions()[0] == null ||
@@ -370,7 +372,12 @@ public class AnnotationService {
         // if yes, add as action
         // if no, add annotation and add as action
         final Optional<Annotation> existing = annotationRepository
-            .findByTargetIdAndPredicateAndCode(target.getId(), dto.getPredicate(), dto.getCode());
+            .findByTargetIdAndPredicateAndCode(
+                target.getId(),
+                dto.getPredicate(),
+                code.getSystem(),
+                code.getSystemVersion(),
+                code.getCode());
 
         if (existing.isEmpty()) {
             final Annotation annotation = annotationMapper.toEntity(dto);

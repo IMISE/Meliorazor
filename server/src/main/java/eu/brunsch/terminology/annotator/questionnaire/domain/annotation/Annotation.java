@@ -14,6 +14,7 @@ import eu.brunsch.terminology.annotator.questionnaire.domain.Participant.Role;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.Annotatable;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -50,7 +51,7 @@ public class Annotation {
     private String predicate;
 
     /** Terminology code mapped in this annotation. */
-    @Column(name = "code")
+    @Embedded
     private Code code;
 
     /**
