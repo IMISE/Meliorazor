@@ -59,7 +59,7 @@ public class Annotation {
      * These directly imply the status of this annotation.
      */
     @OneToMany(mappedBy = "annotation", cascade = CascadeType.ALL)
-    private Set<Action> actions;
+    private Set<Action> actions = new HashSet<>();
 
     /** Annotated variable. */
     @ManyToOne(fetch = FetchType.LAZY)

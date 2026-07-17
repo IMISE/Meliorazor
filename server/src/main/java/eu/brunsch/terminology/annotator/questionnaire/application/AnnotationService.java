@@ -379,28 +379,29 @@ public class AnnotationService {
                 code.getSystemVersion(),
                 code.getCode());
 
+        Annotation annotation = null;
         if (existing.isEmpty()) {
-            final Annotation annotation = annotationMapper.toEntity(dto);
+            annotation = annotationMapper.toEntity(dto);
             // fill object
             annotation.setTarget(target);
             annotation.setStatus(Status.OPEN);
             annotation.getActions().iterator().next().setAuthorName(username());
             annotationRepository.save(annotation);
-            return annotation.getId();
         } else {
-            final Annotation annotation = existing.get();
+            annotation = existing.get();
             // check if author already submitted same annotation; if true, throw exception
             if (annotation.getActions().stream().anyMatch(action -> action.getAuthorName().equals(username()))) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT);
             }
-
-            final Action action = actionMapper.toEntity(dto.getActions()[0]);
-            actionRepository.save(action);
-            annotation.addAction(action, target.getQuestionnaire() == null ? null : target.getQuestionnaire().getOptions());
-            actionRepository.save(action);
-            annotationRepository.save(annotation);
-            return annotation.getId();
         }
+
+        final Action action = actionMapper.toEntity(dto.getActions()[0]);
+        actionRepository.save(action);
+        annotation.addAction(action, target.getQuestionnaire() == null ? null : target.getQuestionnaire().getOptions());
+        actionRepository.save(action);
+        annotationRepository.save(annotation);
+
+        return annotation.getId();
     }
 
     /**
