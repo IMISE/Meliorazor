@@ -99,6 +99,7 @@ public class AnnotationService {
         for (final DataElementDto dDto : dto.getDataElements()) {
             // save DE first, so the choices can reference its ID later
             final DataElement dataElement = annotatableMapper.toEntity(dDto);
+            unitRepository.save(dataElement.getUnit());
             dataElement.setQuestionnaire(questionnaire);
             dataElementRepository.save(dataElement);
 
