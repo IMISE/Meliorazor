@@ -29,6 +29,7 @@ import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.Choice;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.ChoiceDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.DataElement;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.DataElementDto;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.Unit;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.Action;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.ActionMapper;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.Annotation;
@@ -99,9 +100,13 @@ public class AnnotationService {
         for (final DataElementDto dDto : dto.getDataElements()) {
             // save DE first, so the choices can reference its ID later
             final DataElement dataElement = annotatableMapper.toEntity(dDto);
-            unitRepository.save(dataElement.getUnit());
+            final Unit unit = dataElement.getUnit();
+            unitRepository.save(unit);
             dataElement.setQuestionnaire(questionnaire);
             dataElementRepository.save(dataElement);
+
+            unit.setVariable(dataElement);
+            unitRepository.save(unit);
 
             // create & save choices, if required
             if (dDto.getChoices() != null) {
