@@ -30,6 +30,7 @@ import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.ChoiceD
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.DataElement;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.DataElementDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.Unit;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.UnitDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.Action;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.ActionMapper;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.Annotation;
@@ -285,7 +286,7 @@ public class AnnotationService {
             .toList();
 
         // only annotations on the data element, NOT on choices
-        final AnnotationDto[] filteredAnnotations = annotations
+        final AnnotationDto[] annotationDtos = annotations
             .stream()
             .map(annotationMapper::toDto)
             .toArray(AnnotationDto[]::new);
@@ -311,10 +312,21 @@ public class AnnotationService {
             choiceDtos.add(choiceDto);
         }
 
+        final Unit unit = variable.getUnit();
+        UnitDto unitDto = null;
+        if (unit != null) {
+            unitDto = annotatableMapper.toDto(unit);
+            unitDto.setAnnotations(
+                annotationRepository.findByTarget(unit).stream()
+                    .map(annotationMapper::toDto)
+                    .toArray(AnnotationDto[]::new));
+        }
+
         // put it all together
         final DataElementDto dto = annotatableMapper.toDto(variable);
+        dto.setUnit(unitDto);
         dto.setChoices(choiceDtos.toArray(ChoiceDto[]::new));
-        dto.setAnnotations(filteredAnnotations);
+        dto.setAnnotations(annotationDtos);
         return dto;
     }
 
