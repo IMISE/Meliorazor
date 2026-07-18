@@ -78,7 +78,7 @@ watch(dataElementId, () => get(dataElementId.value));
       <template v-if="data.choices?.length">
         <h2>Auswahloptionen</h2>
         <v-divider />
-        <template v-for="choice in data.choices">
+        <template v-for="choice in data.choices" :key="choice.id">
           <h3>{{ choice.label }}</h3>
           <annotation-list
             v-if="choice.annotations.length"

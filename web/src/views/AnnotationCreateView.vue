@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import auth from "@/auth";
 import AnnotatorPage from "@/components/AnnotatorPage.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 import TabbedInterface from "@/components/TabbedInterface.vue";
 import type { Questionnaire, Variable } from "@/types/types";
 import { getProject } from "@/utils/api";
-import getEnv from "@/utils/env";
 import { clean } from "@/utils/utils";
 import { computed, onMounted, ref, watch, type ComponentPublicInstance, type Ref } from "vue";
 import { useRouter } from "vue-router";

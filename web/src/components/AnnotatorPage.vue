@@ -156,7 +156,7 @@ defineExpose({
         Weiter
       </v-btn>
       <v-btn
-        v-else=""
+        v-else
         color="primary"
         :prepend-icon="mdiCheckDecagramOutline"
         :disabled="!dataElement.annotations.length"
