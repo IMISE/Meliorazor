@@ -93,7 +93,7 @@ const autocompleteChoices = computed(() => [
         { title: dataElement.unit.label, value: dataElement.unit },
       ]
     : []),
-  ...(dataElement.choices
+  ...(dataElement.choices?.length
     ? [
         { type: "divider" },
         { type: "subheader", title: "Auswahloptionen" },
