@@ -92,7 +92,12 @@ const itemsPerPage = ref(15);
 
 <template>
   <v-row fluid>
-    <v-text-field v-model="search" hint="Code suchen …" @keydown.enter="go(modelValue!)">
+    <v-text-field
+      v-model="search"
+      label="Codesuche"
+      hint="Label oder Code eingeben"
+      @keydown.enter="go(modelValue!)"
+    >
       <template v-if="langs.length && false" #prepend-inner>
         <v-menu>
           <template #activator="{ props }">
@@ -127,6 +132,10 @@ const itemsPerPage = ref(15);
   </v-row>
   <v-row fluid>
     <!-- TODO group by terminology/source, or display it & filter out duplicates? -->
+    <template v-if="loading">
+      <v-progress-circular indeterminate />
+      <span>Suche lädt &hellip;</span>
+    </template>
     <v-data-table
       v-if="searchResults?.length"
       :item-value="(item) => item"
@@ -152,6 +161,7 @@ const itemsPerPage = ref(15);
       </template>
     </v-data-table>
     <i v-else-if="searchedOnce">Keine Ergebnisse gefunden</i>
+    <i v-else-if="!loading">Noch nicht gesucht</i>
   </v-row>
 </template>
 
