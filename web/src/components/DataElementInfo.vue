@@ -122,7 +122,8 @@ const required = computed(
 const displayMockInput = computed(
   () =>
     supportedFieldTypes.includes(data.fieldType ?? "") &&
-    (!fieldTypesNotDisplayedWithoutChoices.includes(data.fieldType ?? "") || fieldChoices.value.length),
+    (!fieldTypesNotDisplayedWithoutChoices.includes(data.fieldType ?? "") ||
+      fieldChoices.value.length),
 );
 </script>
 
@@ -173,7 +174,7 @@ const displayMockInput = computed(
       </div>
       <template v-if="displayMockInput">
         <v-number-input
-          v-if="dataElement.fieldType === 'integer'"
+          v-if="dataElement.fieldType === 'number'"
           style="grid-column: 4 / span 1"
           control-variant="stacked"
           :label="dataElement.label"
