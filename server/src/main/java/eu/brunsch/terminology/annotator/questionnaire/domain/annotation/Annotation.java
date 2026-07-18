@@ -210,7 +210,7 @@ public class Annotation {
                     : req.checkRejected(reject, total)
                             ? Status.REJECTED
                             : Status.OPEN;
-            if (newStatus != status) {
+            if (!newStatus.equals(getStatus())) {
                 statusChanged = true;
                 setStatus(newStatus);
             }
@@ -281,13 +281,8 @@ public class Annotation {
             }
         }
 
-        // authors can see this annotation if they submitted something similiar
-        for (Action action : getActions()) {
-            if (action.getActionType() == "submission" && action.getAuthorName().equals(username)) {
-                return true;
-            }
-        }
-        return false;
+        // authors can see this annotation if they submitted it
+        return hasAuthor(username);
     }
 
     /**
