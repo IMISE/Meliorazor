@@ -53,10 +53,10 @@ export default async function request(
  */
 export async function getProject(
   id: string | number | undefined,
-  oldId: string | number | undefined,
+  oldId: string | number | undefined = undefined,
   loading: Ref<boolean> | undefined = undefined,
 ) {
-  if ((loading && loading.value) || (oldId !== undefined && (!id || id === oldId))) {
+  if ((loading && loading.value) || (oldId !== undefined && id === oldId) || id === undefined) {
     return;
   } else {
     const response = await request(`/questionnaire/${id}`, "GET", undefined, loading);

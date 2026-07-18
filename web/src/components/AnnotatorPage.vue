@@ -12,7 +12,7 @@ import type { FhirTerminologyCode, FhirValueSetDefinition } from "@/types/fhir";
 
 const emit = defineEmits(["success", "exit"]);
 
-const { dataElement } = defineProps<{
+const props = defineProps<{
   valueSets: FhirValueSetDefinition[];
   dataElement: Variable;
   /** url to previous data element */ prev: string;
@@ -28,7 +28,7 @@ const selectedCode: Ref<FhirTerminologyCode | undefined> = ref();
 const loadingFocus = ref(false);
 
 /** selected to-annotate; data element itself or choice */
-const selectedElement: Ref<Annotatable> = ref(dataElement);
+const selectedElement: Ref<Annotatable> = ref(props.dataElement);
 
 const search = ref("");
 watch(selectedElement, (val) => (search.value = val.label), { immediate: true });
@@ -83,21 +83,33 @@ watch(focusCode, async (newCode, oldCode) => {
   }
 });
 
+// we update data element on success to get new annotations
+// when data element changes, update selected value as well to reflect change
+watch(props, ({ dataElement: val }) => {
+  const tmp = selectedElement.value;
+  selectedElement.value =
+    val.id === tmp.id
+      ? val
+      : val.unit?.id === tmp.id
+        ? val.unit!
+        : props.dataElement.choices!.find((choice) => choice.id === tmp.id)!;
+});
+
 const autocompleteChoices = computed(() => [
   { type: "subheader", title: "Variable selbst" },
-  { title: dataElement.label, value: dataElement },
-  ...(dataElement.unit
+  { title: props.dataElement.label, value: props.dataElement },
+  ...(props.dataElement.unit
     ? [
         { type: "divider" },
         { type: "subheader", title: "ggf. Einheit" },
-        { title: dataElement.unit.label, value: dataElement.unit },
+        { title: props.dataElement.unit.label, value: props.dataElement.unit },
       ]
     : []),
-  ...(dataElement.choices?.length
+  ...(props.dataElement.choices?.length
     ? [
         { type: "divider" },
         { type: "subheader", title: "Auswahloptionen" },
-        ...dataElement.choices.map((choice) => ({ title: choice.label, value: choice })),
+        ...props.dataElement.choices.map((choice) => ({ title: choice.label, value: choice })),
       ]
     : []),
 ]);
@@ -161,7 +173,7 @@ defineExpose({
       <v-select
         v-model="selectedElement"
         :items="autocompleteChoices"
-        label="Zu annotatierendes Element"
+        label="Zu annotierendes Element"
         item-title="title"
         item-value="value"
         :disabled="!dataElement.choices?.length && !dataElement.unit"

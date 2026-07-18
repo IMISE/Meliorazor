@@ -4,6 +4,7 @@ import AnnotatorPage from "@/components/AnnotatorPage.vue";
 import BaseComponent from "@/components/BaseComponent.vue";
 import TabbedInterface from "@/components/TabbedInterface.vue";
 import type { Questionnaire, Variable } from "@/types/types";
+import { getProject } from "@/utils/api";
 import getEnv from "@/utils/env";
 import { clean } from "@/utils/utils";
 import { computed, onMounted, ref, watch, type ComponentPublicInstance, type Ref } from "vue";
@@ -27,21 +28,7 @@ const refs: Ref<(Element | ComponentPublicInstance | { back: () => void } | null
 watch(dataElements, (newVal) => (refs.value = Array(newVal?.length)));
 
 const getData = async () => {
-  const u = await auth.getUser();
-  if (!u?.access_token || !projectId.value) return;
-  const options = {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${u.access_token}`,
-    },
-  };
-
-  const response = await fetch(
-    `${getEnv("VITE_API_BASE")}/questionnaire/${projectId.value}`,
-    options,
-  );
-  project.value = (await response.json()) as Questionnaire;
+  project.value = await getProject(projectId.value as string);
 };
 
 const backClicked = () => {
