@@ -174,7 +174,7 @@ defineExpose({
         v-else
         color="primary"
         :prepend-icon="mdiCheckDecagramOutline"
-        :disabled="!dataElement.annotations.length"
+        :disabled="!dataElement.annotations.length || !!selectedCode || !!focusCode"
         block
         @click="emit('exit')"
       >
