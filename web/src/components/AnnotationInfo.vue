@@ -79,7 +79,12 @@ const getAnnotatedCode = async () => {
       </template>
     </v-col>
     <v-col v-if="code && server" cols="6">
-      <code-display :code-info="code" :server="server" :show-select-button="false" />
+      <code-display
+        :code-info="code"
+        :server="server"
+        :show-select-button="false"
+        :known-predicates="[]"
+      />
     </v-col>
   </v-row>
 </template>
