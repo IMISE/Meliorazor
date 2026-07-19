@@ -39,7 +39,7 @@ const text = computed(() => {
 
 <template>
   <v-icon :key="status" :icon="icon" :class="status ?? 'OPEN'" />
-  <span v-if="includeText">{{ text }}</span>
+  <span v-if="includeText" class="status-icon-comment">{{ text }}</span>
 </template>
 
 <style scoped>
@@ -56,5 +56,8 @@ const text = computed(() => {
   color: white;
   background-color: #8a0202;
   border-radius: 50%;
+}
+.status-icon-comment {
+  padding-left: 2px;
 }
 </style>

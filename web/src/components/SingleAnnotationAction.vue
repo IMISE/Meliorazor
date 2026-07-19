@@ -26,8 +26,8 @@ defineProps<{
 <template>
   <div class="comment">
     <div v-if="action.actionType === 'versioning'">
-      <v-icon :icon="mdiTag"></v-icon>
       <h3>
+        <v-icon :icon="mdiTag" />
         Zu Version <var>{{ (action as AnnotationVersioning).versionKey }}</var> hinzugefügt
       </h3>
       <router-link
@@ -44,29 +44,28 @@ defineProps<{
       </router-link>
     </div>
     <div v-else-if="action.actionType === 'submission'">
-      <v-icon :icon="mdiPencilPlus"></v-icon>
-      <h3>{{ action.authorName }} hat annotiert</h3>
+      <h3>
+        <v-icon :icon="mdiPencilPlus" />
+        {{ action.authorName }} hat annotiert
+      </h3>
       <small>{{ (action as AnnotationSubmission).confidence }}% Konfidenz</small>
     </div>
     <div v-else-if="(action as AnnotationComment).commentType === CommentType.ACCEPT">
-      <v-icon :icon="mdiCheckCircleOutline" color="green"></v-icon>
-      <h3>Angenommen</h3>
+      <h3><v-icon :icon="mdiCheckCircleOutline" color="green" /> Angenommen</h3>
     </div>
     <div v-else-if="(action as AnnotationComment).commentType === CommentType.REJECT">
-      <v-icon :icon="mdiCloseCircleOutline" color="red"></v-icon>
-      <h3>Abgelehnt</h3>
+      <h3><v-icon :icon="mdiCloseCircleOutline" color="red"></v-icon> Abgelehnt</h3>
     </div>
     <div v-else>
-      <v-icon :icon="mdiCheckboxBlankCircleOutline" color="grey"></v-icon>
-      <h3>Bemerkung</h3>
+      <h3><v-icon :icon="mdiCheckboxBlankCircleOutline" color="grey"></v-icon> Bemerkung</h3>
     </div>
-    <div class="comment-contents">{{ action.description }}</div>
+    <div v-if="action.description" class="comment-contents">{{ action.description }}</div>
     <div class="comment-footer">
       <span class="comment-author">{{ action.authorName }}</span> am
       <v-tooltip :text="new Date(action.submittedAt).toTimeString()">
         <template #activator="props">
           <span v-bind="props" class="comment-date">{{
-            new Date(action.submittedAt).toDateString()
+            new Date(action.submittedAt).toLocaleDateString("de-DE")
           }}</span>
         </template>
       </v-tooltip>
@@ -77,7 +76,6 @@ defineProps<{
 <style scoped>
 .comment {
   border-left: 1px solid black;
-  width: 240px;
   overflow-wrap: break-word;
   margin: 20px;
   padding-left: 20px;
