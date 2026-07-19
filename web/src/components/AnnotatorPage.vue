@@ -228,22 +228,24 @@ defineExpose({
       />
     </v-col>
     <v-col v-if="focusCode && focusCodeInfo" cols="6">
-      <code-display
-        v-if="!loadingFocus"
-        :codeInfo="focusCodeInfo"
-        :server="focusCode.valueSet.server"
-        :known-predicates="previousAnnotationsPredicates"
-        show-select-button
-        @exit="unselect"
-        @focus="updateFocus"
-        @selection="(v: FhirTerminologyCode) => (selectedCode = v)"
-      />
+      <div style="position: sticky; top: 70px; right: 0px">
+        <code-display
+          v-if="!loadingFocus"
+          :codeInfo="focusCodeInfo"
+          :server="focusCode.valueSet.server"
+          :known-predicates="previousAnnotationsPredicates"
+          show-select-button
+          @exit="unselect"
+          @focus="updateFocus"
+          @selection="(v: FhirTerminologyCode) => (selectedCode = v)"
+        />
+      </div>
     </v-col>
     <v-col v-else-if="loadingFocus" cols="6">
       <v-progress-circular class="loading-spinner" color="primary" indeterminate />
     </v-col>
   </v-row>
-  <v-col v-else cols="12">
+  <div v-else style="display: flex; justify-content: center; align-items: center">
     <code-annotator
       v-model="selectedElement"
       :data-element="dataElement!"
@@ -253,7 +255,7 @@ defineExpose({
       @success="reload"
       @edit="unselect"
     />
-  </v-col>
+  </div>
   <v-snackbar
     v-model="successFeedback"
     class="feedback"

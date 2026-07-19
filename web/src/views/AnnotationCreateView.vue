@@ -49,7 +49,7 @@ watch(projectId, getData);
       :data="dataElements"
       :title="(e) => `[${e.variableName}] ${e.label}`"
       v-slot="{ element, index, input }"
-      class="full-full"
+      style="padding-left: 10%; padding-right: 10%"
     >
       <annotator-page
         :ref="(el) => (refs[index] = el)"
@@ -60,7 +60,6 @@ watch(projectId, getData);
         :show-next="index < input.length - 1"
         :prev="`#${input?.[index - 1]?.id ?? 0}`"
         :next="`#${input?.[index + 1]?.id ?? 0}`"
-        class="full"
         @success="getData"
         @exit="
           () =>
@@ -73,14 +72,3 @@ watch(projectId, getData);
     </tabbed-interface>
   </base-component>
 </template>
-
-<style scoped>
-.full-full {
-  width: 80vw;
-  height: 100vh;
-}
-.full {
-  width: 100%;
-  height: 100%;
-}
-</style>
