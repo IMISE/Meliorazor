@@ -396,6 +396,7 @@ public class AnnotationService {
                 code.getCode());
 
         Annotation annotation = null;
+        Action action = null;
         if (existing.isEmpty()) {
             annotation = annotationMapper.toEntity(dto);
             // fill object
@@ -403,16 +404,18 @@ public class AnnotationService {
             annotation.setStatus(Status.OPEN);
             annotation.getActions().iterator().next().setAuthorName(username());
             annotationRepository.save(annotation);
+            // there is exactly one
+            action = annotation.getActions().iterator().next();
         } else {
             annotation = existing.get();
             // check if author already submitted same annotation; if true, throw exception
             if (annotation.getActions().stream().anyMatch(action -> action.getAuthorName().equals(username()))) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT);
             }
+            action = actionMapper.toEntity(dto.getActions()[0]);
         }
 
-        Action action = actionMapper.toEntity(dto.getActions()[0]);
-        action = actionRepository.save(action);
+        actionRepository.save(action);
         annotation.addAction(action, target.getQuestionnaire() == null ? null : target.getQuestionnaire().getOptions());
         actionRepository.save(action);
         annotationRepository.save(annotation);
