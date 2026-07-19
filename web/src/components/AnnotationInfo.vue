@@ -48,6 +48,7 @@ const getAnnotatedCode = async () => {
         :data-element="undefined"
         :code="annotation.code"
         :editable="false"
+        :known-predicates="[]"
         @edit="getAnnotatedCode"
       />
       <ul>
