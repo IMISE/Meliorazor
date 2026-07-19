@@ -62,11 +62,14 @@ const display = computed(() => {
 </script>
 
 <template>
-  <v-list-item
-    :title="display.title"
-    :subtitle="display.subtitle"
-    :prepend-icon="display.icon"
-    :append-icon="mdiArrowRight"
-    @click:append="() => router.push(display.link)"
-  />
+  <v-list-item :title="display.title" :subtitle="display.subtitle" :prepend-icon="display.icon">
+    <template #append>
+      <v-icon-btn
+        hide-overlay
+        variant="plain"
+        :icon="mdiArrowRight"
+        @click="() => router.push(display.link)"
+      />
+    </template>
+  </v-list-item>
 </template>
