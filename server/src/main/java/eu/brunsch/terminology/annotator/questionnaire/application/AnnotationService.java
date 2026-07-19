@@ -411,8 +411,8 @@ public class AnnotationService {
             }
         }
 
-        final Action action = actionMapper.toEntity(dto.getActions()[0]);
-        actionRepository.save(action);
+        Action action = actionMapper.toEntity(dto.getActions()[0]);
+        action = actionRepository.save(action);
         annotation.addAction(action, target.getQuestionnaire() == null ? null : target.getQuestionnaire().getOptions());
         actionRepository.save(action);
         annotationRepository.save(annotation);
