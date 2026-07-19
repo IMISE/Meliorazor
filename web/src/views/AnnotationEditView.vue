@@ -63,7 +63,7 @@ watch(
     <p v-if="loadingProject">Lädt &hellip;</p>
     <template v-else-if="annotation && project && dataElementId">
       <annotation-info
-        :annotated-element="getAnnotatableFromProject(annotation.id, project)"
+        :annotated-element="getAnnotatableFromProject(annotation.id, project)!"
         :annotation="annotation"
         :value-sets="project.valueSets"
         :my-roles="roles"

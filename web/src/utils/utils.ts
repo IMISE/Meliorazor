@@ -87,11 +87,18 @@ export function getAnnotatable(annotationId: number, dataElement: Variable): Ann
 export function getAnnotatableFromProject(
   annotationId: number,
   project: Questionnaire,
-): Annotatable {
-  return getAnnotatable(
-    annotationId,
-    project.dataElements.find((de) =>
-      de.annotations.some((annotation) => annotation.id === annotationId),
-    )!,
-  );
+): Annotatable | undefined {
+  for (const dataElement of project.dataElements) {
+    if (dataElement.annotations.some((annotation) => annotation.id === annotationId)) {
+      return dataElement;
+    } else if (dataElement?.unit?.annotations.some((annotation) => annotation.id === annotationId)) {
+      return dataElement.unit;
+    } else {
+      for (const choice of dataElement.choices ?? []) {
+        if (choice.annotations.some((annotation) => annotation.id === annotationId)) {
+          return choice;
+        }
+      }
+    }
+  }
 }
