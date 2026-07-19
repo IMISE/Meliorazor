@@ -51,13 +51,14 @@ const myProfile = computed(
     <v-row fluid>
       <v-col :cols="myProfile ? 6 : 12">
         <h1>Letzte Aktivitäten</h1>
-        <v-list>
+        <v-list v-if="recentActions.length">
           <single-rich-action
             v-for="action in recentActions"
             :key="action.action.id"
             :rich-action="action"
           />
         </v-list>
+        <i v-else>Keine Aktivitäten in den letzten 7 Tagen gefunden</i>
       </v-col>
       <v-col v-if="myProfile" cols="6">
         <h1>Handlungsbedarf</h1>
