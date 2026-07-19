@@ -9,7 +9,11 @@ import { computed, onMounted, ref, watch, type ComponentPublicInstance, type Ref
 import { useRouter } from "vue-router";
 
 const router = useRouter();
-const elementIds = computed(() => router.currentRoute.value.params.elementIds);
+const elementIds = computed(() =>
+  typeof router.currentRoute.value.params.elementIds === "object"
+    ? router.currentRoute.value.params.elementIds
+    : router.currentRoute.value.params.elementIds?.split(","),
+);
 const projectId = computed(() => router.currentRoute.value.params.projectId);
 
 const currentIndex = ref(0);
