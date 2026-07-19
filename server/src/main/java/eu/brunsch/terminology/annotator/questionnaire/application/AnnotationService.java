@@ -644,7 +644,7 @@ public class AnnotationService {
      * @return all annotations by the given user in the last 7 days
      */
     public AnnotationDto[] getRecentAnnotations(final String username) {
-        final var stream = annotationRepository.findAllByActionAuthorNameAndActionActionTypeAndActionSubmittedAtAfter(
+        final var stream = annotationRepository.findAllByActionsAuthorNameAndActionsActionTypeAndActionsSubmittedAtAfter(
                 username,
                 "submission",
                 Instant.now().minus(7, ChronoUnit.DAYS)

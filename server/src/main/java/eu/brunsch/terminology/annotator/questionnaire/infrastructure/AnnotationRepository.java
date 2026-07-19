@@ -29,7 +29,7 @@ public interface AnnotationRepository extends JpaRepository<Annotation, Long> {
      * @param actionSubmittedAt only find results submitted after this date
      * @return all annotations with an action by a given author with a specific type submitted after some date
      */
-    List<Annotation> findAllByActionAuthorNameAndActionActionTypeAndActionSubmittedAtAfter(String actionAuthorName, String actionActionType, Instant actionSubmittedAt);
+    List<Annotation> findAllByActionsAuthorNameAndActionsActionTypeAndActionsSubmittedAtAfter(String actionsAuthorName, String actionsActionType, Instant actionsSubmittedAt);
 
 
     /**
@@ -39,7 +39,7 @@ public interface AnnotationRepository extends JpaRepository<Annotation, Long> {
      * @param actionActionType one of "comment", "submission", "version"
      * @return all annotations with a certain status an action by a given author with a specific type.
      */
-    List<Annotation> findAllByStatusAndActionAuthorNameAndActionActionType(Annotation.Status status, String actionAuthorName, String actionActionType);
+    List<Annotation> findAllByStatusAndActionsAuthorNameAndActionsActionType(Annotation.Status status, String actionsAuthorName, String actionsActionType);
 
     /**
      * Finds all annotations with an action of a specific type done by a specific user and the annotation DOES NOT have a given status,
@@ -49,6 +49,6 @@ public interface AnnotationRepository extends JpaRepository<Annotation, Long> {
      * @param actionActionType one of "comment", "submission", "version"
      * @return all annotations missing a certain status with an action by a given author with a specific type.
      */
-    List<Annotation> findAllByStatusNotAndActionAuthorNameAndActionActionType(Annotation.Status status, String actionAuthorName, String actionActionType);
+    List<Annotation> findAllByStatusNotAndActionsAuthorNameAndActionsActionType(Annotation.Status status, String actionsAuthorName, String actionsActionType);
 
 }
