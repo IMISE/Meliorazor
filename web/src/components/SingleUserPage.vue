@@ -47,7 +47,7 @@ const myProfile = computed(
 -->
 
 <template>
-  <template v-if="username">
+  <template v-if="username && !loading">
     <v-row fluid>
       <v-col :cols="myProfile ? 6 : 12">
         <h1>Letzte Aktivitäten</h1>
@@ -58,7 +58,7 @@ const myProfile = computed(
             :rich-action="action"
           />
         </v-list>
-        <i v-else>Keine Aktivitäten in den letzten 7 Tagen gefunden</i>
+        <i v-else>Keine Aktivitäten in den letzten 7 Tagen gefunden.</i>
       </v-col>
       <v-col v-if="myProfile" cols="6">
         <h1>Handlungsbedarf</h1>
@@ -77,6 +77,9 @@ const myProfile = computed(
   </template>
   <template v-else-if="isHome">
     Bitte loggen Sie sich ein, um auf diese Seite zugreifen zu können.
+  </template>
+  <template v-else-if="loading">
+    Lädt &hellip;
   </template>
   <template v-else>Name nicht gefunden.</template>
 </template>
