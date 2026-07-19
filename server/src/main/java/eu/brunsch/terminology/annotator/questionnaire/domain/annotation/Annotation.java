@@ -231,7 +231,7 @@ public class Annotation {
                 .filter(c -> c != null && "comment".equals(c.getActionType()))
                 .map(c -> (Comment) c)
                 // notes can never change status
-                .filter(c -> c.getCommentType() == Comment.Type.NOTE)
+                .filter(c -> c.getCommentType() != Comment.Type.NOTE)
                 // only newest comment of each author counts
                 .collect(
                         Collectors.toMap(
