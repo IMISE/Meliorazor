@@ -27,7 +27,7 @@ const display = computed(() => {
   if (type === "submission") {
     return {
       title: "Annotation erstellt",
-      subtitle: `An ${props.richAction.dataElementLabel} in ${props.richAction.questionnaireTitle}`,
+      subtitle: `"${props.richAction.annotatableLabel} ${props.richAction.annotationLabel}" an ${props.richAction.dataElementLabel} in ${props.richAction.questionnaireTitle}`,
       link: linkToAnnotation.value,
       icon: mdiPencil,
     };
@@ -37,7 +37,7 @@ const display = computed(() => {
       ctype === "ACCEPT" ? "Akzeptiert" : ctype === "REJECT" ? "Abgelehnt" : "Kommentiert";
     return {
       title: "Feedback gegeben",
-      subtitle: `An ${props.richAction.dataElementLabel} in ${props.richAction.questionnaireTitle}: ${ctypeDisplay}`,
+      subtitle: `${ctypeDisplay}: "${props.richAction.annotatableLabel} ${props.richAction.annotationLabel}" an ${props.richAction.dataElementLabel} in ${props.richAction.questionnaireTitle}`,
       link: linkToAnnotation.value,
       icon: mdiComment,
     };
