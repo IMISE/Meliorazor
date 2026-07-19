@@ -279,15 +279,10 @@ public class AnnotationService {
     @Transactional(readOnly = true)
     public DataElementDto getDataElementWithComments(final DataElement variable) {
         // all annotations visible to user
-        final List<Annotation> annotations = annotationRepository
+        final AnnotationDto[] annotationDtos = annotationRepository
             .findByTarget(variable)
             .stream()
             .filter(a -> a.seenBy(username()))
-            .toList();
-
-        // only annotations on the data element, NOT on choices
-        final AnnotationDto[] annotationDtos = annotations
-            .stream()
             .map(annotationMapper::toDto)
             .toArray(AnnotationDto[]::new);
 
@@ -295,7 +290,7 @@ public class AnnotationService {
         // populate choices with their annotations
         for (final Choice choice :  variable.getChoices()) {
             final ChoiceDto choiceDto = annotatableMapper.toDto(choice);
-            final var choiceAnnotations = annotationRepository.findByTarget(choice);
+            final List<Annotation> choiceAnnotations = annotationRepository.findByTarget(choice);
             List<AnnotationDto> choiceAnnotationDtos = new ArrayList<>();
             for (final Annotation choiceAnnotation : choiceAnnotations) {
                 if (!choiceAnnotation.seenBy(username())) {
@@ -308,7 +303,7 @@ public class AnnotationService {
                         choiceAnnotation.getActions(username())));
                 choiceAnnotationDtos.add(choiceAnnotationDto);
             }
-            choiceDto.setAnnotations(choiceAnnotations.toArray(AnnotationDto[]::new));
+            choiceDto.setAnnotations(choiceAnnotationDtos.toArray(AnnotationDto[]::new));
             choiceDtos.add(choiceDto);
         }
 
