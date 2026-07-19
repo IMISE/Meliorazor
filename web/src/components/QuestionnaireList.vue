@@ -5,7 +5,7 @@ import type { IdTokenClaims } from "oidc-client-ts";
 import auth from "@/auth.ts";
 import getEnv from "@/utils/env.ts";
 import { Role } from "@/types/enums.ts";
-import { mdiDelete, mdiDeleteOutline } from "@mdi/js";
+import { mdiArrowRight, mdiDelete, mdiDeleteOutline } from "@mdi/js";
 import { clean } from "@/utils/utils";
 
 const emit = defineEmits<{
@@ -48,6 +48,7 @@ const deleteQuestionnaire = async (q: Questionnaire) => {
       v-for="(q, i) in questionnaires"
       :key="`${questionnaires.length}-${i}-${q.id}`"
       :href="displayLink ? `/projects/${q.id}-${clean(q.title.substring(0, 20))}/` : undefined"
+      :append-icon="displayLink ? mdiArrowRight : undefined /* only displayed if displayControls is false */"
     >
       <v-list-item-title>{{ q.title }}</v-list-item-title>
       <v-list-item-subtitle v-if="q.description">
