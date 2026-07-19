@@ -409,7 +409,14 @@ public class AnnotationService {
         } else {
             annotation = existing.get();
             // check if author already submitted same annotation; if true, throw exception
-            if (annotation.getActions().stream().anyMatch(a -> a.getAuthorName().equals(username()))) {
+            if (
+                annotation
+                    .getActions()
+                    .stream()
+                    .anyMatch(a ->
+                        "submission".equals(a.getActionType()) &&
+                        a.getAuthorName().equals(username()))
+            ) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT);
             }
             action = actionMapper.toEntity(dto.getActions()[0]);
