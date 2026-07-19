@@ -84,6 +84,7 @@ const getAnnotatedCode = async () => {
         :server="server"
         :show-select-button="false"
         :known-predicates="[]"
+        @exit="code = undefined"
       />
     </v-col>
   </v-row>

@@ -228,13 +228,13 @@ defineExpose({
       />
     </v-col>
     <v-col v-if="focusCode && focusCodeInfo" cols="6">
-      <v-btn :prepend-icon="mdiClose" text="Schließen" variant="plain" @click="unselect" />
       <code-display
         v-if="!loadingFocus"
         :codeInfo="focusCodeInfo"
         :server="focusCode.valueSet.server"
         :known-predicates="previousAnnotationsPredicates"
         show-select-button
+        @exit="unselect"
         @focus="updateFocus"
         @selection="(v: FhirTerminologyCode) => (selectedCode = v)"
       />

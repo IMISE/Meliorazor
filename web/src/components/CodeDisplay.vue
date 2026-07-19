@@ -7,6 +7,7 @@ import { toFhirCode } from "@/utils/fhirUtils.ts";
 import { compareCodes } from "@/utils/terminologyCodes";
 import { watch } from "vue";
 import { ref, type Ref } from "vue";
+import { mdiClose } from "@mdi/js";
 
 const { codeInfo, server } = defineProps<{
   codeInfo: CodeInfo;
@@ -18,6 +19,7 @@ const { codeInfo, server } = defineProps<{
 defineEmits<{
   (e: "selection", v: FhirTerminologyCode): void;
   (e: "focus", v: FhirTerminologyCode): void;
+  (e: "exit"): void;
 }>();
 
 const parents: Ref<CodeInfo[]> = ref([codeInfo]);
@@ -57,6 +59,7 @@ watch(
 </script>
 
 <template>
+  <v-btn :prepend-icon="mdiClose" text="Schließen" variant="plain" @click="$emit('exit')" />
   <br />
   <template v-if="codeInfo && (codeInfo.inactive || codeInfo.definition || knownPredicates.length)">
     <h3>Info</h3>
