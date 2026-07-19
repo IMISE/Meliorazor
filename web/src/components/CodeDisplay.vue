@@ -5,13 +5,13 @@ import type { CodeInfo } from "@/types/types";
 import { getCode } from "@/utils/fhirApi";
 import { toFhirCode } from "@/utils/fhirUtils.ts";
 import { compareCodes } from "@/utils/terminologyCodes";
-import { mdiClose } from "@mdi/js";
 import { watch } from "vue";
 import { ref, type Ref } from "vue";
 
 const { codeInfo, server } = defineProps<{
   codeInfo: CodeInfo;
   server: string;
+  knownPredicates: string[];
   showSelectButton: boolean;
 }>();
 
@@ -58,11 +58,27 @@ watch(
 
 <template>
   <br />
-  <template v-if="codeInfo && (codeInfo.inactive || codeInfo.definition)">
+  <template v-if="codeInfo && (codeInfo.inactive || codeInfo.definition || knownPredicates.length)">
     <h3>Info</h3>
-    <ul>
-      <li v-if="codeInfo.inactive" class="text-error"><v-icon :icon="mdiClose" /><b>Inaktiv</b></li>
-      <li v-if="codeInfo.definition">{{ codeInfo.definition }}</li>
+    <v-alert v-if="knownPredicates.length" type="warning" title="Schon verwendet">
+      Das ausgewählte Element haben Sie schon mit diesem Code verbunden. Konkret wurden folgende
+      Prädikate verwendet:
+      <ul>
+        <li v-for="predicate in knownPredicates" :key="predicate">
+          <code>{{ predicate }}</code>
+        </li>
+      </ul>
+    </v-alert>
+    <template v-if="codeInfo.inactive">
+      <br />
+      <v-alert
+        type="warning"
+        title="Inaktiv"
+        text="Dieser Code wurde von der Terminologie als inaktiv markiert."
+      />
+    </template>
+    <ul v-if="codeInfo.definition">
+      <li>{{ codeInfo.definition }}</li>
     </ul>
     <br />
   </template>

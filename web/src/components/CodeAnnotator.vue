@@ -9,9 +9,10 @@ import type { IconValue } from "vuetify/lib/composables/icons.mjs";
 import ConfidenceSlider from "./ConfidenceSlider.vue";
 
 const annotatable = defineModel<Annotatable>();
-const { code, dataElement } = defineProps<{
+const { code, dataElement, knownPredicates } = defineProps<{
   code: CodeMapping;
   dataElement: Variable | undefined;
+  knownPredicates: string[];
   editable: boolean;
 }>();
 
@@ -43,6 +44,8 @@ const predicates = [
   "oboInOwl:hasDbXref",
   "rdfs:seeAlso",
 ];
+
+const forbiddenPredicateSelected = computed(() => knownPredicates.includes(predicate.value));
 
 const allAnnotatables = computed(() =>
   dataElement
@@ -164,6 +167,19 @@ const submitAnnotation = async () => {
         </v-list>
       </v-col>
     </v-row>
+    <v-alert
+      v-if="knownPredicates.length"
+      :type="forbiddenPredicateSelected ? 'error' : 'warning'"
+      title="Schon verwendet"
+    >
+      Das ausgewählte Element haben Sie schon mit diesem Code verbunden. Konkret wurden folgende
+      Prädikate verwendet:
+      <ul>
+        <li v-for="predicate in knownPredicates" :key="predicate">
+          <code>{{ predicate }}</code>
+        </li>
+      </ul>
+    </v-alert>
     <br />
     <!-- form to add further SSSOM metadata -->
     <v-form v-if="editable" @submit.prevent="submitAnnotation">
@@ -171,7 +187,7 @@ const submitAnnotation = async () => {
       <v-textarea v-model="comment" label="Kommentar" />
       <v-btn
         :prepend-icon="loadingFeedbackIcon"
-        :disabled="!!loadingFeedbackIcon || loadingCreate"
+        :disabled="!!loadingFeedbackIcon || loadingCreate || forbiddenPredicateSelected"
         :loading="loadingCreate"
         size="x-large"
         type="submit"

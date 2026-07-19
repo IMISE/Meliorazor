@@ -5,10 +5,13 @@ import CodeSearch from "@/components/CodeSearch.vue";
 import DataElementSummary from "@/components/DataElementSummary.vue";
 import type { Annotatable, CodeInfo, InformedCodeMapping, Variable } from "@/types/types";
 import { mdiArrowLeft, mdiArrowRight, mdiCheckDecagramOutline, mdiClose } from "@mdi/js";
-import { computed, ref, watch, type Ref } from "vue";
+import { computed, inject, ref, watch, type Ref } from "vue";
 import { getCode } from "@/utils/fhirApi.ts";
 import { codeEquals } from "@/utils/fhirUtils";
 import type { FhirTerminologyCode, FhirValueSetDefinition } from "@/types/fhir";
+import type { IdTokenClaims } from "oidc-client-ts";
+
+const user = inject("user") as Ref<IdTokenClaims | undefined>;
 
 const emit = defineEmits(["success", "exit"]);
 
@@ -29,6 +32,18 @@ const loadingFocus = ref(false);
 
 /** selected to-annotate; data element itself or choice */
 const selectedElement: Ref<Annotatable> = ref(props.dataElement);
+
+/** previous annotations by me */
+const previousAnnotations = computed(() =>
+  selectedElement.value.annotations.filter((a) =>
+    a.actions.some((action) => action.authorName === user.value?.preferred_username),
+  ),
+);
+const previousAnnotationsPredicates = computed(() =>
+  previousAnnotations.value
+    .filter((annotation) => codeEquals(annotation.code, focusCode.value))
+    .map((annotation) => annotation.predicate),
+);
 
 const search = ref("");
 watch(selectedElement, (val) => (search.value = val.label), { immediate: true });
@@ -204,7 +219,13 @@ defineExpose({
         </template>
       </v-select>
       <data-element-summary :data-element="dataElement" />
-      <code-search v-model="search" :valueSets="valueSets" :focus="focusCode" @focus="focus" />
+      <code-search
+        v-model="search"
+        :valueSets="valueSets"
+        :previously-annotated="previousAnnotations.map((annotation) => annotation.code)"
+        :focus="focusCode"
+        @focus="focus"
+      />
     </v-col>
     <v-col v-if="focusCode && focusCodeInfo" cols="6">
       <v-btn :prepend-icon="mdiClose" text="Schließen" variant="plain" @click="unselect" />
@@ -212,6 +233,7 @@ defineExpose({
         v-if="!loadingFocus"
         :codeInfo="focusCodeInfo"
         :server="focusCode.valueSet.server"
+        :known-predicates="previousAnnotationsPredicates"
         show-select-button
         @focus="updateFocus"
         @selection="(v: FhirTerminologyCode) => (selectedCode = v)"
@@ -226,6 +248,7 @@ defineExpose({
       v-model="selectedElement"
       :data-element="dataElement!"
       :code="selectedCode"
+      :known-predicates="previousAnnotationsPredicates"
       editable
       @success="reload"
       @edit="unselect"

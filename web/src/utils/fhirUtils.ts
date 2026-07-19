@@ -1,15 +1,18 @@
 import type { FhirTerminologyCode } from "@/types/fhir";
 import type { CodeInfo, CodeMapping } from "@/types/types";
 
-export function codeEquals(codeA: CodeMapping, codeB: CodeMapping) {
+export function codeEquals(codeA: CodeMapping | undefined, codeB: CodeMapping | undefined) {
   return (
-    codeA.system === codeB.system &&
-    (!codeA.systemVersion ||
-      !codeB.systemVersion ||
-      codeA.systemVersion === "*" ||
-      codeB.systemVersion === "*" ||
-      codeA.systemVersion === codeB.systemVersion) &&
-    codeA.code === codeB.code
+    codeA === codeB ||
+    (codeA !== undefined &&
+      codeB !== undefined &&
+      codeA.system === codeB.system &&
+      (!codeA.systemVersion ||
+        !codeB.systemVersion ||
+        codeA.systemVersion === "*" ||
+        codeB.systemVersion === "*" ||
+        codeA.systemVersion === codeB.systemVersion) &&
+      codeA.code === codeB.code)
   );
 }
 

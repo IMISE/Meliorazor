@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import type { FhirValueSetDefinition } from "@/types/fhir";
-import type { InformedCodeMapping } from "@/types/types";
+import type { CodeMapping, InformedCodeMapping } from "@/types/types";
 import { expandValueSet } from "@/utils/fhirApi";
+import { codeEquals } from "@/utils/fhirUtils";
 import { mdiCheck, mdiClose, mdiMagnify, mdiWeb } from "@mdi/js";
 import { ref, watch, type Ref } from "vue";
 
-const { valueSets, focus } = defineProps<{
+const { valueSets, previouslyAnnotated, focus } = defineProps<{
   valueSets: FhirValueSetDefinition[];
+  previouslyAnnotated: CodeMapping[];
   focus: InformedCodeMapping | undefined;
 }>();
 
@@ -78,11 +80,18 @@ const go = async (text: string) => {
   loading.value = false;
 };
 
-const colorFocusCode = ({ item }: { item: InformedCodeMapping }) => {
+const colourSpecialCodes = ({ item }: { item: InformedCodeMapping }) => {
   if (focus && item.code === focus.code && item.system === focus.system) {
     return { class: "focus-code" };
-  } else if (item.inactive) {
-    return { class: "inactive-code" };
+  } else {
+    const classes = [];
+    if (previouslyAnnotated.some((code) => codeEquals(item, code))) {
+      classes.push("known-code bg-warning");
+    }
+    if (item.inactive) {
+      classes.push("inactive-code");
+    }
+    return { class: classes.join(" ") };
   }
 };
 
@@ -141,7 +150,7 @@ const itemsPerPage = ref(15);
       :item-value="(item) => item"
       :items="searchResults"
       :headers="searchResultHeaders"
-      :row-props="colorFocusCode"
+      :row-props="colourSpecialCodes"
       density="compact"
       :items-per-page="itemsPerPage"
       @click:row="(event: any, v: { item: InformedCodeMapping }) => $emit('focus', v.item)"
@@ -171,5 +180,8 @@ const itemsPerPage = ref(15);
 }
 .inactive-code {
   opacity: 0.5;
+}
+.known-code {
+  font-style: italic;
 }
 </style>
