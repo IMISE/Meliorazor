@@ -84,6 +84,11 @@ public class DataElement extends Annotatable {
         return false;
     }
 
+    @Override
+    public DataElement getVariable() {
+        return this;
+    }
+
     /**
      * Visitor pattern to map DTOs using MapStruct.
      * Stolen from https://www.baeldung.com/java-mapstruct-inheritance#1-applying-the-visitor-pattern.

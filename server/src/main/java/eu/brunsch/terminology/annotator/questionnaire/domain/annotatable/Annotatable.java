@@ -39,6 +39,12 @@ public abstract class Annotatable {
     public abstract Questionnaire getQuestionnaire();
 
     /**
+     * Get the variable this element is or belongs to.
+     * @return either itself or its parent
+     */
+    public abstract DataElement getVariable();
+
+    /**
      * Is this user allowed to annotate this annotatable element?
      * @param username username of user in question
      * @return true if data element this is or belongs to is annotatable by the given username

@@ -61,28 +61,12 @@ public abstract class ActionMapper implements Action.Visitor, ActionDto.Visitor 
         final var target = action.getAnnotation().getTarget();
         final var questionnaire = target.getQuestionnaire();
 
-        Long dataElementId = null;
-        String dataElementLabel = null;
-
-        if (target instanceof DataElement) {
-            dataElementId = target.getId();
-            dataElementLabel = target.getLabel();
-        } else if (target instanceof Choice) {
-            final DataElement variable = ((Choice) target).getVariable();
-            dataElementId = variable.getId();
-            dataElementLabel = variable.getLabel();
-        } else if (target instanceof Unit) {
-            final DataElement variable = ((Unit) target).getVariable();
-            dataElementId = variable.getId();
-            dataElementLabel = variable.getLabel();
-        }
-
         return new RichActionDto(
             toDto(action),
             questionnaire == null ? null : questionnaire.getId(),
             questionnaire == null ? null : questionnaire.getTitle(),
-            dataElementId,
-            dataElementLabel,
+            target.getVariable().getId(),
+            target.getVariable().getLabel(),
             action.getAnnotation().getId(),
             action.getAnnotation().getPredicate() + " " + action.getAnnotation().getCode().getDisplay(),
             target.getId(),
