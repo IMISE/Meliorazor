@@ -141,7 +141,7 @@ defineExpose({
 </script>
 
 <template>
-  <v-row cols="12" class="full-width">
+  <v-row cols="12">
     <v-col cols="6">
       <v-btn
         v-if="showPrev"
@@ -183,7 +183,7 @@ defineExpose({
     </v-col>
   </v-row>
   <br />
-  <v-row v-if="!selectedCode" size="12" class="full-width">
+  <v-row v-if="!selectedCode" size="12">
     <v-col :cols="focusCode ? 6 : 12">
       <v-select
         v-model="selectedElement"
@@ -271,17 +271,5 @@ defineExpose({
   position: sticky;
   left: 75%;
   top: 50%;
-}
-.save {
-  background-color: greenyellow;
-}
-.close {
-  background-color: red;
-}
-.wrap-text {
-  white-space: normal;
-}
-.full-width {
-  width: 100%;
 }
 </style>
