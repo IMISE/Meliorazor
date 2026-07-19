@@ -75,11 +75,11 @@ const myProfile = computed(
     <h1><template v-if="myProfile">Meine </template>Annotationen und Kommentare</h1>
     <h1 v-if="false"><template v-if="myProfile">Meine </template>Statistik</h1>
   </template>
-  <template v-else-if="isHome">
-    Bitte loggen Sie sich ein, um auf diese Seite zugreifen zu können.
-  </template>
   <template v-else-if="loading">
     Lädt &hellip;
+  </template>
+  <template v-else-if="isHome">
+    Bitte loggen Sie sich ein, um auf diese Seite zugreifen zu können.
   </template>
   <template v-else>Name nicht gefunden.</template>
 </template>
