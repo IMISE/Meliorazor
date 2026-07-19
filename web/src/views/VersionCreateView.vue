@@ -123,7 +123,7 @@ const keyRules = ref([
         <v-card title="Annotation auswählen">
           <data-element-list
             v-model="selectedAnnotationIds"
-            :dataElements="project.dataElements"
+            :data-elements="project.dataElements"
             :project-id="projectId"
             :project-title="project.title"
             :my-roles="[]"

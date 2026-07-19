@@ -12,8 +12,8 @@ import {
   mdiCheckboxBlankCircleOutline,
   mdiCheckCircleOutline,
   mdiCloseCircleOutline,
-  mdiFloppy,
   mdiPencilPlus,
+  mdiTag,
 } from "@mdi/js";
 
 defineProps<{
@@ -26,7 +26,7 @@ defineProps<{
 <template>
   <div class="comment">
     <div v-if="action.actionType === 'versioning'">
-      <v-icon :icon="mdiFloppy"></v-icon>
+      <v-icon :icon="mdiTag"></v-icon>
       <h3>
         Zu Version <var>{{ (action as AnnotationVersioning).versionKey }}</var> hinzugefügt
       </h3>

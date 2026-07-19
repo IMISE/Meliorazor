@@ -1,5 +1,7 @@
 package eu.brunsch.terminology.annotator.questionnaire.application;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,6 +31,7 @@ import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.Choice;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.ChoiceDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.DataElement;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.DataElementDto;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.RichActionDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.Unit;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.UnitDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.Action;
@@ -629,6 +632,50 @@ public class AnnotationService {
         }
 
         return versionRepository.findKeysByQuestionnaireId(questionnaireId).toArray(String[]::new);
+    }
+
+
+    //////////////////////////////
+    /// FUN USER-RELATED STUFF ///
+    //////////////////////////////
+
+    /**
+     * @param username user to get all the annotations of
+     * @return all annotations by the given user in the last 7 days
+     */
+    public AnnotationDto[] getRecentAnnotations(final String username) {
+        final var stream = annotationRepository.findAllByActionAuthorNameAndActionActionTypeAndActionSubmittedAtAfter(
+                username,
+                "submission",
+                Instant.now().minus(7, ChronoUnit.DAYS)
+            )
+            .stream();
+        // if we are the queried user, just return all
+        // else, filter for annotations we are allowed to edit (because else we don't
+        // see their annotaitons!)
+        if (!username().equals(username)) {
+            stream.filter(annotation -> annotation.reviewableBy(username()));
+        }
+        return stream
+            .map(annotationMapper::toDto)
+            .toArray(AnnotationDto[]::new);
+    }
+
+    public RichActionDto[] getRecentActions(final String username) {
+        final var stream = actionRepository.findByAuthorNameAndSubmittedAtAfter(
+                username,
+                Instant.now().minus(7, ChronoUnit.DAYS)
+            )
+            .stream();
+        // if we are the queried user, just return all
+        // else, filter for annotations we are allowed to edit (because else we don't
+        // see their annotaitons!)
+        if (!username().equals(username)) {
+            stream.filter(action -> action.getAnnotation() != null && action.getAnnotation().reviewableBy(username()));
+        }
+        return stream
+            .map(actionMapper::toRichDto)
+            .toArray(RichActionDto[]::new);
     }
 
     /**

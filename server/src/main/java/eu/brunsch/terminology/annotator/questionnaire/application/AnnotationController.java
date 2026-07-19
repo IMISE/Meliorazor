@@ -14,6 +14,7 @@ import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.VersionCreateDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.VersionDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.DataElementDto;
+import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.RichActionDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.AnnotationDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.CommentDto;
 import lombok.RequiredArgsConstructor;
@@ -187,4 +188,15 @@ public class AnnotationController {
     ) {
         return service.getVersion(questionnaireId, versionKey);
     }
+
+    @GetMapping("user/{username}/annotations/recent")
+    public AnnotationDto[] getRecentAnnotations(final @PathVariable String username) {
+        return service.getRecentAnnotations(username);
+    }
+
+    @GetMapping("user/{username}/actions/recent")
+    public RichActionDto[] getRecentActions(final @PathVariable String username) {
+        return service.getRecentActions(username);
+    }
+
 }

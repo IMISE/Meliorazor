@@ -89,6 +89,18 @@ export interface AnnotationAction {
   submittedAt: string;
 }
 
+export interface RichAction {
+  action: AnnotationAction | AnnotationComment | AnnotationSubmission | AnnotationVersioning;
+  questionnaireId: number;
+  questionnaireTitle: string;
+  dataElementId: number;
+  dataElementLabel: string;
+  annotationId: number;
+  annotationLabel: string;
+  annotatableId: number;
+  annotatableLabel: string;
+}
+
 export interface CreateAnnotationComment extends CreateAnnotationAction {
   commentType: CommentType;
   actionType: "comment";

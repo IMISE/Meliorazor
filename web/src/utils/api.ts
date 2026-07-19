@@ -1,7 +1,13 @@
 import auth from "@/auth";
 import type { Ref } from "vue";
 import getEnv from "./env";
-import type { Annotation, CreateAnnotation, CreateVersion, Questionnaire } from "@/types/types";
+import type {
+  Annotation,
+  CreateAnnotation,
+  CreateVersion,
+  Questionnaire,
+  RichAction,
+} from "@/types/types";
 
 export default async function request(
   path: string,
@@ -84,6 +90,16 @@ export async function getProjects(loading: Ref<boolean> | undefined = undefined)
   }
 
   return ((await response.json()) ?? []) as Questionnaire[];
+}
+
+export async function getRecentActions(username: string) {
+  const response = await request(`/user/${username}/actions/recent`, "GET");
+  if (!response?.ok) {
+    console.error("Users response not ok :(");
+    return;
+  }
+
+  return ((await response.json()) ?? []) as RichAction[];
 }
 
 export async function getVersionKeys(
