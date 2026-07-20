@@ -19,7 +19,7 @@ const loading = ref(false);
 
 const recentActionsLimit = ref(5);
 const recentActionsLimited = computed(() =>
-  recentActions.value.reverse().slice(0, recentActionsLimit.value),
+  [...recentActions.value].reverse().slice(0, recentActionsLimit.value),
 );
 
 watch(
