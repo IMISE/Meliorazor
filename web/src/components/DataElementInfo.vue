@@ -5,7 +5,7 @@ import { Role, status, Status } from "@/types/enums";
 import AnnotationBadge from "./AnnotationBadge.vue";
 import { useRouter } from "vue-router";
 import { clean } from "@/utils/utils";
-import { mdiChevronDown, mdiChevronUp, mdiMenuOpen, mdiPencilPlus } from "@mdi/js";
+import { mdiChevronDown, mdiChevronUp, mdiClose, mdiMenuOpen, mdiPencilPlus } from "@mdi/js";
 import { fieldTypesNotDisplayedWithoutChoices, supportedFieldTypes } from "@/types/redCap.ts";
 
 const model = defineModel<number[] | undefined>();
@@ -271,7 +271,7 @@ const displayMockInput = computed(
       <v-divider />
       <v-row>
         <v-col cols="2">Akzeptierte Annotationen</v-col>
-        <v-col cols="10">
+        <v-col cols="9">
           <template v-if="acceptedAnnotations.length">
             <template
               v-for="(group, system) in groupedAcceptedAnnotations"
@@ -295,13 +295,16 @@ const displayMockInput = computed(
             </template>
           </template>
         </v-col>
+        <v-col cols="1">
+          <v-icon-btn variant="plain" :icon="mdiClose" @click="detailsAcceptedAnnotations = false" />
+        </v-col>
       </v-row>
     </template>
     <template v-if="openAnnotations.length && detailsOpenAnnotations">
       <v-divider />
       <v-row>
         <v-col cols="2">Offene Annotationen</v-col>
-        <v-col>
+        <v-col cols="9">
           <template v-if="openAnnotations.length">
             <template
               v-for="(group, system) in groupedOpenAnnotations"
@@ -324,6 +327,9 @@ const displayMockInput = computed(
               </div>
             </template>
           </template>
+        </v-col>
+        <v-col cols="1">
+          <v-icon-btn variant="plain" :icon="mdiClose" @click="detailsOpenAnnotations = false" />
         </v-col>
       </v-row>
     </template>
