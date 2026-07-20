@@ -21,6 +21,7 @@ const {
   myRoles: Role[];
   allowEditSelection: boolean;
   highlightUnannotated: boolean;
+  annotatedCrf: boolean;
   showActions: boolean;
 }>();
 
@@ -133,7 +134,7 @@ const displayMockInput = computed(
     class="data-element-container"
   >
     <v-row class="data-element-title-row">
-      <div class="annotations-aggregated">
+      <div v-if="!annotatedCrf" class="annotations-aggregated">
         <v-tooltip :text="acceptedTooltip">
           <template #activator="{ props }">
             <div
@@ -166,13 +167,32 @@ const displayMockInput = computed(
           </template>
         </v-tooltip>
       </div>
-      <v-divider vertical />
+      <v-divider v-if="!annotatedCrf" vertical />
       <div :style="'grid-column: 3 / span ' + (displayMockInput ? 1 : 2)">
         <span class="varlabel">{{ dataElement.label }}</span>
         <br />
         <var v-if="dataElement.variableName" class="varname">{{ dataElement.variableName }}</var>
       </div>
-      <template v-if="displayMockInput">
+      <div
+        v-if="dataElement.annotations.length && annotatedCrf"
+        class="badge-container"
+        :style="'grid-row: 2; grid-column: 3 / span' + (displayMockInput ? 1 : 2)"
+      >
+        <annotation-badge
+          v-for="annotation in dataElement.annotations"
+          v-model="model"
+          :key="`${annotation.id}-${annotation.actions.length}`"
+          :annotation="annotation"
+          :data-element-id="dataElement.id!"
+          :data-element-name="dataElement.variableName!"
+          :project-id="projectId"
+          :project-name="projectTitle"
+          :allow-edit-selection="allowEditSelection"
+          :dashed-border="false"
+        />
+      </div>
+
+      <div v-if="displayMockInput">
         <v-number-input
           v-if="dataElement.fieldType === 'number'"
           style="grid-column: 4 / span 1"
@@ -196,25 +216,6 @@ const displayMockInput = computed(
           readonly
           :required="required"
         />
-        <v-select
-          v-else-if="dataElement.fieldType === 'dropdown'"
-          v-model="fieldChoices"
-          :items="fieldChoices"
-          multiple
-          readonly
-          :required="required"
-        >
-          <template #selection="{ item, index }">
-            <v-chip
-              :text="item"
-              :class="
-                highlightUnannotated && data.choices![index]!.annotations.length === 0
-                  ? 'bg-error'
-                  : 'bg-mute'
-              "
-            />
-          </template>
-        </v-select>
         <v-radio-group v-else-if="dataElement.fieldType === 'radio'" readonly :required="required">
           <v-radio
             v-for="(choice, i) in fieldChoices"
@@ -226,7 +227,25 @@ const displayMockInput = computed(
                 : 'bg-mute'
             "
             readonly
-          />
+          >
+            <template v-if="dataElement.choices![i]!.annotations?.length && annotatedCrf" #label>
+              {{ dataElement.choices![i]!.label }}
+              <div class="badge-container">
+                <annotation-badge
+                  v-for="annotation in dataElement.choices![i]!.annotations"
+                  v-model="model"
+                  :key="`${annotation.id}-${annotation.actions.length}`"
+                  :annotation="annotation"
+                  :data-element-id="dataElement.id!"
+                  :data-element-name="dataElement.variableName!"
+                  :project-id="projectId"
+                  :project-name="projectTitle"
+                  :allow-edit-selection="allowEditSelection"
+                  :dashed-border="false"
+                />
+              </div>
+            </template>
+          </v-radio>
         </v-radio-group>
         <v-slider
           v-else-if="dataElement.fieldType === 'slider'"
@@ -245,7 +264,7 @@ const displayMockInput = computed(
           readonly
           :required="required"
         />
-      </template>
+      </div>
 
       <template v-if="showActions">
         <v-divider vertical />
@@ -296,7 +315,11 @@ const displayMockInput = computed(
           </template>
         </v-col>
         <v-col cols="1">
-          <v-icon-btn variant="plain" :icon="mdiClose" @click="detailsAcceptedAnnotations = false" />
+          <v-icon-btn
+            variant="plain"
+            :icon="mdiClose"
+            @click="detailsAcceptedAnnotations = false"
+          />
         </v-col>
       </v-row>
     </template>

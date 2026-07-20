@@ -291,6 +291,7 @@ const participantUser = ref([
               :my-roles="myRoles"
               :allow-edit-selection="false"
               :highlight-unnanotated="false"
+              :annotated-crf="false"
               show-actions
             />
           </v-tabs-window-item>

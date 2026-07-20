@@ -12,6 +12,7 @@ defineProps<{
   myRoles: Role[];
   allowEditSelection: boolean;
   highlightUnnanotated: boolean;
+  annotatedCrf: boolean;
   showActions: boolean;
 }>();
 </script>
@@ -28,6 +29,7 @@ defineProps<{
         :allow-edit-selection="allowEditSelection"
         :highlight-unannotated="highlightUnnanotated"
         :show-actions="showActions"
+        :annotated-crf="annotatedCrf"
       />
     </v-item>
     <v-item v-if="!dataElements?.length">

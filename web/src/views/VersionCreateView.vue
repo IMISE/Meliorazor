@@ -130,6 +130,7 @@ const keyRules = ref([
             :allow-edit-selection="true"
             :highlight-unnanotated="false"
             :show-actions="false"
+            annotated-crf
           />
         </v-card>
       </template>
@@ -143,6 +144,7 @@ const keyRules = ref([
             :allow-edit-selection="false"
             :highlight-unnanotated="true"
             :show-actions="false"
+            annotated-crf
           />
         </v-card>
       </template>

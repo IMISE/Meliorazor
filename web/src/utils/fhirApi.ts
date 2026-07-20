@@ -16,7 +16,7 @@ async function fetchFhir(
   acceptLanguage: string = "en-US",
 ) {
   const headers = {
-    "Content-Type": "application/json",
+    "Content-Type": "application/fhir+json",
     "Accept-Language": acceptLanguage,
   };
 
@@ -122,6 +122,43 @@ export async function getCode(
   version: string,
   server: string,
 ): Promise<CodeInfo | undefined> {
+const params = {
+    "resourceType": "Parameters",
+    "id": "undefined",
+    "parameter": [
+        {
+            "name": "system",
+            "valueUri": system,
+        },
+        {
+            "name": "version",
+            "valueString": version,
+        },
+        {
+            "name": "exact",
+            "valueBoolean": true
+        },
+        {
+            "name": "property",
+            "part": [
+                {
+                    "name": "designation",
+                    "valueString": "Male"
+                },
+            ]
+        }
+    ]
+}
+  try {
+  const headers = {
+    "Content-Type": "application/fhirjson",
+  };
+
+  const response2 = await fetch(`${server}/CodeSystem/$find-matches`, { headers, method: "POST", body: JSON.stringify(params) });
+    console.log((await response2.json())) }
+  catch(e) {
+    console.error(e)
+  }
   const response = (await fetchFhir(
     `${server}/CodeSystem/$lookup?code=${code}&system=${system}`,
     "Parameters",

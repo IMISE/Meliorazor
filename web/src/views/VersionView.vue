@@ -73,6 +73,7 @@ watch(
           :allow-edit-selection="false"
           :highlight-unnanotated="false"
           :show-actions="false"
+          annotated-crf
         />
         <v-btn
           v-if="elements?.length && false"

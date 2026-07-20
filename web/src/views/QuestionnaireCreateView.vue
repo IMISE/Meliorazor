@@ -133,6 +133,7 @@ const redcapFieldType = (datum: { [index: string]: string }) => {
   const t = datum?.["Field Type"] as string;
   switch (t) {
     case "yesno":
+    case "dropdown":
       return "radio";
     case "text":
       if (datum?.["Text Validation Type OR Show Slider Number"] === "integer") {
