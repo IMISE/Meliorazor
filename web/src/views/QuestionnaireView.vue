@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import auth from "@/auth";
 import BaseComponent from "@/components/BaseComponent.vue";
 import DataElementList from "@/components/DataElementList.vue";
 import ValueSetSelector from "@/components/ValueSetSelector.vue";
 import { Role, roles, Status } from "@/types/enums";
 import type { FhirValueSetDefinition } from "@/types/fhir";
 import type { Participant, Questionnaire, QuestionnaireOut } from "@/types/types";
-import request, { getVersionKeys } from "@/utils/api";
-import getEnv from "@/utils/env";
+import request, { getProject, getVersionKeys } from "@/utils/api";
 import { mdiArrowRight, mdiCheck, mdiClose, mdiMinus, mdiPlus } from "@mdi/js";
 import type { IdTokenClaims } from "oidc-client-ts";
 import { computed, inject, onMounted, provide, ref, watch, type Ref } from "vue";
@@ -119,25 +117,9 @@ onMounted(() => get(projectId.value));
 watch(projectId, (newVal) => get(newVal));
 
 const get = async (id: number) => {
-  const u = await auth.getUser();
-  if (!u?.access_token) return;
-
   loading.value = true;
-  try {
-    const response = await fetch(`${getEnv("VITE_API_BASE")}/questionnaire/${id}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${u.access_token}`,
-      },
-    });
-    if (!response.ok) return;
-    questionnaire.value = (await response.json()) as Questionnaire;
-  } catch (e) {
-    console.error(e);
-  } finally {
-    loading.value = false;
-  }
+  questionnaire.value = await getProject(id);
+  loading.value = false;
 };
 
 const selected: Ref<number[] | undefined> = ref();
