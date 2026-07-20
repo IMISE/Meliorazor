@@ -5,6 +5,7 @@ import QuestionnaireList from "./QuestionnaireList.vue";
 import { getProjects, getRecentActions } from "@/utils/api.ts";
 import type { IdTokenClaims } from "oidc-client-ts";
 import SingleRichAction from "./SingleRichAction.vue";
+import { mdiChevronDown } from "@mdi/js";
 
 const user = inject("user") as Ref<IdTokenClaims | undefined>;
 const props = defineProps<{ username: string | undefined; isHome: boolean }>();
@@ -15,6 +16,11 @@ const userQuestionnaires = computed(() =>
 );
 const recentActions: Ref<RichAction[]> = ref([]);
 const loading = ref(false);
+
+const recentActionsLimit = ref(5);
+const recentActionsLimited = computed(() =>
+  recentActions.value.reverse().slice(0, recentActionsLimit.value),
+);
 
 watch(
   props,
@@ -53,9 +59,18 @@ const myProfile = computed(
         <h1>Letzte Aktivitäten</h1>
         <v-list v-if="recentActions.length">
           <single-rich-action
-            v-for="action in recentActions"
+            v-for="action in recentActionsLimited"
             :key="action.action.id"
             :rich-action="action"
+          />
+          <v-list-item
+            v-if="recentActionsLimit < recentActions.length"
+            :prepend-icon="mdiChevronDown"
+            :title="
+              Math.min(5, recentActions.length - recentActionsLimit) + ' weitere Aktionen anzeigen'
+            "
+            link
+            @click="recentActionsLimit += 5"
           />
         </v-list>
         <i v-else>Keine Aktivitäten in den letzten 7 Tagen gefunden.</i>
@@ -75,9 +90,7 @@ const myProfile = computed(
     <h1><template v-if="myProfile">Meine </template>Annotationen und Kommentare</h1>
     <h1 v-if="false"><template v-if="myProfile">Meine </template>Statistik</h1>
   </template>
-  <template v-else-if="loading">
-    Lädt &hellip;
-  </template>
+  <template v-else-if="loading"> Lädt &hellip; </template>
   <template v-else-if="isHome">
     Bitte loggen Sie sich ein, um auf diese Seite zugreifen zu können.
   </template>
