@@ -55,7 +55,7 @@ const myProfile = computed(
 <template>
   <template v-if="username && !loading">
     <v-row fluid>
-      <v-col :cols="myProfile ? 6 : 12">
+      <v-col :cols="myProfile && false ? 6 : 12">
         <h1>Letzte Aktivitäten</h1>
         <v-list v-if="recentActions.length">
           <single-rich-action
@@ -75,7 +75,7 @@ const myProfile = computed(
         </v-list>
         <i v-else>Keine Aktivitäten in den letzten 7 Tagen gefunden.</i>
       </v-col>
-      <v-col v-if="myProfile" cols="6">
+      <v-col v-if="myProfile && false" cols="6">
         <h1>Handlungsbedarf</h1>
       </v-col>
     </v-row>
@@ -87,7 +87,7 @@ const myProfile = computed(
       display-link
       :questionnaires="userQuestionnaires"
     />
-    <h1><template v-if="myProfile">Meine </template>Annotationen und Kommentare</h1>
+    <h1 v-if="false"><template v-if="myProfile">Meine </template>Annotationen und Kommentare</h1>
     <h1 v-if="false"><template v-if="myProfile">Meine </template>Statistik</h1>
   </template>
   <template v-else-if="loading"> Lädt &hellip; </template>
