@@ -154,7 +154,7 @@ const parsedDataREDCap = () =>
         fieldType: redcapFieldType(datum),
         unit: {
           id: undefined,
-          label: "Einheit",
+          label: "Automatisch generierte Einheit",
           min: null,
           max: null,
           annotations: [],
@@ -184,9 +184,7 @@ const parsedDataREDCap = () =>
             (key) =>
               !["Variable / Field Name", "Field Label", "Field Type"].includes(key) &&
               (key !== "Choices, Calculations, OR Slider Labels" ||
-                !["dropdown", "checkbox", "radio", "slider"].includes(
-                  datum["Field Type"] as string,
-                )),
+                !fieldTypesWithChoicesImport.includes(redcapFieldType(datum))),
           )
           .filter((key) => datum[key])
           .map((key) => ({ key, value: datum[key] })),
@@ -204,7 +202,7 @@ const parsedDataOpenClinica = () =>
         fieldType: datum["DATA_TYPE*"] as string,
         unit: {
           id: undefined,
-          label: "Einheit",
+          label: "Automatisch generierte Einheit",
           min: null,
           max: null,
           annotations: [],
