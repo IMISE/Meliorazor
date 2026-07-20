@@ -54,15 +54,13 @@ onMounted(async () => {
 });
 
 const create = async () => {
-  const response = await createVersion(
-    projectId.value,
-    {
-      key: key.value,
-      description: description.value,
-      annotationIds: selectedAnnotationIds.value,
-    },
-    creating,
-  );
+  creating.value = true;
+  const response = await createVersion(projectId.value, {
+    key: key.value,
+    description: description.value,
+    annotationIds: selectedAnnotationIds.value,
+  });
+  creating.value = false;
   const error = async () => {
     errorState.value = true;
     setTimeout(() => (errorState.value = false), 10_000);

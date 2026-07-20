@@ -43,17 +43,19 @@ const roles = computed(
 );
 
 const loadAnnotation = async () => {
-  annotation.value = await getAnnotation(
-    dataElementId.value,
-    annotationId.value,
-    loadingAnnotation,
-  );
+  loadingAnnotation.value = true;
+  annotation.value = await getAnnotation(dataElementId.value, annotationId.value);
+  loadingAnnotation.value = false;
 };
 
 watch(annotationId, loadAnnotation, { immediate: true });
 watch(
   projectId,
-  async (newId, oldId) => (project.value = await getProject(newId, oldId, loadingProject)),
+  async (newId, oldId) => {
+    loadingProject.value = true;
+    project.value = await getProject(newId, oldId);
+    loadingProject.value = false;
+  },
   { immediate: true },
 );
 </script>

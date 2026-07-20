@@ -33,22 +33,24 @@ const elements = computed(
 
 watch(
   versionKey,
-  async (newVal) =>
-    (version.value = newVal
+  async (newVal) => {
+    loadingVersion.value = true;
+    version.value = newVal
       ? await (
-          await request(
-            `/questionnaire/${projectId.value}/version/${newVal}`,
-            "GET",
-            undefined,
-            loadingVersion,
-          )
+          await request(`/questionnaire/${projectId.value}/version/${newVal}`, "GET", undefined)
         )?.json()
-      : undefined),
+      : undefined;
+    loadingVersion.value = false;
+  },
   { immediate: true },
 );
 watch(
   projectId,
-  async (newVal) => (questionnaire.value = await getProject(newVal, undefined, loadingProject)),
+  async (newVal) => {
+    loadingProject.value = true;
+    questionnaire.value = await getProject(newVal);
+    loadingProject.value = false;
+  },
   { immediate: true },
 );
 </script>

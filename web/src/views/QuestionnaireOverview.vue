@@ -10,7 +10,11 @@ import { onMounted, ref, type Ref } from "vue";
 const questionnaires: Ref<Questionnaire[]> = ref([]);
 const loading = ref(false);
 
-const getQuestionnaires = async () => (questionnaires.value = (await getProjects(loading)) ?? []);
+const getQuestionnaires = async () => {
+  loading.value = true;
+  questionnaires.value = (await getProjects()) ?? [];
+  loading.value = false;
+};
 
 onMounted(getQuestionnaires);
 </script>

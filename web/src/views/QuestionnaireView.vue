@@ -202,6 +202,7 @@ watch(
 
 const editFeedbackIcon: Ref<IconValue | undefined> = ref();
 const saveEdits = async () => {
+  loadingEdits.value = true;
   const response = questionnaire.value
     ? await request(
         `/questionnaire/${questionnaire.value.id}`,
@@ -215,7 +216,6 @@ const saveEdits = async () => {
           valueSets: valueSetEdit.value.map((row) => row.set),
           participants: participantEdit.value.map((row) => row.participant),
         } as QuestionnaireOut),
-        loadingEdits,
       )
     : undefined;
   if (response?.ok) {
@@ -226,6 +226,7 @@ const saveEdits = async () => {
     editFeedbackIcon.value = mdiClose;
     setTimeout(() => (editFeedbackIcon.value = undefined), 5_000);
   }
+  loadingEdits.value = false;
 };
 /* editing rules */
 const notEmpty = ref([(v: string | unknown[]) => !!v.length || "darf nicht leer sein"]);
