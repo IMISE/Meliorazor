@@ -7,6 +7,7 @@ import { useRouter } from "vue-router";
 import { clean } from "@/utils/utils";
 import { mdiChevronDown, mdiChevronUp, mdiClose, mdiMenuOpen, mdiPencilPlus } from "@mdi/js";
 import { fieldTypesNotDisplayedWithoutChoices, supportedFieldTypes } from "@/types/redCap.ts";
+import StatusIcon from "./StatusIcon.vue";
 
 const model = defineModel<number[] | undefined>();
 
@@ -105,6 +106,18 @@ const openDataElement = () =>
       name: clean(data.variableName),
     },
   });
+const openAnnotation = (annotation: Annotation) =>
+  router.push({
+    name: "focus-annotation",
+    params: {
+      aid: annotation.id,
+      subject: clean(annotation.code.display),
+      eid: data.id,
+      name: clean(data.label),
+      pid: projectId,
+      title: clean(projectTitle),
+    },
+  });
 const annotate = () =>
   router.push({
     name: "create-annotation",
@@ -126,6 +139,7 @@ const displayMockInput = computed(
     (!fieldTypesNotDisplayedWithoutChoices.includes(data.fieldType ?? "") ||
       fieldChoices.value.length),
 );
+const wideTitle = computed(() => !displayMockInput.value && !data.unit);
 </script>
 
 <template>
@@ -168,7 +182,7 @@ const displayMockInput = computed(
         </v-tooltip>
       </div>
       <v-divider v-if="!annotatedCrf" vertical />
-      <div :style="'grid-column: 3 / span ' + (displayMockInput ? 1 : 2)">
+      <div :style="'grid-column: 3 / span ' + (wideTitle ? 2 : 1)">
         <span class="varlabel">{{ dataElement.label }}</span>
         <br />
         <var v-if="dataElement.variableName" class="varname">{{ dataElement.variableName }}</var>
@@ -176,7 +190,7 @@ const displayMockInput = computed(
       <div
         v-if="dataElement.annotations.length && annotatedCrf"
         class="badge-container"
-        :style="'grid-row: 2; grid-column: 3 / span' + (displayMockInput ? 1 : 2)"
+        :style="'grid-row: 2; grid-column: 3 / span' + (wideTitle ? 2 : 1)"
       >
         <annotation-badge
           v-for="annotation in dataElement.annotations"
@@ -192,78 +206,156 @@ const displayMockInput = computed(
         />
       </div>
 
-      <div v-if="displayMockInput">
-        <v-number-input
-          v-if="dataElement.fieldType === 'number'"
-          style="grid-column: 4 / span 1"
-          control-variant="stacked"
-          :label="dataElement.label"
-          :hint="dataElement.metadata.find((e) => e.key === 'Field Note')?.value"
-          readonly
-          :min="
-            Number(dataElement.metadata.find((pair) => pair.key === 'Text Validation Min')?.value)
-          "
-          :max="
-            Number(dataElement.metadata.find((pair) => pair.key === 'Text Validation Max')?.value)
-          "
-          :required="required"
-        />
-        <v-text-field
-          v-else-if="dataElement.fieldType === 'text'"
-          style="grid-column: 4 / span 1"
-          :label="dataElement.label"
-          :hint="dataElement.metadata.find((e) => e.key === 'Field Note')?.value"
-          readonly
-          :required="required"
-        />
-        <v-radio-group v-else-if="dataElement.fieldType === 'radio'" readonly :required="required">
-          <v-radio
-            v-for="(choice, i) in fieldChoices"
-            :key="choice"
-            :label="choice"
-            :class="
-              highlightUnannotated && data.choices![i]!.annotations.length === 0
-                ? 'bg-error'
-                : 'bg-mute'
-            "
+      <div v-if="!wideTitle" style="display: flex; flex-direction: column; grid-column: 4 / span 1">
+        <template v-if="displayMockInput">
+          <v-number-input
+            v-if="dataElement.fieldType === 'number'"
+            control-variant="stacked"
+            :label="dataElement.label"
+            :hint="dataElement.metadata.find((e) => e.key === 'Field Note')?.value"
             readonly
+            :min="
+              Number(dataElement.metadata.find((pair) => pair.key === 'Text Validation Min')?.value)
+            "
+            :max="
+              Number(dataElement.metadata.find((pair) => pair.key === 'Text Validation Max')?.value)
+            "
+            :required="required"
+          />
+          <v-text-field
+            v-else-if="dataElement.fieldType === 'text'"
+            :label="dataElement.label"
+            :hint="dataElement.metadata.find((e) => e.key === 'Field Note')?.value"
+            readonly
+            :required="required"
+          />
+          <v-radio-group
+            v-else-if="dataElement.fieldType === 'radio'"
+            readonly
+            :required="required"
           >
-            <template v-if="dataElement.choices![i]!.annotations?.length && annotatedCrf" #label>
-              {{ dataElement.choices![i]!.label }}
-              <div class="badge-container">
-                <annotation-badge
-                  v-for="annotation in dataElement.choices![i]!.annotations"
-                  v-model="model"
-                  :key="`${annotation.id}-${annotation.actions.length}`"
-                  :annotation="annotation"
-                  :data-element-id="dataElement.id!"
-                  :data-element-name="dataElement.variableName!"
-                  :project-id="projectId"
-                  :project-name="projectTitle"
-                  :allow-edit-selection="allowEditSelection"
-                  :dashed-border="false"
-                />
-              </div>
-            </template>
-          </v-radio>
-        </v-radio-group>
-        <v-slider
-          v-else-if="dataElement.fieldType === 'slider'"
-          :min="fieldChoices[0]"
-          :max="fieldChoices[fieldChoices.length - 1]"
-          step="1"
-          :ticks="fieldChoices"
-          show-ticks="always"
-          tick-size="4"
-          readonly
-          :required="required"
-        />
-        <v-file-input
-          v-else-if="dataElement.fieldType === 'file'"
-          :label="dataElement.label"
-          readonly
-          :required="required"
-        />
+            <v-radio
+              v-for="(choice, i) in fieldChoices"
+              :key="choice"
+              :label="choice"
+              :class="
+                highlightUnannotated && data.choices![i]!.annotations.length === 0
+                  ? 'bg-error'
+                  : 'bg-mute'
+              "
+              readonly
+            >
+              <template v-if="dataElement.choices![i]!.annotations?.length" #label>
+                {{ dataElement.choices![i]!.label }}
+                <div v-if="annotatedCrf" class="badge-container">
+                  <annotation-badge
+                    v-for="annotation in dataElement.choices![i]!.annotations"
+                    v-model="model"
+                    :key="`${annotation.id}-${annotation.actions.length}`"
+                    :annotation="annotation"
+                    :data-element-id="dataElement.id!"
+                    :data-element-name="dataElement.variableName!"
+                    :project-id="projectId"
+                    :project-name="projectTitle"
+                    :allow-edit-selection="allowEditSelection"
+                    :dashed-border="false"
+                  />
+                </div>
+                <v-menu v-else>
+                  <template #activator="{ props }">
+                    <v-chip v-bind="props" style="margin-left: 4px">
+                      {{ dataElement.choices![i]!.annotations.length }} Annotation<template
+                        v-if="dataElement.choices![i]!.annotations.length > 1"
+                        >en</template
+                      >
+                    </v-chip>
+                  </template>
+                  <v-list>
+                    <v-list-item
+                      v-for="annotation in dataElement.choices![i]!.annotations"
+                      :key="annotation.id"
+                      :title="`${annotation.predicate} ${annotation.code.display}`"
+                      :subtitle="annotation.code.system"
+                      link
+                      @click.prevent="() => openAnnotation(annotation)"
+                    >
+                      <template #prepend>
+                        <status-icon :status="annotation.status" :include-text="false" />
+                      </template>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+              </template>
+            </v-radio>
+          </v-radio-group>
+          <v-slider
+            v-else-if="dataElement.fieldType === 'slider'"
+            :min="fieldChoices[0]"
+            :max="fieldChoices[fieldChoices.length - 1]"
+            step="1"
+            :ticks="fieldChoices"
+            show-ticks="always"
+            tick-size="4"
+            readonly
+            :required="required"
+          />
+          <v-file-input
+            v-else-if="dataElement.fieldType === 'file'"
+            :label="dataElement.label"
+            readonly
+            :required="required"
+          />
+        </template>
+        <div
+          v-if="dataElement.unit"
+          :class="
+            highlightUnannotated && dataElement.unit.annotations.length === 0
+              ? 'bg-error'
+              : 'bg-mute'
+          "
+        >
+          Einheit <i>{{ dataElement.unit.label }}</i>
+          <template v-if="dataElement.unit.annotations?.length">
+            <div v-if="annotatedCrf" class="badge-container">
+              <annotation-badge
+                v-for="annotation in dataElement.unit.annotations"
+                v-model="model"
+                :key="`${annotation.id}-${annotation.actions.length}`"
+                :annotation="annotation"
+                :data-element-id="dataElement.id!"
+                :data-element-name="dataElement.variableName!"
+                :project-id="projectId"
+                :project-name="projectTitle"
+                :allow-edit-selection="allowEditSelection"
+                :dashed-border="false"
+              />
+            </div>
+            <v-menu v-else>
+              <template #activator="{ props }">
+                <v-chip v-bind="props" style="margin-left: 4px">
+                  {{ dataElement.unit.annotations.length }} Annotation<template
+                    v-if="dataElement.unit.annotations.length > 1"
+                    >en</template
+                  >
+                </v-chip>
+              </template>
+              <v-list>
+                <v-list-item
+                  v-for="annotation in dataElement.unit.annotations"
+                  :key="annotation.id"
+                  :title="`${annotation.predicate} ${annotation.code.display}`"
+                  :subtitle="annotation.code.system"
+                  link
+                  @click.prevent="() => openAnnotation(annotation)"
+                >
+                  <template #prepend>
+                    <status-icon :status="annotation.status" :include-text="false" />
+                  </template>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </template>
+        </div>
       </div>
 
       <template v-if="showActions">

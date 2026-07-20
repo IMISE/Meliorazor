@@ -4,7 +4,7 @@ import CodeDisplay from "@/components/CodeDisplay.vue";
 import CodeSearch from "@/components/CodeSearch.vue";
 import DataElementSummary from "@/components/DataElementSummary.vue";
 import type { Annotatable, CodeInfo, InformedCodeMapping, Variable } from "@/types/types";
-import { mdiArrowLeft, mdiArrowRight, mdiCheckDecagramOutline, mdiClose } from "@mdi/js";
+import { mdiArrowLeft, mdiArrowRight, mdiCheckDecagramOutline } from "@mdi/js";
 import { computed, inject, ref, watch, type Ref } from "vue";
 import { getCode } from "@/utils/fhirApi.ts";
 import { codeEquals } from "@/utils/fhirUtils";
