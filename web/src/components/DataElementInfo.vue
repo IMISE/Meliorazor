@@ -6,7 +6,10 @@ import AnnotationBadge from "./AnnotationBadge.vue";
 import { useRouter } from "vue-router";
 import { clean } from "@/utils/utils";
 import { mdiChevronDown, mdiChevronUp, mdiClose, mdiMenuOpen, mdiPencilPlus } from "@mdi/js";
-import { fieldTypesNotDisplayedWithoutChoices, supportedFieldTypes } from "@/types/redCap.ts";
+import {
+  supportedFieldTypes,
+  supportedFieldTypesNotDisplayedWithoutChoices,
+} from "@/types/redCap.ts";
 import StatusIcon from "./StatusIcon.vue";
 
 const model = defineModel<number[] | undefined>();
@@ -136,7 +139,7 @@ const required = computed(
 const displayMockInput = computed(
   () =>
     supportedFieldTypes.includes(data.fieldType ?? "") &&
-    (!fieldTypesNotDisplayedWithoutChoices.includes(data.fieldType ?? "") ||
+    (!supportedFieldTypesNotDisplayedWithoutChoices.includes(data.fieldType ?? "") ||
       fieldChoices.value.length),
 );
 const wideTitle = computed(() => !displayMockInput.value && !data.unit);
