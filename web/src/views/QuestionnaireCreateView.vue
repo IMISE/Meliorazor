@@ -12,7 +12,7 @@ import type { IdTokenClaims } from "oidc-client-ts";
 import ValueSetSelector from "@/components/ValueSetSelector.vue";
 import { clean } from "@/utils/utils";
 import type { FhirValueSetDefinition } from "@/types/fhir";
-import { fieldTypesWithChoicesImport } from "@/types/redCap";
+import { fieldTypesWithChoicesImport, supportedFieldTypesWithChoices } from "@/types/redCap";
 import BaseComponent from "@/components/BaseComponent.vue";
 
 const step = shallowRef([1]);
@@ -184,7 +184,7 @@ const parsedDataREDCap = () =>
             (key) =>
               !["Variable / Field Name", "Field Label", "Field Type"].includes(key) &&
               (key !== "Choices, Calculations, OR Slider Labels" ||
-                !fieldTypesWithChoicesImport.includes(redcapFieldType(datum))),
+                !supportedFieldTypesWithChoices.includes(redcapFieldType(datum))),
           )
           .filter((key) => datum[key])
           .map((key) => ({ key, value: datum[key] })),
@@ -252,8 +252,8 @@ const headers = [
     key: "label",
   },
   {
-    title: "Feld-/Datentyp",
-    key: "type",
+    title: "Datentyp des Felds",
+    key: "fieldType",
   },
   {
     title: "Optionen",
