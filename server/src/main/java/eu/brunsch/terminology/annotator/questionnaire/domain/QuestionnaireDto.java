@@ -1,10 +1,12 @@
 package eu.brunsch.terminology.annotator.questionnaire.domain;
 
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.DataElementDto;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
 public class QuestionnaireDto {
     /**

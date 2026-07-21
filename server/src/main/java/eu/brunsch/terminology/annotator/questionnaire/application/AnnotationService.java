@@ -160,6 +160,17 @@ public class AnnotationService {
         return questionnaireRepository.findAll().stream()
             .filter(q -> q.seenBy(username()))
             .map(questionnaireMapper::toDto)
+            .map(q -> q.getDataElements() == null
+                ? new QuestionnaireDto(
+                    q.getId(),
+                    q.getTitle(),
+                    q.getDescription(),
+                    q.getOptions(),
+                    new DataElementDto[] {},
+                    q.getParticipants(),
+                    q.getValueSets())
+                : q
+            )
             .toArray(QuestionnaireDto[]::new);
     }
 
@@ -179,7 +190,12 @@ public class AnnotationService {
         final DataElementDto[] dataElemetDtos = dataElements.stream()
             .map(this::getDataElementWithComments)
             .toArray(DataElementDto[]::new);
-        questionnaireDto.setDataElements(dataElemetDtos);
+            questionnaireDto.setDataElements(dataElemetDtos);
+
+        // never return dataElements: null
+        if (questionnaireDto.getDataElements() == null) {
+            questionnaireDto.setDataElements(new DataElementDto[] {});
+        }
         return questionnaireDto;
     }
 
