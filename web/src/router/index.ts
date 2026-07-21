@@ -40,22 +40,22 @@ const router = createRouter({
       component: () => import("../views/QuestionnaireCreateView.vue"),
     },
     {
-      path: "/projects/:pid-:title",
+      path: "/projects/:pid-:title?",
       name: "single-project",
       component: () => import("../views/QuestionnaireView.vue"),
     },
     {
-      path: "/projects/:pid-:title/version",
+      path: "/projects/:pid-:title?/version",
       name: "project-version-index",
       component: () => import("../views/QuestionnaireView.vue"),
     },
     {
-      path: "/projects/:pid-:title/admin",
+      path: "/projects/:pid-:title?/admin",
       name: "project-admin",
       component: () => import("../views/QuestionnaireView.vue"),
     },
     {
-      path: "/projects/:pid-:title/elements/:eid-:name",
+      path: "/projects/:pid-:title?/elements/:eid-:name?",
       name: "data-element",
       component: () => import("../views/DataElementView.vue"),
       children: [
@@ -80,17 +80,17 @@ const router = createRouter({
       ],
     },
     {
-      path: "/projects/:pid-:title/version/create",
+      path: "/projects/:pid-:title?/version/create",
       name: "create-version",
       component: () => import("../views/VersionCreateView.vue"),
     },
     {
-      path: "/projects/:pid-:title/version/:key",
+      path: "/projects/:pid-:title?/version/:key",
       name: "single-version",
       component: () => import("../views/VersionView.vue"),
     },
     {
-      path: "/projects/:pid-:title/elements/:eid-:name/annotations/:aid-:subject",
+      path: "/projects/:pid-:title?/elements/:eid-:name?/annotations/:aid-:subjec?t",
       name: "focus-annotation",
       component: () => import("../views/AnnotationEditView.vue"),
     },
