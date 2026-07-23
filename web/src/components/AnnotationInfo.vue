@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import CodeDisplay from "./CodeDisplay.vue";
-import type { Annotatable, Annotation, CodeInfo } from "@/types/types";
+import type { Annotatable, Annotation, CodeInfo, FhirValueSetDefinition } from "@/types/types";
 import { findCode } from "@/utils/fhirApi";
 import { watch, ref, type Ref } from "vue";
 import SingleAnnotationAction from "./SingleAnnotationAction.vue";
-import type { FhirValueSetDefinition } from "@/types/fhir.js";
 import StatusIcon from "./StatusIcon.vue";
 import CodeAnnotator from "./CodeAnnotator.vue";
 

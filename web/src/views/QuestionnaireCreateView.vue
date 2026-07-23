@@ -11,7 +11,7 @@ import getEnv from "@/utils/env";
 import type { IdTokenClaims } from "oidc-client-ts";
 import ValueSetSelector from "@/components/ValueSetSelector.vue";
 import { clean } from "@/utils/utils";
-import type { FhirValueSetDefinition } from "@/types/fhir";
+import type { FhirValueSetDefinition } from "@/types/types";
 import { fieldTypesWithChoicesImport, supportedFieldTypesWithChoices } from "@/types/redCap";
 import BaseComponent from "@/components/BaseComponent.vue";
 
@@ -294,9 +294,11 @@ const create = async () => {
         .map((v) => v.set)
         .filter((v) => !!v)
         .map((v) => ({
+          /* do not copy unnecessary properties */
           display: v.display,
           server: v.server,
-          valueSet: v.valueSet,
+          url: v.url,
+          version: v.version,
         })) as FhirValueSetDefinition[],
     }),
     headers: {
@@ -387,7 +389,7 @@ const fracSliderRules = ref([
           </v-stepper-vertical-item>
           <v-stepper-vertical-item
             title="FHIR value sets"
-            subtitle="In diesen Value Sets wird nach Termen gesucht."
+            subtitle="An diesen Orten wird nach Termen gesucht."
             value="3"
             editable
           >

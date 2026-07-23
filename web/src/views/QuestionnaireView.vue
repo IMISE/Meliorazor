@@ -3,8 +3,12 @@ import BaseComponent from "@/components/BaseComponent.vue";
 import DataElementList from "@/components/DataElementList.vue";
 import ValueSetSelector from "@/components/ValueSetSelector.vue";
 import { Role, roles, Status } from "@/types/enums";
-import type { FhirValueSetDefinition } from "@/types/fhir";
-import type { Participant, Questionnaire, QuestionnaireOut } from "@/types/types";
+import type {
+  FhirValueSetDefinition,
+  Participant,
+  Questionnaire,
+  QuestionnaireOut,
+} from "@/types/types";
 import request, { getProject, getVersionKeys } from "@/utils/api";
 import { mdiArrowRight, mdiCheck, mdiClose, mdiMinus, mdiPlus } from "@mdi/js";
 import type { IdTokenClaims } from "oidc-client-ts";
@@ -364,13 +368,16 @@ const participantUser = ref([
                   Hinzufügen
                 </v-btn>
               </div>
-              <h3>Value Sets</h3>
+              <h3>Codequellen</h3>
               <div v-if="!isAdmin">
                 <template v-for="(group, key) in valueSetsByServer" :key="key">
                   <v-list-subheader>Server {{ key }}</v-list-subheader>
-                  <v-list-item v-for="valueSet in group" :key="valueSet.valueSet">
+                  <v-list-item
+                    v-for="valueSet in group"
+                    :key="`${valueSet.url}|${valueSet.version}`"
+                  >
                     <v-list-item-title>{{ valueSet.display }}</v-list-item-title>
-                    <v-list-item-subtitle>{{ valueSet.valueSet }}</v-list-item-subtitle>
+                    <v-list-item-subtitle>{{ valueSet.url }}</v-list-item-subtitle>
                   </v-list-item>
                 </template>
               </div>

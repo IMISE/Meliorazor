@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FhirValueSetDefinition } from "@/types/fhir";
+import type { FhirValueSetDefinition } from "@/types/types";
 import type { CodeMapping, InformedCodeMapping } from "@/types/types";
 import { expandValueSet } from "@/utils/fhirApi";
 import { codeEquals } from "@/utils/fhirUtils";
@@ -62,9 +62,9 @@ const go = async (text: string) => {
   const fetches = valueSets.map(async (set) => {
     const response = await expandValueSet(
       text,
-      set.server,
-      set.valueSet,
+      set,
       selectedLang.value ?? "en-US",
+      20_000 /* TODO: pagination */,
     );
     return response;
   });
@@ -73,6 +73,7 @@ const go = async (text: string) => {
   searchResults.value = answers
     .filter((answer) => answer.status === "fulfilled")
     .map((answer) => answer.value)
+    .filter((val) => !!val)
     .flat(1);
   if (text === search.value) {
     searchedOnce.value = true;

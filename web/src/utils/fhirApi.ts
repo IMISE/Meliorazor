@@ -1,26 +1,37 @@
 import type {
+  CodeSystemIndex,
   FhirKeyValue,
-  FhirValueSetDefinition,
   Parameters,
   Properties,
   ValidateCode,
   ValueSetIndex,
   VersionlessFhirTerminologyCodeWithDesignation,
 } from "@/types/fhir";
-import type { CodeInfo, CodeMapping, InformedCodeMapping } from "@/types/types";
+import type {
+  CodeInfo,
+  CodeMapping,
+  FhirValueSetDefinition,
+  InformedCodeMapping,
+} from "@/types/types";
 import { getLongestStartingWith, isUrl } from "./utils";
 
 async function fetchFhir(
   url: string,
   expectedResourceType: string,
+  method: "GET" | "POST" = "GET",
+  body: string | undefined = undefined,
   acceptLanguage: string = "en-US",
 ) {
-  const headers = {
-    "Content-Type": "application/fhir+json",
-    "Accept-Language": acceptLanguage,
+  const options = {
+    method,
+    body,
+    headers: {
+      "Content-Type": "application/fhir+json",
+      "Accept-Language": acceptLanguage,
+    },
   };
 
-  const response = await fetch(url, { headers });
+  const response = await fetch(url, options);
   if (!response.ok) return undefined;
   const json = await response.json();
   return json?.resourceType === expectedResourceType ? json : undefined;
@@ -32,12 +43,21 @@ function getPropertyCodes(properties: Properties[]) {
     .filter((e) => e !== undefined);
 }
 
+/**
+ * Uses FHIR's $validate-code operation on ValueSet (if implicit: CodeSystem) to check if a certain code is contained in the value set.
+ * @param code code itself and its system is checked.
+ * @param valueSet
+ * @returns
+ */
 export async function existsInValueSet(
   code: CodeMapping,
   valueSet: FhirValueSetDefinition,
 ): Promise<boolean | undefined> {
   const response: ValidateCode = await fetchFhir(
-    `${valueSet.server}/ValueSet/$validate-code?code=${code.code}&system=${code.system}&url=${valueSet.valueSet}`,
+    `${valueSet.server}/${valueSet.implicit ? "CodeSystem" : "ValueSet"}/$validate-code?code=${code.code}&url=${valueSet.url}` +
+      (valueSet.implicit
+        ? `&version=${code.systemVersion}`
+        : `&system=${code.system}&systemVersion=${code.systemVersion}&valueSetVersion=${valueSet.version}`),
     "Parameters",
   );
   if (!response?.parameter?.length) return undefined;
@@ -59,48 +79,97 @@ export async function allValueSets(
           (entry.resource.title || entry.resource.name) &&
           isUrl(entry.resource.url),
       )
-      .map((entry) => ({
-        display: entry.resource!.title ?? entry.resource!.name!,
-        server,
-        valueSet: entry.resource!.url!,
-      })) ?? []
+      .map(
+        (entry) =>
+          ({
+            implicit: false,
+            display: entry.resource!.title ?? entry.resource!.name!,
+            server,
+            url: entry.resource!.url!,
+            version: entry.resource!.version ?? "",
+          }) as FhirValueSetDefinition,
+      ) ?? []
+  );
+}
+
+/**
+ * Get all code systems of a server.
+ * @param server Valid and functional FHIR server to query all Code Systems of.
+ * @param keepInactive Whether to keep or scrap inactive Code Systems in the response.
+ * @returns An array of all code systems saved as implicit value sets grouped by their name.
+ */
+export async function allCodeSystemsAsImplicitValueSets(
+  server: string,
+  keepInactive: boolean = false,
+): Promise<{ [index: string]: FhirValueSetDefinition[] }> {
+  const response = (await fetchFhir(`${server}/CodeSystem`, "Bundle")) as
+    | CodeSystemIndex
+    | undefined;
+  return (
+    response?.entry
+      .filter(
+        (entry) =>
+          entry?.resource &&
+          // if someone wants an inactive or deleted valueset, they can add it themselves
+          (keepInactive || ["preliminary", "active", undefined].includes(entry.resource.status)) &&
+          (entry.resource.title || entry.resource.name) &&
+          isUrl(entry.resource.url),
+      )
+      .reduce(
+        (acc, val) => {
+          // name holds something such as SNOMED_CT, title is title for version
+          const index = val.resource!.name ?? val.resource!.title ?? "";
+          if (acc[index] === undefined) {
+            acc[index] = [];
+          }
+          acc[index]!.push({
+            implicit: true,
+            display: val.resource!.title ?? val.resource!.name ?? val.resource.url!,
+            server,
+            url: val.resource!.url!,
+            version: val.resource!.version ?? "",
+          });
+          return acc;
+        },
+        {} as { [index: string]: FhirValueSetDefinition[] },
+      ) ?? {}
   );
 }
 
 export async function expandValueSet(
-  filter: string,
-  server: string,
-  valueSet: string,
+  search: string,
+  valueSet: FhirValueSetDefinition,
   acceptLanguage: string,
   limit: number | undefined = 1000,
-): Promise<InformedCodeMapping[]> {
-  const response = await fetchFhir(
-    `${server}/ValueSet/$expand?url=${valueSet}&filter=${filter}&includeDesignations=true` +
-      (limit !== undefined ? `&limit=${limit}` : ""),
-    "ValueSet",
-    acceptLanguage,
-  );
+) {
+  const versionMap: { [index: string]: { version: string; display: string } } = {};
+  const response = await expandValueSetRaw(search, valueSet, true, acceptLanguage, limit);
   if (response?.expansion?.contains?.length) {
-    // build CodeSystem => Version map
-    const versionMap: { [index: string]: { version: string; name: string } } = {};
-    response.expansion.parameter
-      ?.filter(
-        (entry: FhirKeyValue) =>
-          entry.valueUri?.includes("|") && ["used-codesystem", "version"].includes(entry.name),
-      )
-      .map((entry: FhirKeyValue) => entry.valueUri?.split("|"))
-      .forEach((entry: string[]) => {
-        versionMap[entry[0]!] = { version: entry[1]!, name: "" };
-      });
+    if (valueSet.implicit) {
+      versionMap[valueSet.url] = { version: valueSet.version, display: valueSet.display };
+    } else {
+      response.expansion.parameter
+        ?.filter(
+          (entry: FhirKeyValue) =>
+            entry.valueUri?.includes("|") && ["used-codesystem", "version"].includes(entry.name),
+        )
+        .map((entry: FhirKeyValue) => entry.valueUri?.split("|"))
+        .forEach((entry: string[]) => {
+          versionMap[entry[0]!] = { version: entry[1]!, display: "" };
+        });
 
-    // fetch names of codesystem versions
-    await Promise.allSettled(
-      Object.keys(versionMap).map(async (systemName) => {
-        const name = await getCodeSystemName(systemName, versionMap[systemName]!.version, server);
-        versionMap[systemName]!.name = name ?? "";
-      }),
-    );
-
+      // fetch names of codesystem versions
+      await Promise.allSettled(
+        Object.keys(versionMap).map(async (systemName) => {
+          const name = await getCodeSystemName(
+            systemName,
+            versionMap[systemName]!.version,
+            valueSet.server,
+          );
+          versionMap[systemName]!.display = name ?? "";
+        }),
+      );
+    }
     return response.expansion.contains.map((e: VersionlessFhirTerminologyCodeWithDesignation) => ({
       code: e.code,
       display: getLongestStartingWith(e.display, [
@@ -110,10 +179,67 @@ export async function expandValueSet(
       system: e.system,
       systemVersion: versionMap[e.system]!.version,
       inactive: e.inactive,
-      valueSet: { display: "", server, valueSet } as FhirValueSetDefinition,
-      codeSystemName: versionMap[e.system]!.name,
+      valueSet: {
+        implicit: valueSet.implicit,
+        display: valueSet.display || response.name || "",
+        server: valueSet.server,
+        url: valueSet.url,
+        version: valueSet.version || "", // TODO!!!
+      } as FhirValueSetDefinition,
+      codeSystemName: versionMap[e.system]!.display,
     })) as InformedCodeMapping[];
-  } else return [];
+  }
+}
+
+/**
+ * Searches a ValueSet or CodeSystem for a string.
+ * See FHIR valueset-operation-expand.
+ *
+ * CodeSystems are searched by expanding an implicit ValueSet containing the entire CodeSystem.
+ * $find-matches was considered but wasn't ready yet at this time (FHIR r4, r5 and draft of r6).
+ *
+ * For explicit ValueSets, this could have been a GET query; this was decided against to just have one method dealing with all this.
+ *
+ * @param search search value to expand the value set with
+ * @param valueSet value set to query
+ * @param includeDesignations include different names of the codes in the query result?
+ * @param acceptLanguage try to force language to this string; TODO: format unclear
+ * @param limit number of codes to return; must be >= 0. If = 0, just the count is returned.
+ * @returns the raw response without any parsing.
+ */
+export async function expandValueSetRaw(
+  search: string,
+  valueSet: FhirValueSetDefinition,
+  includeDesignations: boolean,
+  acceptLanguage: string | undefined,
+  limit: number | undefined = 1000,
+) {
+  const response = await fetchFhir(
+    `${valueSet.server}/ValueSet/$expand`,
+    "ValueSet",
+    "POST",
+    postValueSet(valueSet.implicit, valueSet.url, valueSet.version, [
+      {
+        name: "filter",
+        valueString: search,
+      },
+      {
+        name: "includeDesignations",
+        valueBoolean: true,
+      },
+      ...(limit !== undefined && limit >= 0
+        ? [
+            {
+              name: "count",
+              valueInteger: limit,
+            },
+          ]
+        : []),
+    ] as FhirKeyValue[]),
+    acceptLanguage,
+  );
+
+  return response;
 }
 
 export async function getCode(
@@ -122,43 +248,6 @@ export async function getCode(
   version: string,
   server: string,
 ): Promise<CodeInfo | undefined> {
-const params = {
-    "resourceType": "Parameters",
-    "id": "undefined",
-    "parameter": [
-        {
-            "name": "system",
-            "valueUri": system,
-        },
-        {
-            "name": "version",
-            "valueString": version,
-        },
-        {
-            "name": "exact",
-            "valueBoolean": true
-        },
-        {
-            "name": "property",
-            "part": [
-                {
-                    "name": "designation",
-                    "valueString": "Male"
-                },
-            ]
-        }
-    ]
-}
-  try {
-  const headers = {
-    "Content-Type": "application/fhirjson",
-  };
-
-  const response2 = await fetch(`${server}/CodeSystem/$find-matches`, { headers, method: "POST", body: JSON.stringify(params) });
-    console.log((await response2.json())) }
-  catch(e) {
-    console.error(e)
-  }
   const response = (await fetchFhir(
     `${server}/CodeSystem/$lookup?code=${code}&system=${system}`,
     "Parameters",
@@ -220,4 +309,57 @@ function toCodeInfo(code: string, system: string, version: string, response: Par
   info.parents = getPropertyCodes(properties.filter((e) => e.code === "parent"));
   info.children = getPropertyCodes(properties.filter((e) => e.code === "child"));
   return info;
+}
+
+/**
+ * Create a string that can be POSTed as a value set.
+ * @param implicit whether the url encodes a codesystem or a valueset
+ * @param url url of codesystem or valueset
+ * @param version version of resource referenced by url; is omitted if empty
+ * @param additionalParameters additional parameters for the object stringified, e.g. `filter`, `includeDesignations` or `count` (see the FHIR docs for the operation you want to do for reference)
+ * @returns stringified object that can be POSTed to ValueSet/$expand
+ */
+function postValueSet(
+  implicit: boolean,
+  url: string,
+  version: string,
+  additionalParameters: FhirKeyValue[] = [],
+) {
+  return JSON.stringify({
+    resourceType: "Parameters",
+    parameter: [
+      ...(implicit
+        ? [
+            {
+              name: "valueSet",
+              resource: {
+                resourceType: "ValueSet",
+                compose: {
+                  include: [
+                    {
+                      url: url,
+                      version: version || undefined,
+                    },
+                  ],
+                },
+              },
+            },
+          ]
+        : [
+            {
+              name: "url",
+              valueUri: url,
+            },
+            ...(version
+              ? [
+                  {
+                    name: "valueSetVersion",
+                    valueUri: version,
+                  },
+                ]
+              : []),
+          ]),
+      ...additionalParameters,
+    ],
+  });
 }

@@ -1,6 +1,11 @@
 <script setup lang="ts">
-import type { FhirKeyValue, FhirValueSetDefinition } from "@/types/fhir";
-import { allValueSets } from "@/utils/fhirApi";
+import type { FhirKeyValue } from "@/types/fhir";
+import type { FhirValueSetDefinition } from "@/types/types";
+import {
+  allCodeSystemsAsImplicitValueSets,
+  allValueSets,
+  expandValueSetRaw,
+} from "@/utils/fhirApi";
 import { isFhirServer, isUrl } from "@/utils/utils";
 import {
   mdiAlertCircleOutline,
@@ -12,6 +17,7 @@ import {
 } from "@mdi/js";
 import { computed, watch } from "vue";
 import { ref, type Ref } from "vue";
+import type { InternalItem } from "vuetify";
 
 const model = defineModel<FhirValueSetDefinition | undefined>();
 defineProps<{
@@ -26,9 +32,8 @@ defineEmits<{
 type TestResults = { ok: boolean; title: string; status: string; codes: number };
 
 const server = ref(model.value?.server ?? "");
-const selectedSet: Ref<FhirValueSetDefinition | string | undefined> = ref(
-  model.value /* ?? undefined (implicit) */,
-);
+const implicit = ref(model.value?.implicit ?? true);
+const selectedSet: Ref<FhirValueSetDefinition | string | undefined> = ref(model.value);
 const testResult: Ref<TestResults | undefined> = ref();
 const testTooltip = computed(() =>
   testResult.value
@@ -46,9 +51,11 @@ watch(selectedSet, (val) => {
     model.value = undefined;
   } else if (typeof val === "string") {
     model.value = {
+      implicit: false,
       server: server.value,
       display: val,
-      valueSet: val,
+      url: val,
+      version: "",
     };
   } else {
     model.value = val;
@@ -57,6 +64,10 @@ watch(selectedSet, (val) => {
 
 /** value sets on `server` */
 const valueSets: Ref<FhirValueSetDefinition[]> = ref([]);
+/** code systems on `server`, saved as implicit value sets */
+const codeSystems: Ref<
+  (FhirValueSetDefinition | (FhirValueSetDefinition & { type: "subheader" }))[]
+> = ref([]);
 const loading = ref(false);
 // if we were passed a server via a model, count that as selected
 // (we do that further below, because we need to load the valuesets still)
@@ -72,10 +83,19 @@ const serverRules = ref([
 const testConnectionLimit = ref(100);
 const testConnection = async () => {
   loading.value = true;
+  if (!model.value) return;
   try {
-    const response = await fetch(
-      `${server.value}/ValueSet/$expand?url=${model.value?.valueSet}&count=${testConnectionLimit.value}`,
+    // limit of 0 should return just the count
+    // for some servers, this is not actually done though
+    // so we have testConnectionLimit
+    const response = await expandValueSetRaw(
+      server.value,
+      model.value,
+      false,
+      undefined,
+      testConnectionLimit.value,
     );
+
     const json = await response.json();
     testResult.value = {
       ok: response.ok && json.resourceType === "ValueSet",
@@ -103,6 +123,20 @@ const getValueSets = async () => {
   loadingValueSets.value = true;
   try {
     valueSets.value = await allValueSets(server.value);
+    const groupedCodeSystems = await allCodeSystemsAsImplicitValueSets(server.value);
+    codeSystems.value = Object.keys(groupedCodeSystems).flatMap((key) => [
+      {
+        // everything except type and display is unimportant
+        type: "subheader",
+        server: "subheader",
+        display: key,
+        url: groupedCodeSystems[key]![0]?.url ?? "",
+        version: "",
+        implicit: true,
+      },
+      ...groupedCodeSystems[key]!,
+    ]);
+    // TODO: chips that show version for combobox
   } catch (e) {
     console.error(e);
   } finally {
@@ -135,13 +169,31 @@ watch(loadingSelection, (val) => {
   if (val) return;
 });
 
-const valueSetProps = (item: FhirValueSetDefinition | string) =>
+const valueSetProps = (
+  item: FhirValueSetDefinition | (FhirValueSetDefinition & { type: "subheader" }) | string,
+) =>
   typeof item === "string"
     ? item
-    : {
-        title: item.display,
-        subtitle: item.valueSet,
-      };
+    : item.server === "subheader"
+      ? { type: "subheader", title: `${item.display} (${item.url})` }
+      : {
+          type: "",
+          title: item.display,
+          subtitle: item.implicit ? item.version : item.url,
+        };
+
+/** Filter for ValueSet name, url and version. */
+const customFilter = (
+  itemTitle: string,
+  queryText: string,
+  item: InternalItem<FhirValueSetDefinition> | undefined,
+) => {
+  return (
+    itemTitle.indexOf(queryText) > -1 ||
+    (item?.raw.url.indexOf(queryText) ?? -1) > -1 ||
+    (item?.raw.version.indexOf(queryText) ?? -1) > -1
+  );
+};
 </script>
 
 <template>
@@ -161,13 +213,19 @@ const valueSetProps = (item: FhirValueSetDefinition | string) =>
       />
     </v-col>
     <v-col v-if="serverSelected" :cols="6">
-      <v-combobox
+      <v-autocomplete
         v-model="selectedSet"
-        auto-select-first="exact"
-        :items="valueSets"
+        :items="implicit ? codeSystems : valueSets"
         :item-props="valueSetProps"
-        label="Value Set"
+        :custom-filter="customFilter"
+        label="Codequelle"
       >
+        <template #menu-footer>
+          <v-btn-toggle v-model="implicit" mandatory>
+            <v-btn :value="true">CodeSystem</v-btn>
+            <v-btn :value="false">ValueSet</v-btn>
+          </v-btn-toggle>
+        </template>
         <template #append-inner>
           <v-tooltip v-if="model" :text="testTooltip">
             <template #activator="{ props }">
@@ -185,7 +243,7 @@ const valueSetProps = (item: FhirValueSetDefinition | string) =>
             </template>
           </v-tooltip>
         </template>
-      </v-combobox>
+      </v-autocomplete>
     </v-col>
     <v-col v-if="displayControls" :cols="1">
       <v-icon-btn :icon="mdiMinus" @click="$emit('remove')"></v-icon-btn>

@@ -1,5 +1,5 @@
 import type { CommentType, Role, Status } from "./enums";
-import type { FhirTerminologyCode, FhirValueSetDefinition } from "./fhir";
+import type { FhirTerminologyCode } from "./fhir";
 
 export interface Questionnaire {
   id: number;
@@ -19,6 +19,14 @@ export type QuestionnaireOut = Questionnaire & {
   options: undefined | null;
   participants: undefined | null;
   valueSets: undefined | null;
+};
+
+export type FhirValueSetDefinition = {
+  implicit: boolean;
+  display: string;
+  server: string;
+  url: string;
+  version: string;
 };
 
 export interface QuestionnaireOptions {
