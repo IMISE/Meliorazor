@@ -332,6 +332,7 @@ public class AnnotationService {
             unitDto = annotatableMapper.toDto(unit);
             unitDto.setAnnotations(
                 annotationRepository.findByTarget(unit).stream()
+                    .filter(a -> a.seenBy(username()))
                     .map(annotationMapper::toDto)
                     .toArray(AnnotationDto[]::new));
         }
