@@ -89,7 +89,7 @@ const testConnection = async () => {
     // for some servers, this is not actually done though
     // so we have testConnectionLimit
     const response = await expandValueSetRaw(
-      server.value,
+      undefined,
       model.value,
       false,
       undefined,
@@ -170,17 +170,15 @@ watch(loadingSelection, (val) => {
 });
 
 const valueSetProps = (
-  item: FhirValueSetDefinition | (FhirValueSetDefinition & { type: "subheader" }) | string,
+  item: FhirValueSetDefinition | (FhirValueSetDefinition & { type: "subheader" }),
 ) =>
-  typeof item === "string"
-    ? item
-    : item.server === "subheader"
-      ? { type: "subheader", title: `${item.display} (${item.url})` }
-      : {
-          type: "",
-          title: item.display,
-          subtitle: item.implicit ? item.version : item.url,
-        };
+  item.server === "subheader"
+    ? { type: "subheader", title: `${item.display} (${item.url})` }
+    : {
+        type: "",
+        title: item.display,
+        subtitle: item.implicit ? item.version : item.url,
+      };
 
 /** Filter for ValueSet name, url and version. */
 const customFilter = (

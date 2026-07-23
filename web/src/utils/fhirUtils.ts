@@ -46,7 +46,7 @@ export function postValueSet(
                 compose: {
                   include: [
                     {
-                      url: url,
+                      system: url,
                       version: version || undefined,
                     },
                   ],

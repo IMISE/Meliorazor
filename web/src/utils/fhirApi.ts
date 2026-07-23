@@ -14,6 +14,7 @@ import type {
   InformedCodeMapping,
 } from "@/types/types";
 import { getLongestStartingWith, isUrl } from "./utils";
+import { postValueSet } from "./fhirUtils";
 
 async function fetchFhir(
   url: string,
@@ -21,6 +22,16 @@ async function fetchFhir(
   method: "GET" | "POST" = "GET",
   body: string | undefined = undefined,
   acceptLanguage: string = "en-US",
+) {
+  const response = await fetchFhirRaw(url, method, body, acceptLanguage);
+  return await checkFhirResponse(response, expectedResourceType);
+}
+
+async function fetchFhirRaw(
+  url: string,
+  method: "GET" | "POST" = "GET",
+  body: string | undefined = undefined,
+  acceptLanguage: string | undefined = "en-US",
 ) {
   const options = {
     method,
@@ -31,7 +42,10 @@ async function fetchFhir(
     },
   };
 
-  const response = await fetch(url, options);
+  return await fetch(url, options);
+}
+
+async function checkFhirResponse(response: Response, expectedResourceType: string) {
   if (!response.ok) return undefined;
   const json = await response.json();
   return json?.resourceType === expectedResourceType ? json : undefined;
@@ -143,7 +157,9 @@ export async function expandValueSet(
   limit: number | undefined = 1000,
 ) {
   const versionMap: { [index: string]: { version: string; display: string } } = {};
-  const response = await expandValueSetRaw(search, valueSet, true, acceptLanguage, limit);
+  const _response = await expandValueSetRaw(search, valueSet, true, acceptLanguage, limit);
+  const response = await checkFhirResponse(_response, "ValueSet");
+
   if (response?.expansion?.contains?.length) {
     if (valueSet.implicit) {
       versionMap[valueSet.url] = { version: valueSet.version, display: valueSet.display };
@@ -208,24 +224,27 @@ export async function expandValueSet(
  * @returns the raw response without any parsing.
  */
 export async function expandValueSetRaw(
-  search: string,
+  search: string | undefined,
   valueSet: FhirValueSetDefinition,
   includeDesignations: boolean,
   acceptLanguage: string | undefined,
   limit: number | undefined = 1000,
 ) {
-  const response = await fetchFhir(
+  return await fetchFhirRaw(
     `${valueSet.server}/ValueSet/$expand`,
-    "ValueSet",
     "POST",
     postValueSet(valueSet.implicit, valueSet.url, valueSet.version, [
-      {
-        name: "filter",
-        valueString: search,
-      },
+      ...(search?.length
+        ? [
+            {
+              name: "filter",
+              valueString: search,
+            },
+          ]
+        : []),
       {
         name: "includeDesignations",
-        valueBoolean: true,
+        valueBoolean: includeDesignations,
       },
       ...(limit !== undefined && limit >= 0
         ? [
@@ -238,8 +257,6 @@ export async function expandValueSetRaw(
     ] as FhirKeyValue[]),
     acceptLanguage,
   );
-
-  return response;
 }
 
 export async function getCode(
@@ -309,57 +326,4 @@ function toCodeInfo(code: string, system: string, version: string, response: Par
   info.parents = getPropertyCodes(properties.filter((e) => e.code === "parent"));
   info.children = getPropertyCodes(properties.filter((e) => e.code === "child"));
   return info;
-}
-
-/**
- * Create a string that can be POSTed as a value set.
- * @param implicit whether the url encodes a codesystem or a valueset
- * @param url url of codesystem or valueset
- * @param version version of resource referenced by url; is omitted if empty
- * @param additionalParameters additional parameters for the object stringified, e.g. `filter`, `includeDesignations` or `count` (see the FHIR docs for the operation you want to do for reference)
- * @returns stringified object that can be POSTed to ValueSet/$expand
- */
-function postValueSet(
-  implicit: boolean,
-  url: string,
-  version: string,
-  additionalParameters: FhirKeyValue[] = [],
-) {
-  return JSON.stringify({
-    resourceType: "Parameters",
-    parameter: [
-      ...(implicit
-        ? [
-            {
-              name: "valueSet",
-              resource: {
-                resourceType: "ValueSet",
-                compose: {
-                  include: [
-                    {
-                      url: url,
-                      version: version || undefined,
-                    },
-                  ],
-                },
-              },
-            },
-          ]
-        : [
-            {
-              name: "url",
-              valueUri: url,
-            },
-            ...(version
-              ? [
-                  {
-                    name: "valueSetVersion",
-                    valueUri: version,
-                  },
-                ]
-              : []),
-          ]),
-      ...additionalParameters,
-    ],
-  });
 }
