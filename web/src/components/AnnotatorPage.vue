@@ -33,7 +33,7 @@ const props = defineProps<{
 // further information
 const focusCode: Ref<InformedCodeMapping | undefined> = ref();
 const focusCodeInfo: Ref<CodeInfo | undefined> = ref();
-const selectedCode: Ref<FhirTerminologyCode | undefined> = ref();
+const selectedCode: Ref<FhirTerminologyCode | null | undefined> = ref();
 const loadingFocus = ref(false);
 
 /** selected to-annotate; data element itself or choice */
@@ -47,6 +47,7 @@ const previousAnnotations = computed(() =>
 );
 const previousAnnotationsPredicates = computed(() =>
   previousAnnotations.value
+    .filter((annotation) => !annotation.negate)
     .filter((annotation) => codeEquals(annotation.code, focusCode.value))
     .map((annotation) => annotation.predicate),
 );
@@ -137,7 +138,7 @@ const autocompleteChoices = computed(() => [
 
 defineExpose({
   back() {
-    if (selectedCode.value) {
+    if (selectedCode.value === undefined) {
       unselect();
     } else {
       emit("exit");
@@ -180,7 +181,11 @@ defineExpose({
         v-else
         color="primary"
         :prepend-icon="mdiCheckDecagramOutline"
-        :disabled="!selectedElement.annotations.length || !!selectedCode || !!focusCode"
+        :disabled="
+          !selectedElement.annotations.length ||
+          selectedCode !== undefined ||
+          focusCode !== undefined
+        "
         block
         @click="emit('exit')"
       >
@@ -189,7 +194,7 @@ defineExpose({
     </v-col>
   </v-row>
   <br />
-  <v-row v-if="!selectedCode" size="12">
+  <v-row v-if="selectedCode === undefined" size="12">
     <v-col :cols="focusCode ? 6 : 12">
       <v-select
         v-model="selectedElement"
@@ -228,12 +233,18 @@ defineExpose({
       <code-search
         v-model="search"
         :valueSets="valueSets"
-        :previously-annotated="previousAnnotations.map((annotation) => annotation.code)"
+        :previously-annotated="
+          previousAnnotations.map((annotation) => annotation.code).filter((c) => c !== null)
+        "
         :focus="focusCode"
         @focus="focus"
       />
+      <v-divider />oder<v-divider />
+      <v-btn color="warning" @click="() => (selectedCode = null)"
+        >Ich glaube, es gibt keinen passenden Code.</v-btn
+      >
     </v-col>
-    <v-col v-if="focusCode && focusCodeInfo" cols="6">
+    <v-col v-if="focusCode !== undefined && focusCodeInfo" cols="6">
       <div style="position: sticky; top: 70px; right: 0px">
         <code-display
           v-if="!loadingFocus"

@@ -55,9 +55,9 @@ const annotations = computed(() =>
 const groupAnnotationsByCodeSystem = (annotations: Annotation[]) =>
   annotations.reduce(
     (acc, val) =>
-      acc[val.code.system]
-        ? (acc[val.code.system]!.push(val), acc)
-        : ((acc[val.code.system] = [val]), acc),
+      acc[val.code?.system ?? ""]
+        ? (acc[val.code?.system ?? ""]!.push(val), acc)
+        : ((acc[val.code?.system ?? ""] = [val]), acc),
     {} as { [index: string]: Annotation[] },
   );
 
@@ -114,7 +114,7 @@ const openAnnotation = (annotation: Annotation) =>
     name: "focus-annotation",
     params: {
       aid: annotation.id,
-      subject: clean(annotation.code.display),
+      subject: clean(annotation.code?.display ?? "negative"),
       eid: data.id,
       name: clean(data.label),
       pid: projectId,
@@ -277,8 +277,12 @@ const wideTitle = computed(() => !displayMockInput.value && !data.unit);
                     <v-list-item
                       v-for="annotation in dataElement.choices![i]!.annotations"
                       :key="annotation.id"
-                      :title="`${annotation.predicate} ${annotation.code.display}`"
-                      :subtitle="annotation.code.system"
+                      :title="
+                        annotation.negate
+                          ? 'Kein Term gefunden'
+                          : `${annotation.predicate} ${annotation.code.display}`
+                      "
+                      :subtitle="annotation.code?.system"
                       link
                       @click.prevent="() => openAnnotation(annotation)"
                     >
@@ -346,8 +350,12 @@ const wideTitle = computed(() => !displayMockInput.value && !data.unit);
                 <v-list-item
                   v-for="annotation in dataElement.unit.annotations"
                   :key="annotation.id"
-                  :title="`${annotation.predicate} ${annotation.code.display}`"
-                  :subtitle="annotation.code.system"
+                  :title="
+                    annotation.negate
+                      ? 'Kein Term gefunden'
+                      : `${annotation.predicate} ${annotation.code.display}`
+                  "
+                  :subtitle="annotation.code?.system"
                   link
                   @click.prevent="() => openAnnotation(annotation)"
                 >

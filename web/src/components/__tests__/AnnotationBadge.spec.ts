@@ -15,6 +15,7 @@ const vuetify = createVuetify({
 
 const singleAuthorAnnotation: Annotation = {
   id: 0,
+  negate: false,
   status: Status.ACCEPTED,
   actions: [
     {

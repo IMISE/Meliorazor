@@ -68,7 +68,12 @@ public abstract class ActionMapper implements Action.Visitor, ActionDto.Visitor 
             target.getVariable().getId(),
             target.getVariable().getLabel(),
             action.getAnnotation().getId(),
-            action.getAnnotation().getPredicate() + " " + action.getAnnotation().getCode().getDisplay(),
+            // if predicate is null, code is also null
+            // else, both are not null
+            action.getAnnotation().getPredicate() == null
+                ? null
+                : (action.getAnnotation().getPredicate() + " " + action.getAnnotation().getCode().getDisplay()),
+            action.getAnnotation().getNegate(),
             target.getId(),
             target.getLabel()
         );

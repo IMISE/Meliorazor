@@ -40,7 +40,10 @@ const annotate = async () => {
       :append-icon="mdiArrowRight"
     >
       <!-- TODO mehr Metadaten zur Annotation anzeigen? -->
-      <v-list-item-title>{{ annotation.code.display }}</v-list-item-title>
+      <v-list-item-title v-if="annotation.code !== null">{{
+        annotation.code.display
+      }}</v-list-item-title>
+      <v-list-item-title v-else>Kein Term gefunden</v-list-item-title>
       <v-list-item-subtitle>{{
         annotation.actions
           .filter((action) => action.actionType === "submission")
@@ -61,7 +64,7 @@ const annotate = async () => {
             name: 'focus-annotation',
             params: {
               aid: annotation.id,
-              subject: annotation.code.display,
+              subject: annotation.code?.display ?? 'negative',
             },
           }"
         >

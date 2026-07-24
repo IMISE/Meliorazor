@@ -23,7 +23,7 @@ const annotatable: Ref<Annotatable | undefined> = ref();
 watch(props, (newVal) => (annotatable.value = newVal.annotatedElement), { immediate: true });
 
 const getAnnotatedCode = async () => {
-  if (loading.value) return;
+  if (loading.value || !props.annotation.code) return;
   if (!code.value) {
     loading.value = true;
     const result = await findCode(

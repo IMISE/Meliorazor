@@ -16,6 +16,7 @@ public class RichActionDto {
     private String dataElementLabel;
     private Long annotationId;
     private String annotationLabel;
+    private Boolean annotationNegate;
     private Long annotatableId;
     private String annotatableLabel;
 }

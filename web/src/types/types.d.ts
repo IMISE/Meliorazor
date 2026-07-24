@@ -70,15 +70,28 @@ export interface Unit extends Annotatable {
 }
 
 export interface CreateAnnotation {
-  code: CodeMapping;
-  predicate: Predicate;
+  negate: boolean;
+  code: CodeMapping | null;
+  predicate: Predicate | null;
   actions: [CreateAnnotationSubmission];
 }
 
-export interface Annotation {
+export type Annotation = PositiveAnnotation | NegativeAnnotation;
+
+export interface PositiveAnnotation {
   id: number;
+  negate: false;
   code: CodeMapping;
   predicate: Predicate;
+  actions: (AnnotationAction | AnnotationComment | AnnotationSubmission | AnnotationVersioning)[];
+  status: Status;
+}
+
+export interface NegativeAnnotation {
+  id: number;
+  negate: true;
+  code: null;
+  predicate: null;
   actions: (AnnotationAction | AnnotationComment | AnnotationSubmission | AnnotationVersioning)[];
   status: Status;
 }

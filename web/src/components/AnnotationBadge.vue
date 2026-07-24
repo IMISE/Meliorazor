@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Annotation } from "@/types/types";
 import { clean } from "@/utils/utils";
-import { mdiCheckCircleOutline, mdiCircleOutline } from "@mdi/js";
+import { mdiCheckCircleOutline, mdiCircleOutline, mdiClose } from "@mdi/js";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 
@@ -19,14 +19,18 @@ const props = defineProps<{
 
 const router = useRouter();
 
-const hint = computed(() => `${props.annotation.code.code} in ${props.annotation.code.system}`);
+const hint = computed(() =>
+  props.annotation.code !== null
+    ? `${props.annotation.code.code} in ${props.annotation.code.system}`
+    : "Hierfür wurde kein Code gefunden.",
+);
 
 const go = async () =>
   router.push({
     name: "focus-annotation",
     params: {
       aid: props.annotation.id,
-      subject: clean(props.annotation.code.display),
+      subject: clean(props.annotation.code?.display ?? "negative"),
       eid: props.dataElementId,
       name: clean(props.dataElementName),
       pid: props.projectId,
@@ -67,6 +71,7 @@ const unselect = () => {
       <template #activator="{ props }">
         <div v-bind="props" @click="go" style="display: inline">
           <v-chip
+            v-if="!annotation.negate"
             style="border-radius: 20px 0 0 20px"
             class="bg-info"
             :class="dashedBorder ? 'dashed-border' : undefined"
@@ -74,6 +79,17 @@ const unselect = () => {
             inline
           >
             {{ annotation.predicate }}
+          </v-chip>
+          <v-chip
+            v-else
+            style="border-radius: 20px 0 0 20px"
+            class="bg-info"
+            :class="dashedBorder ? 'dashed-border' : undefined"
+            aria-label="Prädikat"
+            inline
+            hide-overflow
+          >
+            <v-icon :icon="mdiClose" />
           </v-chip>
           <v-divider vertical color="white" :thickness="2" />
           <v-chip
@@ -83,7 +99,7 @@ const unselect = () => {
             aria-label="Code"
             inline
           >
-            {{ annotation.code.display }}
+            {{ annotation.code === null ? "Kein Term" : annotation.code.display }}
           </v-chip>
         </div>
       </template>

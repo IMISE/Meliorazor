@@ -376,10 +376,14 @@ public class AnnotationService {
         final Long annotatableElementId,
         final AnnotationDto dto
     ) {
-        // must contain exactly one submission action with a code attached
         final Code code = dto.getCode();
+        // must contain exactly one submission action with a code attached
+        // if negated, code & predicate may be null, but it must either be both or none of them
+        // if not negated, both predicate and code may not be null
         if (
-            code == null ||
+            (!dto.getNegate() && (dto.getCode() == null || dto.getPredicate() == null)) ||
+            (dto.getNegate() && dto.getCode() == null && dto.getPredicate() != null) ||
+            (dto.getNegate() && dto.getCode() != null && dto.getPredicate() == null) ||
             dto.getActions() == null ||
             dto.getActions().length != 1 ||
             dto.getActions()[0] == null ||

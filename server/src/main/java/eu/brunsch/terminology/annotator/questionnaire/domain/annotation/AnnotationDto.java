@@ -31,6 +31,13 @@ public class AnnotationDto {
      */
     private ActionDto[] actions;
 
+    /**
+     * If false and predicate and code are both null, the submitter thinks that there does not exist a valid mapping for the target.
+     * If false predicate and code are both not null, this means that this annotation is incorrect.
+     * If true, this suggests mapping code with predicate to target.
+     */
+    private Boolean negate;
+
     /** Terminology code the data element is mapped to. */
     private Code code;
 

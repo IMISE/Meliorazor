@@ -10,7 +10,7 @@ import ConfidenceSlider from "./ConfidenceSlider.vue";
 
 const annotatable = defineModel<Annotatable>();
 const { code, dataElement, knownPredicates } = defineProps<{
-  code: CodeMapping;
+  code: CodeMapping | null;
   dataElement: Variable | undefined;
   knownPredicates: string[];
   editable: boolean;
@@ -63,8 +63,11 @@ const submitAnnotation = async () => {
   try {
     const response = await createAnnotation(
       {
+        // TODO: give user option to negate normal mapping?
+        // backend supports it theoretically, but do we want it to happen?
+        negate: false,
         code,
-        predicate: predicate.value,
+        predicate: code === null ? null : predicate.value,
         actions: [
           {
             authorName: u.profile!.preferred_username!,
@@ -95,7 +98,7 @@ const submitAnnotation = async () => {
 
 <template>
   <div class="code-annotator-container">
-    <v-row>
+    <v-row v-if="code !== null">
       <v-col cols="4">
         <v-list lines="one">
           <v-list-item :key="modelValue?.id">
@@ -155,7 +158,7 @@ const submitAnnotation = async () => {
                 </template>
               </v-tooltip>
             </template>
-            <template #append>
+            <template v-if="editable || code.code !== null" #append>
               <v-btn
                 :disabled="loadingCreate"
                 :icon="editable ? mdiPencil : mdiEye"
@@ -167,18 +170,23 @@ const submitAnnotation = async () => {
         </v-list>
       </v-col>
     </v-row>
+    <v-row v-else>
+      Es existiert kein zufriedenstellender Term oder es ist keiner auffindbar.
+    </v-row>
     <v-alert
       v-if="knownPredicates.length"
       :type="forbiddenPredicateSelected ? 'error' : 'warning'"
       title="Schon verwendet"
     >
-      Das ausgewählte Element haben Sie schon mit diesem Code verbunden. Konkret wurden folgende
-      Prädikate verwendet:
-      <ul>
-        <li v-for="predicate in knownPredicates" :key="predicate">
-          <code>{{ predicate }}</code>
-        </li>
-      </ul>
+      Das ausgewählte Element haben Sie schon mit diesem Code verbunden.
+      <template v-if="code !== null">
+        Konkret wurden folgende Prädikate verwendet:
+        <ul>
+          <li v-for="predicate in knownPredicates" :key="predicate">
+            <code>{{ predicate }}</code>
+          </li>
+        </ul>
+      </template>
     </v-alert>
     <br />
     <!-- form to add further SSSOM metadata -->

@@ -46,6 +46,13 @@ public class Annotation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * If false and predicate and code are both null, the submitter thinks that there does not exist a valid mapping for the target.
+     * If false predicate and code are both not null, this means that this annotation is incorrect.
+     * If true, this suggests mapping code with predicate to target.
+     */
+    private Boolean negate;
+
     /** Predicate of mapping triple, e.g. skos:exactMatch */
     @Column(name = "predicate")
     private String predicate;
