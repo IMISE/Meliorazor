@@ -210,6 +210,8 @@ const submitAnnotation = async () => {
 
 <style>
 .code-annotator-container {
+  min-width: 700px;
+  width: 80%;
   max-width: 1000px;
 }
 </style>

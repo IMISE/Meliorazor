@@ -60,8 +60,10 @@ const unselect = () => {
   selectedCode.value = undefined;
 };
 
-const focus = (value: InformedCodeMapping) => {
-  if (focusCode.value && codeEquals(focusCode.value, value)) {
+const focus = (value: InformedCodeMapping | null) => {
+  if (value === null) {
+    selectedCode.value = null;
+  } else if (focusCode.value && codeEquals(focusCode.value, value)) {
     unselect();
   } else {
     focusCode.value = value;
@@ -138,7 +140,7 @@ const autocompleteChoices = computed(() => [
 
 defineExpose({
   back() {
-    if (selectedCode.value === undefined) {
+    if (selectedCode.value !== undefined) {
       unselect();
     } else {
       emit("exit");
@@ -181,11 +183,7 @@ defineExpose({
         v-else
         color="primary"
         :prepend-icon="mdiCheckDecagramOutline"
-        :disabled="
-          !selectedElement.annotations.length ||
-          selectedCode !== undefined ||
-          focusCode !== undefined
-        "
+        :disabled="!selectedElement.annotations.length || selectedCode !== undefined || !!focusCode"
         block
         @click="emit('exit')"
       >
@@ -239,12 +237,8 @@ defineExpose({
         :focus="focusCode"
         @focus="focus"
       />
-      <v-divider />oder<v-divider />
-      <v-btn color="warning" @click="() => (selectedCode = null)"
-        >Ich glaube, es gibt keinen passenden Code.</v-btn
-      >
     </v-col>
-    <v-col v-if="focusCode !== undefined && focusCodeInfo" cols="6">
+    <v-col v-if="focusCode && focusCodeInfo" cols="6">
       <div style="position: sticky; top: 70px; right: 0px">
         <code-display
           v-if="!loadingFocus"

@@ -13,7 +13,7 @@ const { valueSets, previouslyAnnotated, focus } = defineProps<{
 }>();
 
 defineEmits<{
-  (e: "focus", v: InformedCodeMapping): void;
+  (e: "focus", v: InformedCodeMapping | null): void;
 }>();
 
 const search = defineModel<string>();
@@ -173,6 +173,12 @@ const itemsPerPage = ref(15);
     <i v-else-if="searchedOnce">Keine Ergebnisse gefunden</i>
     <i v-else-if="!loading">Noch nicht gesucht</i>
   </v-row>
+  <template v-if="searchedOnce">
+    <v-divider thickness="3">oder</v-divider>
+    <v-btn block color="error" variant="outlined" @click="() => $emit('focus', null)">
+      Ich glaube, es gibt keinen passenden Code.
+    </v-btn>
+  </template>
 </template>
 
 <style>
