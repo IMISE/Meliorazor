@@ -55,16 +55,11 @@ const previousAnnotationsPredicates = computed(() =>
 const search = ref("");
 watch(selectedElement, (val) => (search.value = val.label), { immediate: true });
 
-const unselect = () => {
-  focusCode.value = undefined;
-  selectedCode.value = undefined;
-};
-
 const focus = (value: InformedCodeMapping | null) => {
   if (value === null) {
     selectedCode.value = null;
   } else if (focusCode.value && codeEquals(focusCode.value, value)) {
-    unselect();
+    focusCode.value = undefined;
   } else {
     focusCode.value = value;
   }
@@ -81,7 +76,8 @@ const updateFocus = (value: FhirTerminologyCode) => {
 const successFeedback = ref(false);
 const reload = async () => {
   emit("success");
-  unselect();
+  focusCode.value = undefined;
+  selectedCode.value = undefined;
   successFeedback.value = true;
 };
 
@@ -141,7 +137,7 @@ const autocompleteChoices = computed(() => [
 defineExpose({
   back() {
     if (selectedCode.value !== undefined) {
-      unselect();
+      selectedCode.value = undefined;
     } else {
       emit("exit");
     }
@@ -192,7 +188,8 @@ defineExpose({
     </v-col>
   </v-row>
   <br />
-  <v-row v-if="selectedCode === undefined" size="12">
+<keep-alive>
+  <v-row v-if="selectedCode === undefined" :key="dataElement.id" size="12">
     <v-col :cols="focusCode ? 6 : 12">
       <v-select
         v-model="selectedElement"
@@ -246,7 +243,7 @@ defineExpose({
           :server="focusCode.valueSet.server"
           :known-predicates="previousAnnotationsPredicates"
           show-select-button
-          @exit="unselect"
+          @exit="focusCode = undefined"
           @focus="updateFocus"
           @selection="(v: FhirTerminologyCode) => (selectedCode = v)"
         />
@@ -256,7 +253,7 @@ defineExpose({
       <v-progress-circular class="loading-spinner" color="primary" indeterminate />
     </v-col>
   </v-row>
-  <div v-else style="display: flex; justify-content: center; align-items: center">
+  <div v-else :key="`${dataElement.id}|${JSON.stringify(selectedCode)}`" style="display: flex; justify-content: center; align-items: center">
     <code-annotator
       v-model="selectedElement"
       :data-element="dataElement!"
@@ -264,9 +261,11 @@ defineExpose({
       :known-predicates="previousAnnotationsPredicates"
       editable
       @success="reload"
-      @edit="unselect"
+      @edit="selectedCode = undefined"
     />
   </div>
+  </keep-alive>
+
   <v-snackbar
     v-model="successFeedback"
     class="feedback"
