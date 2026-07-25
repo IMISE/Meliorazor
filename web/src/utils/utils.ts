@@ -4,10 +4,14 @@ import type { LocationQueryValue } from "vue-router";
 export function clean(input: string | null | undefined, length: number | undefined = undefined) {
   return (input || "undef")
     .toLowerCase()
-    .split("ä").join("ae")
-    .split("ö").join("oe")
-    .split("ü").join("ue")
-    .split("ß").join("ss")
+    .split("ä")
+    .join("ae")
+    .split("ö")
+    .join("oe")
+    .split("ü")
+    .join("ue")
+    .split("ß")
+    .join("ss")
     .replace(/[^a-z0-9-]/gi, "_")
     .replace(/_{2,}/g, "_")
     .replace(/(^_|_$)/g, "")
@@ -91,7 +95,9 @@ export function getAnnotatableFromProject(
   for (const dataElement of project.dataElements) {
     if (dataElement.annotations.some((annotation) => annotation.id === annotationId)) {
       return dataElement;
-    } else if (dataElement?.unit?.annotations.some((annotation) => annotation.id === annotationId)) {
+    } else if (
+      dataElement?.unit?.annotations.some((annotation) => annotation.id === annotationId)
+    ) {
       return dataElement.unit;
     } else {
       for (const choice of dataElement.choices ?? []) {
@@ -101,4 +107,17 @@ export function getAnnotatableFromProject(
       }
     }
   }
+}
+
+export function download(format: string, filename: string, contents: string) {
+  var element = document.createElement('a');
+  element.setAttribute("href", `data:${format};charset=utf-8,${encodeURIComponent(contents)}`);
+  element.setAttribute("download", filename);
+
+  element.style.display = 'none';
+  document.body.appendChild(element);
+
+  element.click();
+
+  document.body.removeChild(element);
 }

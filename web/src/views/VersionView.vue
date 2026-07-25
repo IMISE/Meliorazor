@@ -3,6 +3,8 @@ import BaseComponent from "@/components/BaseComponent.vue";
 import DataElementList from "@/components/DataElementList.vue";
 import type { Questionnaire, Variable, Version } from "@/types/types";
 import request, { getProject } from "@/utils/api";
+import { exportToSssomJson, exportToSssomTsv } from "@/utils/export";
+import { clean, download } from "@/utils/utils";
 import { ref, watch, type Ref } from "vue";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
@@ -29,6 +31,10 @@ const elements = computed(
           annotations: el.annotations.filter((anno) => annotationIds.value.includes(anno.id)),
         }) as Variable,
     ) ?? [],
+);
+
+const filePrefix = computed(
+  () => `${clean(questionnaire.value?.title ?? projectTitle.value ?? "")} ${versionKey.value}`,
 );
 
 watch(
@@ -67,6 +73,35 @@ watch(
       <p v-if="version.description">{{ version.description }}</p>
       <template v-if="questionnaire">
         <h3>Annotierter Fragebogen</h3>
+        <v-menu>
+          <template #activator="{ props }">
+            <v-btn v-if="elements?.length" v-bind="props" color="primary"> Exportieren </v-btn>
+          </template>
+          <v-list>
+            <v-list-item
+              link
+              @click="
+                download(
+                  'application/sssom+json',
+                  `${filePrefix}.sssom.json`,
+                  exportToSssomJson(questionnaire!, versionKey),
+                )
+              "
+              title="SSSOM/JSON"
+            />
+            <v-list-item
+              link
+              @click="
+                download(
+                  'text/sssom+tab-separated-values',
+                  `${filePrefix}.sssom.tsv`,
+                  exportToSssomTsv(questionnaire!, versionKey),
+                )
+              "
+              title="SSSOM/TSV"
+            />
+          </v-list>
+        </v-menu>
         <data-element-list
           :project-id="projectId"
           :project-title="projectTitle"
@@ -77,14 +112,6 @@ watch(
           :show-actions="false"
           annotated-crf
         />
-        <v-btn
-          v-if="elements?.length && false"
-          color="primary"
-          block
-          @click="console.log('TODO unimplemented')"
-        >
-          Exportieren
-        </v-btn>
       </template>
       <h3 v-else-if="loadingProject">Lädt &hellip;</h3>
       <template v-else>
