@@ -184,7 +184,7 @@ watch(
 );
 
 /** editing */
-const participantEdit: Ref<{ id: number; participant: Participant }[]> = ref([]);
+const participantEdit: Ref<{ id: number; participant: Participant; original: boolean }[]> = ref([]);
 const participantKey = ref(0);
 const valueSetEdit: Ref<{ id: number; set: FhirValueSetDefinition | undefined }[]> = ref([]);
 const valueSetKey = ref(0);
@@ -195,6 +195,7 @@ watch(
     participantEdit.value = (newVal?.participants ?? []).map((participant, id) => ({
       id,
       participant: JSON.parse(JSON.stringify(participant)),
+      original: true,
     }));
     participantKey.value = participantEdit.value.length ?? 0;
 
@@ -319,7 +320,7 @@ const participantUser = ref([
                     v-model="row.participant.username"
                     :rules="participantUser"
                     label="Nutzername"
-                    :disabled="i === 0 || user?.preferred_username === row.participant.username"
+                    :disabled="row.original"
                   ></v-text-field>
                   <v-select
                     label="Rolle"
@@ -333,6 +334,7 @@ const participantUser = ref([
                       <v-list-item
                         v-bind="props"
                         :disabled="
+                          row.original &&
                           (i === 0 || user?.preferred_username === row.participant.username) &&
                           item.value === 'ADMIN'
                         "
@@ -348,7 +350,11 @@ const participantUser = ref([
                     </template>
                   </v-select>
                   <v-icon-btn
-                    v-if="isAdmin"
+                    v-if="
+                      i !== 0 &&
+                      (user?.preferred_username !== row.participant.username || !row.original) &&
+                      isAdmin
+                    "
                     :icon="mdiMinus"
                     @click.prevent="participantEdit.splice(i, 1)"
                   />
@@ -362,6 +368,7 @@ const participantUser = ref([
                     participantEdit.push({
                       id: participantKey++,
                       participant: { username: '', roles: [] },
+                      original: false,
                     })
                   "
                 >
