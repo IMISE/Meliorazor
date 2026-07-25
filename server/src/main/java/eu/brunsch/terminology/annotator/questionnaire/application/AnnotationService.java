@@ -424,9 +424,9 @@ public class AnnotationService {
                 .findByTargetIdAndPredicateAndCodeAndNegate(
                         target.getId(),
                         dto.getPredicate(),
-                        code.getCode() == null ? null : code.getSystem(),
-                        code.getCode() == null ? null : code.getSystemVersion(),
-                        code.getCode() == null ? null : code.getCode(),
+                        code == null ? null : code.getSystem(),
+                        code == null ? null : code.getSystemVersion(),
+                        code == null ? null : code.getCode(),
                         dto.getNegate()
                     );
 
