@@ -65,7 +65,7 @@ const submitAnnotation = async () => {
       {
         // TODO: give user option to negate normal mapping?
         // backend supports it theoretically, but do we want it to happen?
-        negate: false,
+        negate: code === null,
         code,
         predicate: code === null ? null : predicate.value,
         actions: [

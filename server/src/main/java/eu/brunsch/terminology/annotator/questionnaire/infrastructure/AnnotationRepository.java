@@ -19,8 +19,8 @@ public interface AnnotationRepository extends JpaRepository<Annotation, Long> {
      */
     List<Annotation> findByTarget(Annotatable target);
 
-    @Query("select a from Annotation a where a.target.id = ?1 and a.predicate = ?2 and a.code.system = ?3 and a.code.systemVersion = ?4 and a.code.code = ?5")
-    Optional<Annotation> findByTargetIdAndPredicateAndCode(Long targetId, String predicate, String codeSystem, String codeSystemVersion, String codeValue);
+    @Query("select a from Annotation a where a.target.id = ?1 and a.predicate = ?2 and a.code.system = ?3 and a.code.systemVersion = ?4 and a.code.code = ?5 and a.negate = ?6")
+    Optional<Annotation> findByTargetIdAndPredicateAndCodeAndNegate(Long targetId, String predicate, String codeSystem, String codeSystemVersion, String codeValue, Boolean negate);
 
     /**
      * Finds all annotations with an action of a specific type done by a specific user.

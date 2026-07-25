@@ -421,12 +421,14 @@ public class AnnotationService {
         // if yes, add as action
         // if no, add annotation and add as action
         final Optional<Annotation> existing = annotationRepository
-                .findByTargetIdAndPredicateAndCode(
+                .findByTargetIdAndPredicateAndCodeAndNegate(
                         target.getId(),
                         dto.getPredicate(),
-                        code.getSystem(),
-                        code.getSystemVersion(),
-                        code.getCode());
+                        code.getCode() == null ? null : code.getSystem(),
+                        code.getCode() == null ? null : code.getSystemVersion(),
+                        code.getCode() == null ? null : code.getCode(),
+                        dto.getNegate()
+                    );
 
         Annotation annotation = null;
         Action action = null;
