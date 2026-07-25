@@ -47,7 +47,7 @@ const previousAnnotations = computed(() =>
 );
 const previousAnnotationsPredicates = computed(() =>
   previousAnnotations.value
-    .filter((annotation) => !annotation.negate)
+    .filter((annotation) => annotation.code !== null)
     .filter((annotation) => codeEquals(annotation.code, focusCode.value))
     .map((annotation) => annotation.predicate),
 );

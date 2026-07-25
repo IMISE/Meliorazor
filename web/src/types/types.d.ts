@@ -76,11 +76,11 @@ export interface CreateAnnotation {
   actions: [CreateAnnotationSubmission];
 }
 
-export type Annotation = PositiveAnnotation | NegativeAnnotation;
+export type Annotation = NormalAnnotation | NegativeAnnotation;
 
-export interface PositiveAnnotation {
+export interface NormalAnnotation {
   id: number;
-  negate: false;
+  negate: boolean;
   code: CodeMapping;
   predicate: Predicate;
   actions: (AnnotationAction | AnnotationComment | AnnotationSubmission | AnnotationVersioning)[];
