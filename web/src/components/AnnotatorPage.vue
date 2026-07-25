@@ -188,82 +188,84 @@ defineExpose({
     </v-col>
   </v-row>
   <br />
-<keep-alive>
-  <v-row v-if="selectedCode === undefined" :key="dataElement.id" size="12">
-    <v-col :cols="focusCode ? 6 : 12">
-      <v-select
-        v-model="selectedElement"
-        :items="autocompleteChoices"
-        label="Zu annotierendes Element"
-        item-title="title"
-        item-value="value"
-        :disabled="!dataElement.choices?.length && !dataElement.unit"
-      >
-        <template #selection="{ item }">
-          {{ item.value?.label ?? (item as { [index: string]: unknown })["label"] }}
-          <v-chip v-if="item.value?.annotations?.length" style="margin-left: 4px">
-            {{ item.value.annotations.length }} vorgeschlagene Annotationen
-          </v-chip>
-        </template>
-        <template #item="{ props, item }">
-          <v-list-item
-            v-if="item.value"
-            v-bind="props"
-            :title="item.title"
-            link
-            @click="() => (selectedElement = item.value)"
-          >
-            <template #append>
-              <v-chip v-if="item.value?.annotations?.length">
-                {{ item.value.annotations.length }} vorgeschlagene Annotation<template
-                  v-if="item.value.annotations.length > 1"
-                  >en
-                </template>
-              </v-chip>
-            </template>
-          </v-list-item>
-        </template>
-      </v-select>
-      <data-element-summary :data-element="dataElement" />
-      <code-search
-        v-model="search"
-        :valueSets="valueSets"
-        :previously-annotated="
-          previousAnnotations.map((annotation) => annotation.code).filter((c) => c !== null)
-        "
-        :focus="focusCode"
-        @focus="focus"
-      />
-    </v-col>
-    <v-col v-if="focusCode && focusCodeInfo" cols="6">
-      <div style="position: sticky; top: 70px; right: 0px">
-        <code-display
-          v-if="!loadingFocus"
-          :codeInfo="focusCodeInfo"
-          :server="focusCode.valueSet.server"
-          :known-predicates="previousAnnotationsPredicates"
-          show-select-button
-          @exit="focusCode = undefined"
-          @focus="updateFocus"
-          @selection="(v: FhirTerminologyCode) => (selectedCode = v)"
+  <keep-alive>
+    <v-row v-if="selectedCode === undefined" :key="dataElement.id" size="12">
+      <v-col :cols="focusCode ? 6 : 12">
+        <v-select
+          v-model="selectedElement"
+          :items="autocompleteChoices"
+          label="Zu annotierendes Element"
+          item-title="title"
+          item-value="value"
+          :disabled="!dataElement.choices?.length && !dataElement.unit"
+        >
+          <template #selection="{ item }">
+            {{ item.value?.label ?? (item as { [index: string]: unknown })["label"] }}
+            <v-chip v-if="item.value?.annotations?.length" style="margin-left: 4px">
+              {{ item.value.annotations.length }} vorgeschlagene Annotationen
+            </v-chip>
+          </template>
+          <template #item="{ props, item }">
+            <v-list-item
+              v-if="item.value"
+              v-bind="props"
+              :title="item.title"
+              link
+              @click="() => (selectedElement = item.value)"
+            >
+              <template #append>
+                <v-chip v-if="item.value?.annotations?.length">
+                  {{ item.value.annotations.length }} vorgeschlagene Annotation<template
+                    v-if="item.value.annotations.length > 1"
+                    >en
+                  </template>
+                </v-chip>
+              </template>
+            </v-list-item>
+          </template>
+        </v-select>
+        <data-element-summary :data-element="dataElement" />
+        <code-search
+          v-model="search"
+          :valueSets="valueSets"
+          :previously-annotated="previousAnnotations.map((annotation) => annotation.code)"
+          :focus="focusCode"
+          @focus="focus"
         />
-      </div>
-    </v-col>
-    <v-col v-else-if="loadingFocus" cols="6">
-      <v-progress-circular class="loading-spinner" color="primary" indeterminate />
-    </v-col>
-  </v-row>
-  <div v-else :key="`${dataElement.id}|${JSON.stringify(selectedCode)}`" style="display: flex; justify-content: center; align-items: center">
-    <code-annotator
-      v-model="selectedElement"
-      :data-element="dataElement!"
-      :code="selectedCode"
-      :known-predicates="previousAnnotationsPredicates"
-      editable
-      @success="reload"
-      @edit="selectedCode = undefined"
-    />
-  </div>
+      </v-col>
+      <v-col v-if="focusCode && focusCodeInfo" cols="6">
+        <div style="position: sticky; top: 70px; right: 0px">
+          <code-display
+            v-if="!loadingFocus"
+            :codeInfo="focusCodeInfo"
+            :server="focusCode.valueSet.server"
+            :known-predicates="previousAnnotationsPredicates"
+            show-select-button
+            @exit="focusCode = undefined"
+            @focus="updateFocus"
+            @selection="(v: FhirTerminologyCode) => (selectedCode = v)"
+          />
+        </div>
+      </v-col>
+      <v-col v-else-if="loadingFocus" cols="6">
+        <v-progress-circular class="loading-spinner" color="primary" indeterminate />
+      </v-col>
+    </v-row>
+    <div
+      v-else
+      :key="`${dataElement.id}|${JSON.stringify(selectedCode)}`"
+      style="display: flex; justify-content: center; align-items: center"
+    >
+      <code-annotator
+        v-model="selectedElement"
+        :data-element="dataElement!"
+        :code="selectedCode"
+        :known-predicates="previousAnnotationsPredicates"
+        editable
+        @success="reload"
+        @edit="selectedCode = undefined"
+      />
+    </div>
   </keep-alive>
 
   <v-snackbar

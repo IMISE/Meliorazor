@@ -4,11 +4,11 @@ import type { CodeMapping, InformedCodeMapping } from "@/types/types";
 import { expandValueSet } from "@/utils/fhirApi";
 import { codeEquals } from "@/utils/fhirUtils";
 import { mdiCheck, mdiClose, mdiMagnify, mdiWeb } from "@mdi/js";
-import { ref, watch, type Ref } from "vue";
+import { computed, ref, watch, type Ref } from "vue";
 
 const { valueSets, previouslyAnnotated, focus } = defineProps<{
   valueSets: FhirValueSetDefinition[];
-  previouslyAnnotated: CodeMapping[];
+  previouslyAnnotated: (CodeMapping | null)[];
   focus: InformedCodeMapping | undefined;
 }>();
 
@@ -86,7 +86,7 @@ const colourSpecialCodes = ({ item }: { item: InformedCodeMapping }) => {
     return { class: "focus-code" };
   } else {
     const classes = [];
-    if (previouslyAnnotated.some((code) => codeEquals(item, code))) {
+    if (previouslyAnnotated.some((code) => codeEquals(item, code ?? undefined))) {
       classes.push("known-code bg-warning");
     }
     if (item.inactive) {
@@ -96,11 +96,18 @@ const colourSpecialCodes = ({ item }: { item: InformedCodeMapping }) => {
   }
 };
 
+const hasNullAnnotation = computed(() => previouslyAnnotated.some((mapping) => mapping === null));
+
 // PAGINATION (todo?)
 const itemsPerPage = ref(15);
 </script>
 
 <template>
+  <v-alert v-if="hasNullAnnotation" type="warning" title="Schon negativ annotiert">
+    Laut einer vorherigen Annotation scheint es hier keinen passenden Code zu geben. Eine neue
+    Annotation kann trotzdem immer erstellt werden.
+  </v-alert>
+  <br />
   <v-row fluid>
     <v-text-field
       v-model="search"
@@ -173,7 +180,7 @@ const itemsPerPage = ref(15);
     <i v-else-if="searchedOnce">Keine Ergebnisse gefunden</i>
     <i v-else-if="!loading">Noch nicht gesucht</i>
   </v-row>
-  <template v-if="searchedOnce">
+  <template v-if="searchedOnce && !hasNullAnnotation">
     <v-divider thickness="3">oder</v-divider>
     <v-btn block color="error" variant="outlined" @click="() => $emit('focus', null)">
       Ich glaube, es gibt keinen passenden Code.
