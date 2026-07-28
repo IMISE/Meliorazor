@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseComponent from "@/components/BaseComponent.vue";
+import BaseComponent from "@/components/wrappers/BaseComponent.vue";
 import DataElementList from "@/components/DataElementList.vue";
 import QuestionnaireList from "@/components/QuestionnaireList.vue";
 import type { Questionnaire } from "@/types/types";

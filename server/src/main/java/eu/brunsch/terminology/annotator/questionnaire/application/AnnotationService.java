@@ -1,9 +1,6 @@
 package eu.brunsch.terminology.annotator.questionnaire.application;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -11,13 +8,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import eu.brunsch.terminology.annotator.questionnaire.domain.Participant;
 import eu.brunsch.terminology.annotator.questionnaire.domain.Questionnaire;
 import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireMapper;
@@ -25,14 +19,12 @@ import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireOption
 import eu.brunsch.terminology.annotator.questionnaire.domain.Version;
 import eu.brunsch.terminology.annotator.questionnaire.domain.VersionCreateDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.VersionDto;
-import eu.brunsch.terminology.annotator.questionnaire.domain.Participant.Role;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.Annotatable;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.AnnotatableMapper;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.Choice;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.ChoiceDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.DataElement;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.DataElementDto;
-import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.RichActionDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.Unit;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.UnitDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.Action;
@@ -53,6 +45,7 @@ import eu.brunsch.terminology.annotator.questionnaire.infrastructure.DataElement
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.QuestionnaireRepository;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.UnitRepository;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.VersionRepository;
+import eu.brunsch.terminology.annotator.utils.Utils;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -98,12 +91,8 @@ public class AnnotationService {
      */
     public Long importQuestionnaire(final QuestionnaireDto dto) {
         final Questionnaire questionnaire = questionnaireMapper.toEntity(dto);
-        // check if the first user is us (creator) and has admin privileges
-        if (!questionnaire.administeredBy(username())
-                || !username().equals(questionnaire.getParticipants()[0].getUsername())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This participant configuration is forbidden");
-        }
         questionnaireRepository.save(questionnaire);
+
         for (final DataElementDto dDto : dto.getDataElements()) {
             // save DE first, so the choices can reference its ID later
             final DataElement dataElement = annotatableMapper.toEntity(dDto);
@@ -145,7 +134,7 @@ public class AnnotationService {
     public void deleteQuestionnaire(final Long id) {
         final Questionnaire q = questionnaireRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException());
-        if (!q.administeredBy(username())) {
+        if (!q.administeredBy(Utils.username())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
         final var dataElements = dataElementRepository.findByQuestionnaire(q);
@@ -162,8 +151,10 @@ public class AnnotationService {
      * @return DTOs without data elements.
      */
     public QuestionnaireDto[] getAllQuestionnaires() {
+        final String username = Utils.username();
+
         return questionnaireRepository.findAll().stream()
-                .filter(q -> q.seenBy(username()))
+                .filter(q -> q.seenBy(username))
                 .map(questionnaireMapper::toDto)
                 .map(q -> q.getDataElements() == null
                         ? new QuestionnaireDto(
@@ -172,7 +163,6 @@ public class AnnotationService {
                                 q.getDescription(),
                                 q.getOptions(),
                                 new DataElementDto[] {},
-                                q.getParticipants(),
                                 q.getValueSets())
                         : q)
                 .toArray(QuestionnaireDto[]::new);
@@ -187,7 +177,7 @@ public class AnnotationService {
     public QuestionnaireDto getQuestionnaire(final Long id) {
         final Questionnaire q = questionnaireRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        if (!q.seenBy(username())) {
+        if (!q.seenBy(Utils.username())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
         final var dataElements = dataElementRepository.findByQuestionnaire(q);
@@ -217,11 +207,13 @@ public class AnnotationService {
         if (dto.getId() != null && id != dto.getId()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "IDs do not match");
         }
+
+        final String username = Utils.username();
         final Questionnaire q = questionnaireRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        if (!q.seenBy(username())) {
+        if (!q.seenBy(username)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        } else if (!q.administeredBy(username())) {
+        } else if (!q.administeredBy(username)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
@@ -231,24 +223,6 @@ public class AnnotationService {
         }
         if (dto.getDescription() != null) {
             q.setDescription(dto.getDescription());
-        }
-        if (dto.getParticipants() != null) {
-            if (!List.of(dto.getParticipants()).contains(null) &&
-            // participants need to still include ourselves as admins
-                    Arrays.stream(dto.getParticipants()).anyMatch(p -> p.getUsername().equals(username()) &&
-                            List.of(p.getRoles()).contains(Role.ADMIN))
-                    && List.of(dto.getParticipants()[0].getRoles()).contains(Role.ADMIN) &&
-                    // first user (creator) has to stay the same user & must be an admin, the other
-                    // roles may change
-                    dto.getParticipants()[0].getUsername().equals(q.getParticipants()[0].getUsername()) &&
-                    // each user must only occur once
-                    Arrays.stream(dto.getParticipants()).map(Participant::getUsername).collect(Collectors.toSet())
-                            .size() == dto.getParticipants().length) {
-                q.setParticipants(dto.getParticipants());
-            } else {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "This participant configuration is forbidden");
-            }
         }
         if (dto.getValueSets() != null) {
             // need to have at least one valueset
@@ -284,7 +258,7 @@ public class AnnotationService {
         // check if user is eligible to see this data element
         // -> must not be associated with a questionnaire not seen by this user
         final Questionnaire q = variable.getQuestionnaire();
-        if (q != null && !q.seenBy(username())) {
+        if (q != null && !q.seenBy(Utils.username())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         } else {
             return variable;
@@ -311,11 +285,13 @@ public class AnnotationService {
      */
     @Transactional(readOnly = true)
     public DataElementDto getDataElementWithComments(final DataElement variable) {
+        final String username = Utils.username();
+
         // all annotations visible to user
         final AnnotationDto[] annotationDtos = annotationRepository
                 .findByTarget(variable)
                 .stream()
-                .filter(a -> a.seenBy(username()))
+                .filter(a -> a.seenBy(username))
                 .map(annotationMapper::toDto)
                 .toArray(AnnotationDto[]::new);
 
@@ -326,14 +302,14 @@ public class AnnotationService {
             final List<Annotation> choiceAnnotations = annotationRepository.findByTarget(choice);
             List<AnnotationDto> choiceAnnotationDtos = new ArrayList<>();
             for (final Annotation choiceAnnotation : choiceAnnotations) {
-                if (!choiceAnnotation.seenBy(username())) {
+                if (!choiceAnnotation.seenBy(username)) {
                     continue;
                 }
 
                 final AnnotationDto choiceAnnotationDto = annotationMapper.toDto(choiceAnnotation);
                 choiceAnnotationDto.setActions(
                         annotationMapper.toDtos(
-                                choiceAnnotation.getActions(username())));
+                                choiceAnnotation.getActions(username)));
                 choiceAnnotationDtos.add(choiceAnnotationDto);
             }
             choiceDto.setAnnotations(choiceAnnotationDtos.toArray(AnnotationDto[]::new));
@@ -346,7 +322,7 @@ public class AnnotationService {
             unitDto = annotatableMapper.toDto(unit);
             unitDto.setAnnotations(
                     annotationRepository.findByTarget(unit).stream()
-                            .filter(a -> a.seenBy(username()))
+                            .filter(a -> a.seenBy(username))
                             .map(annotationMapper::toDto)
                             .toArray(AnnotationDto[]::new));
         }
@@ -372,9 +348,11 @@ public class AnnotationService {
     public AnnotationDto[] getDataElementsAnnotations(
             final Long dataElementId) {
         final DataElement d = getDataElement(dataElementId);
+        final String username = Utils.username();
+
         return annotationRepository.findByTarget(d)
                 .stream()
-                .filter(a -> a.seenBy(username()))
+                .filter(a -> a.seenBy(username))
                 .map(annotationMapper::toDto)
                 .toArray(AnnotationDto[]::new);
     }
@@ -389,6 +367,8 @@ public class AnnotationService {
     public Long createAnnotation(
             final Long annotatableElementId,
             final AnnotationDto dto) {
+        final String username = Utils.username();
+
         final Code code = dto.getCode();
         // must contain exactly one submission action with a code attached
         // if negated, code & predicate may be null, but it must either be both or none
@@ -408,12 +388,12 @@ public class AnnotationService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         // check if we see
-        if (target.getQuestionnaire() != null && !target.getQuestionnaire().seenBy(username())) {
+        if (target.getQuestionnaire() != null && !target.getQuestionnaire().seenBy(username)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
         // check if we're allowed to annotate
-        if (!target.annotatableBy(username())) {
+        if (!target.annotatableBy(username)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
@@ -437,7 +417,7 @@ public class AnnotationService {
             // fill object
             annotation.setTarget(target);
             annotation.setStatus(Status.OPEN);
-            annotation.getActions().iterator().next().setAuthorName(username());
+            annotation.getActions().iterator().next().setAuthorName(username);
             annotationRepository.save(annotation);
             // there is exactly one
             action = annotation.getActions().iterator().next();
@@ -448,7 +428,7 @@ public class AnnotationService {
                     .getActions()
                     .stream()
                     .anyMatch(a -> "submission".equals(a.getActionType()) &&
-                            a.getAuthorName().equals(username()))) {
+                            a.getAuthorName().equals(username))) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT);
             }
             action = actionMapper.toEntity(dto.getActions()[0]);
@@ -474,7 +454,7 @@ public class AnnotationService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         // see if user is allowed to delete
         // -> either this is the user's own annotation or user has admin rights
-        if (annotation.removeAction(action, username()) == null) {
+        if (annotation.removeAction(action, Utils.username()) == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
         actionRepository.deleteById(actionId);
@@ -493,7 +473,7 @@ public class AnnotationService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         // check if user is able to see
-        if (!annotation.seenBy(username())) {
+        if (!annotation.seenBy(Utils.username())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
@@ -521,13 +501,15 @@ public class AnnotationService {
      * @return ID of created comment
      */
     public Long addComment(final Long annotationId, final CommentDto dto) {
+        final String username = Utils.username();
+
         final Annotation parent = annotationRepository.findById(annotationId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        if (!parent.seenBy(username())) {
+        if (!parent.seenBy(username)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "did not find annotation with id " + annotationId);
         }
-        if (!parent.reviewableBy(username())
-                && (!parent.hasAuthor(username()) || !Comment.Type.NOTE.equals(dto.getActionType()))) {
+        if (!parent.reviewableBy(username)
+                && (!parent.hasAuthor(username) || !Comment.Type.NOTE.equals(dto.getActionType()))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
@@ -549,6 +531,8 @@ public class AnnotationService {
      * @param id Internal ID of the comment to delete
      */
     public void deleteComment(final Long id) {
+        final String username = Utils.username();
+
         final Action action = actionRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         if (!"comment".equals(action.getActionType())) {
@@ -557,17 +541,17 @@ public class AnnotationService {
 
         // access control
         final Annotation annotation = action.getAnnotation();
-        if (!annotation.seenBy(username())) {
+        if (!annotation.seenBy(username)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-        if (!action.getAuthorName().equals(username()) ||
+        if (!action.getAuthorName().equals(username) ||
                 (annotation.getTarget().getQuestionnaire() != null &&
-                        annotation.getTarget().getQuestionnaire().administeredBy(username()))) {
+                        annotation.getTarget().getQuestionnaire().administeredBy(username))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
         final Comment comment = (Comment) action;
-        final Boolean response = annotation.removeAction(comment, username());
+        final Boolean response = annotation.removeAction(comment, username);
         if (response == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         } else {
@@ -588,7 +572,7 @@ public class AnnotationService {
      *                                 questionnaire
      */
     public Long createVersion(final Long questionnaireId, final VersionCreateDto dto) {
-        final String username = username();
+        final String username = Utils.username();
         final Questionnaire q = questionnaireRepository.findById(questionnaireId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
@@ -642,7 +626,7 @@ public class AnnotationService {
     }
 
     public VersionDto getVersion(final Long questionnaireId, final String versionKey) {
-        final String username = username();
+        final String username = Utils.username();
         final Questionnaire q = questionnaireRepository.findById(questionnaireId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
@@ -668,7 +652,7 @@ public class AnnotationService {
     }
 
     public String[] getVersionKeys(final Long questionnaireId) {
-        final String username = username();
+        final String username = Utils.username();
         final Questionnaire q = questionnaireRepository.findById(questionnaireId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
@@ -682,52 +666,4 @@ public class AnnotationService {
         return versionRepository.findKeysByQuestionnaireId(questionnaireId).toArray(String[]::new);
     }
 
-    ////////////////////////////// FUN USER-RELATED STUFF ///
-    //////////////////////////////
-
-    /**
-     * @param username user to get all the annotations of
-     * @return all annotations by the given user in the last 7 days
-     */
-    public AnnotationDto[] getRecentAnnotations(final String username) {
-        final var stream = annotationRepository
-                .findAllByActionsAuthorNameAndActionsActionTypeAndActionsSubmittedAtAfter(
-                        username,
-                        "submission",
-                        Instant.now().minus(7, ChronoUnit.DAYS))
-                .stream();
-        // if we are the queried user, just return all
-        // else, filter for annotations we are allowed to edit (because else we don't
-        // see their annotaitons!)
-        if (!username().equals(username)) {
-            stream.filter(annotation -> annotation.reviewableBy(username()));
-        }
-        return stream
-                .map(annotationMapper::toDto)
-                .toArray(AnnotationDto[]::new);
-    }
-
-    public RichActionDto[] getRecentActions(final String username) {
-        final var stream = actionRepository.findByAuthorNameAndSubmittedAtAfter(
-                username,
-                Instant.now().minus(7, ChronoUnit.DAYS))
-                .stream();
-        // if we are the queried user, just return all
-        // else, filter for annotations we are allowed to edit (because else we don't
-        // see their annotaitons!)
-        if (!username().equals(username)) {
-            stream.filter(action -> action.getAnnotation() != null && action.getAnnotation().reviewableBy(username()));
-        }
-        return stream
-                .map(actionMapper::toRichDto)
-                .toArray(RichActionDto[]::new);
-    }
-
-    /**
-     * @returns username of current user
-     */
-    private String username() {
-        final Jwt jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return jwt.getClaimAsString("preferred_username");
-    }
 }

@@ -7,11 +7,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import eu.brunsch.terminology.annotator.questionnaire.domain.Participant;
 import eu.brunsch.terminology.annotator.questionnaire.domain.Questionnaire;
 import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireOptions;
-import eu.brunsch.terminology.annotator.questionnaire.domain.Participant.Role;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.Annotatable;
+import eu.brunsch.terminology.annotator.questionnaire.domain.group.Participant;
+import eu.brunsch.terminology.annotator.questionnaire.domain.group.Participant.Role;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;

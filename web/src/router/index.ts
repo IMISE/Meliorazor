@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
-import { mdiBookAlphabet, mdiHistory, mdiPen } from "@mdi/js";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -9,9 +8,6 @@ const router = createRouter({
       path: "/",
       name: "home",
       component: HomeView,
-      meta: {
-        disableBackButton: true,
-      },
     },
     {
       path: "/about",
@@ -27,12 +23,34 @@ const router = createRouter({
       component: () => import("../views/SingleUserView.vue"),
     },
     {
+      path: "/groups",
+      name: "groups",
+      component: () => import("../views/GroupOverview.vue"),
+    },
+    {
+      path: "/groups/:gid-:name?",
+      name: "single-group",
+      component: () => import("../views/GroupView.vue"),
+    },
+    {
+      path: "/groups/:gid-:name?/members",
+      name: "group-members",
+      component: () => import("../views/GroupView.vue"),
+    },
+    {
+      path: "/groups/:gid-:name?/servers",
+      name: "group-servers",
+      component: () => import("../views/GroupView.vue"),
+    },
+    {
+      path: "/groups/:gid-:name?",
+      name: "single-group",
+      component: () => import("../views/QuestionnaireOverview.vue"),
+    },
+    {
       path: "/projects",
       name: "projects",
       component: () => import("../views/QuestionnaireOverview.vue"),
-      meta: {
-        disableBackButton: true,
-      },
     },
     {
       path: "/projects/create",
@@ -51,7 +69,7 @@ const router = createRouter({
     },
     {
       path: "/projects/:pid-:title?/admin",
-      name: "project-admin",
+      name: "project-value-sets",
       component: () => import("../views/QuestionnaireView.vue"),
     },
     {
@@ -63,19 +81,11 @@ const router = createRouter({
           path: "create-project-annotate",
           name: "data-element-annotation",
           component: () => import("../views/AnnotationCreateView.vue"),
-          meta: { tabLabel: "Annotate", tabIcon: mdiPen },
         },
         {
           path: "annotations",
           name: "data-element-annotations",
           component: () => import("../views/DataElementView.vue"),
-          meta: { tabLabel: "Annotations", tabIcon: mdiBookAlphabet },
-        },
-        {
-          path: "history",
-          name: "data-element-history",
-          component: HomeView,
-          meta: { tabLabel: "History", tabIcon: mdiHistory },
         },
       ],
     },
@@ -108,9 +118,6 @@ const router = createRouter({
       path: "/afterauth",
       name: "post-login",
       component: () => import("../views/AuthView.vue"),
-      meta: {
-        disableBackButton: true,
-      },
     },
   ],
 });

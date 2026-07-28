@@ -3,9 +3,15 @@ import getEnv from "./env";
 import type {
   Annotation,
   CreateAnnotation,
+  CreateGroup,
   CreateVersion,
+  Group,
+  GroupInvitation,
+  Participant,
   Questionnaire,
+  QuestionnaireOut,
   RichAction,
+  ServerDefinition,
 } from "@/types/types";
 
 export default async function request(
@@ -78,14 +84,86 @@ export async function getProjects() {
   return ((await response.json()) ?? []) as Questionnaire[];
 }
 
+export async function createProject(q: QuestionnaireOut) {
+  return await request(`/questionnaire`, "POST", JSON.stringify(q));
+}
+
+export async function deleteProject(id: number): Promise<boolean> {
+  const response = await request(`/questionnaire/${id}`, "DELETE");
+  return !!response?.ok;
+}
+
+export async function getGroups() {
+  const response = await request("/group", "GET");
+  if (!response?.ok) {
+    console.error("Group response not ok :(");
+    return;
+  }
+  return ((await response.json()) ?? []) as Group[];
+}
+
+export async function getGroup(
+  id: string | number | undefined,
+  oldId: string | number | undefined = undefined,
+) {
+  if ((oldId !== undefined && id === oldId) || id === undefined) {
+    return;
+  } else {
+    const response = await request(`/group/${id}`, "GET");
+    if (!response?.ok) {
+      console.error("Group response not ok :(");
+      return;
+    }
+    return (await response.json()) as Group | undefined;
+  }
+}
+
+export async function createGroup(group: CreateGroup) {
+  const response = await request(`/group`, "POST", JSON.stringify(group));
+  return !!response?.ok;
+}
+
+export async function deleteGroup(id: number): Promise<boolean> {
+  const response = await request(`/group/${id}`, "DELETE");
+  return !!response?.ok;
+}
+
+export async function editGroupParticipants(id: number, participants: Participant[]) {
+  await request(`/group/${id}/participants`, "PUT", JSON.stringify(participants));
+}
+
+export async function editGroupServers(id: number, servers: ServerDefinition[]) {
+  await request(`/group/${id}/servers`, "PUT", JSON.stringify(servers));
+}
+
 export async function getRecentActions(username: string) {
-  const response = await request(`/user/${username}/actions/recent`, "GET");
+  const response = await request(`/users/${username}/actions/recent`, "GET");
   if (!response?.ok) {
     console.error("Users response not ok :(");
     return;
   }
 
   return ((await response.json()) ?? []) as RichAction[];
+}
+
+export async function getInvitations(username: string): Promise<GroupInvitation[] | undefined> {
+  const response = await request(`/users/${username}/invitations`, "GET");
+  if (!response?.ok) {
+    console.error("Users response not ok :(");
+    return;
+  }
+
+  return ((await response.json()) ?? []) as GroupInvitation[];
+}
+
+export async function acceptInvitation(groupId: number): Promise<boolean> {
+  const response = await request(`/groups/${groupId}/accept`, "POST");
+  return !!response?.ok;
+}
+
+export async function declineInvitation(groupId: number): Promise<boolean> {
+  const response = await request(`/groups/${groupId}/decline`, "POST");
+  return !!response?.ok;
 }
 
 export async function getVersionKeys(projectId: string | number | undefined) {

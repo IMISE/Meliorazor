@@ -1,6 +1,35 @@
 import type { CommentType, Role, Status } from "./enums";
 import type { FhirTerminologyCode } from "./fhir";
 
+export interface Group {
+  id: number;
+  name: string;
+  description: string;
+  website: string | null | undefined;
+  participants: Participant[];
+  invitees: Participant[];
+  subGroups: Group[];
+  allowedServers: ServerDefinition[];
+  projects: Questionnaire[];
+}
+
+export interface CreateGroup {
+  name: string;
+  description: string;
+  website: string | null | undefined;
+  participants: Participant[];
+  parentGroupId: number | null;
+}
+
+export interface GroupInvitation {
+  id: number;
+  names: string[];
+  description: string;
+  website: string | null;
+}
+
+export type ServerDefinition = string;
+
 export interface Questionnaire {
   id: number;
   title: string;
@@ -11,15 +40,15 @@ export interface Questionnaire {
   valueSets: FhirValueSetDefinition[];
 }
 
-export type QuestionnaireOut = Questionnaire & {
-  id: undefined | null;
-  title: undefined | null;
-  description: undefined | null;
-  dataElements: undefined | null;
-  options: undefined | null;
-  participants: undefined | null;
-  valueSets: undefined | null;
-};
+export interface QuestionnaireOut {
+  id?: number | null | undefined;
+  title: string | null | undefined;
+  description: string | null | undefined;
+  dataElements: Variable[] | null | undefined;
+  options: QuestionnaireOptions | null | undefined;
+  valueSets: FhirValueSetDefinition[] | null | undefined;
+  groupId: number | null | undefined;
+}
 
 export type FhirValueSetDefinition = {
   implicit: boolean;

@@ -2,8 +2,8 @@ package eu.brunsch.terminology.annotator.questionnaire.domain.annotatable;
 
 import java.util.List;
 
-import eu.brunsch.terminology.annotator.questionnaire.domain.Participant;
 import eu.brunsch.terminology.annotator.questionnaire.domain.Questionnaire;
+import eu.brunsch.terminology.annotator.questionnaire.domain.group.Participant;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;

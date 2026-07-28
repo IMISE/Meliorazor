@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AnnotatorPage from "@/components/AnnotatorPage.vue";
-import BaseComponent from "@/components/BaseComponent.vue";
-import TabbedInterface from "@/components/TabbedInterface.vue";
+import BaseComponent from "@/components/wrappers/BaseComponent.vue";
+import TabbedInterface from "@/components/wrappers/TabbedInterface.vue";
 import type { Questionnaire, Variable } from "@/types/types";
 import { getProject } from "@/utils/api";
 import { clean } from "@/utils/utils";

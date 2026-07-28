@@ -1,14 +1,16 @@
 package eu.brunsch.terminology.annotator.questionnaire.domain;
 
-import java.util.List;
-
+import eu.brunsch.terminology.annotator.questionnaire.domain.group.Group;
+import eu.brunsch.terminology.annotator.questionnaire.domain.group.Participant;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,13 +42,18 @@ public class Questionnaire {
     /** Configures the annotation process. */
     private QuestionnaireOptions options;
 
-    /** Assigns usernames permissions. */
-    @ElementCollection
-    private Participant[] participants;
-
     /** URLs of whitelisted value sets. */
     @ElementCollection
     private FhirValueSetDefinition[] valueSets;
+
+    /** Group this is placed in. Dictates possible servers and participants. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Group group;
+
+    public Participant[] getParticipants() {
+        return getGroup() == null ? new Participant[0]
+                : getGroup().getParticipants() == null ? new Participant[0] : getGroup().getParticipants();
+    }
 
     /**
      * Whether a user with the given username is able to see this questionnaire.
@@ -57,12 +64,7 @@ public class Questionnaire {
      * @return whether user is allowed to see this
      */
     public boolean seenBy(final String username) {
-        for (Participant participant : participants) {
-            if (participant.getUsername().equals(username) && participant.getRoles().length > 0) {
-                return true;
-            }
-        }
-        return false;
+        return getGroup() == null ? true : getGroup().administeredBy(username);
     }
 
     /**
@@ -75,12 +77,6 @@ public class Questionnaire {
      * @return whether user is allowed to administer this
      */
     public boolean administeredBy(final String username) {
-        for (Participant participant : participants) {
-            if (participant.getUsername().equals(username)
-                    && List.of(participant.getRoles()).contains(Participant.Role.ADMIN)) {
-                return true;
-            }
-        }
-        return false;
+        return getGroup() == null ? false : getGroup().administeredBy(username);
     }
 }

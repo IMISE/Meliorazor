@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AnnotationCommentor from "@/components/AnnotationCommentor.vue";
 import AnnotationInfo from "@/components/AnnotationInfo.vue";
-import BaseComponent from "@/components/BaseComponent.vue";
+import BaseComponent from "@/components/wrappers/BaseComponent.vue";
 import { Role } from "@/types/enums";
 import type { Annotation, Questionnaire } from "@/types/types";
 import { getAnnotation, getProject } from "@/utils/api";

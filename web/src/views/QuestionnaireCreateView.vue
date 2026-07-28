@@ -1,25 +1,35 @@
 <script setup lang="ts">
-import { computed, inject, ref, shallowRef, watch, type Ref } from "vue";
+import { computed, inject, onMounted, ref, shallowRef, watch, type Ref } from "vue";
 import Papa from "papaparse";
-import { mdiAccountMinus, mdiAccountPlus, mdiAlertCircleOutline, mdiMinus, mdiPlus } from "@mdi/js";
-import type { Participant, QuestionnaireOptions, Unit, Variable } from "@/types/types";
-import auth from "@/auth";
-import { Role, roles } from "@/types/enums";
+import { mdiAlertCircleOutline, mdiPlus } from "@mdi/js";
+import type { Group, QuestionnaireOptions, Unit, Variable } from "@/types/types";
+import { Role } from "@/types/enums";
 import { useRouter } from "vue-router";
 import { read, utils } from "xlsx";
-import getEnv from "@/utils/env";
 import type { IdTokenClaims } from "oidc-client-ts";
 import ValueSetSelector from "@/components/ValueSetSelector.vue";
 import { clean } from "@/utils/utils";
 import type { FhirValueSetDefinition } from "@/types/types";
 import { fieldTypesWithChoicesImport, supportedFieldTypesWithChoices } from "@/types/redCap";
-import BaseComponent from "@/components/BaseComponent.vue";
+import BaseComponent from "@/components/wrappers/BaseComponent.vue";
+import { createProject, getGroups } from "@/utils/api";
+import GroupSelector from "@/components/groups/GroupSelector.vue";
 
 const step = shallowRef([1]);
 const itemsPerPage = ref(25);
 
 const user = inject<Ref<IdTokenClaims | undefined>>("user");
 const router = useRouter();
+
+const groups: Ref<Group[]> = ref([]);
+const administeredGroups = computed(() =>
+  groups.value.filter((group) =>
+    group.participants.some(
+      (p) => p.username === user?.value?.preferred_username && p.roles.includes(Role.ADMIN),
+    ),
+  ),
+);
+const selectedGroup: Ref<Group | undefined> = ref();
 
 const title = ref("");
 const description = ref("");
@@ -39,9 +49,6 @@ const setKey = () => {
   valueSetKey.value++;
   return valueSetKey.value;
 };
-const participants: Ref<Participant[]> = ref([
-  { username: user?.value?.preferred_username ?? "", roles: [Role.ADMIN] },
-]);
 const contents: Ref<
   | {
       data: { [index: string]: string }[];
@@ -273,38 +280,29 @@ const headers = [
 const loading: Ref<boolean> = ref(false);
 const response: Ref<Response | undefined> = ref();
 const create = async () => {
-  if (!parsedData.value) return;
-  const u = await auth.getUser();
-  if (!u?.access_token) return;
+  if (!parsedData.value || !selectedGroup.value) return;
   loading.value = true;
-  response.value = await fetch(`${getEnv("VITE_API_BASE")}/questionnaire`, {
-    method: "POST",
-    body: JSON.stringify({
-      title: title.value,
-      description: description.value,
-      dataElements: parsedData.value as Variable[],
-      options: {
-        reqPosReviews: options.value.posCount.use ? options.value.posCount.val : null,
-        reqNegReviews: options.value.negCount.use ? options.value.negCount.val : null,
-        reqPosReviewRatio: options.value.posRatio.use ? options.value.posRatio.val : null,
-        reqNegReviewRatio: options.value.negRatio.use ? options.value.negRatio.val : null,
-      } as QuestionnaireOptions,
-      participants: participants.value as Participant[],
-      valueSets: valueSets.value
-        .map((v) => v.set)
-        .filter((v) => !!v)
-        .map((v) => ({
-          /* do not copy unnecessary properties */
-          display: v.display,
-          server: v.server,
-          url: v.url,
-          version: v.version,
-        })) as FhirValueSetDefinition[],
-    }),
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${u.access_token}`,
-    },
+  response.value = await createProject({
+    title: title.value,
+    description: description.value,
+    dataElements: parsedData.value as Variable[],
+    options: {
+      reqPosReviews: options.value.posCount.use ? options.value.posCount.val : null,
+      reqNegReviews: options.value.negCount.use ? options.value.negCount.val : null,
+      reqPosReviewRatio: options.value.posRatio.use ? options.value.posRatio.val : null,
+      reqNegReviewRatio: options.value.negRatio.use ? options.value.negRatio.val : null,
+    } as QuestionnaireOptions,
+    valueSets: valueSets.value
+      .map((v) => v.set)
+      .filter((v) => !!v)
+      .map((v) => ({
+        /* do not copy unnecessary properties */
+        display: v.display,
+        server: v.server,
+        url: v.url,
+        version: v.version,
+      })) as FhirValueSetDefinition[],
+    groupId: selectedGroup.value!.id,
   });
   loading.value = false;
 };
@@ -328,12 +326,6 @@ const notEmpty = ref([(v: string | unknown[]) => !!v.length || "darf nicht leer 
 const atLeastOneDE = ref([
   () => !!parsedData.value?.length || "darf nicht leer sein; muss mind. ein Datenelement enthalten",
 ]);
-const participantUser = ref([
-  (v: string) => !!v.length || "darf nicht leer sein",
-  (v: string) =>
-    participants.value.reduce((acc, w) => Number(v === w.username) + acc, 0) === 1 ||
-    "darf nur 1x vorkommen",
-]);
 
 const sliderRules = ref([
   (v: number) => 0 <= v || "zu klein",
@@ -348,6 +340,8 @@ const fracSliderRules = ref([
     !options.value.negRatio.use ||
     "müssen zusammen mind. 100% sein",
 ]);
+
+onMounted(async () => (groups.value = (await getGroups()) ?? []));
 </script>
 
 <template>
@@ -359,6 +353,11 @@ const fracSliderRules = ref([
           <v-stepper-vertical-item title="Allgemeine Informationen" value="1" editable>
             <v-text-field v-model="title" :rules="notEmpty" label="Titel" required></v-text-field>
             <v-textarea v-model="description" label="Beschreibung"></v-textarea>
+            <group-selector
+              v-model="selectedGroup"
+              :disabled="loading"
+              :options="administeredGroups"
+            />
           </v-stepper-vertical-item>
           <v-stepper-vertical-item
             title="Datenelemente"
@@ -413,67 +412,7 @@ const fracSliderRules = ref([
             </v-col>
           </v-stepper-vertical-item>
           <v-stepper-vertical-item
-            title="Mitwirkende"
-            subtitle="Wer hat welche Rechte?"
             value="4"
-            editable
-          >
-            <v-col fluid>
-              <v-row v-for="(row, i) in participants" :key="participants.length + i" gap="10">
-                <v-col cols="6">
-                  <v-text-field
-                    v-model="row.username"
-                    :rules="participantUser"
-                    label="Nutzername"
-                    :disabled="i === 0 && !!user?.preferred_username"
-                  ></v-text-field>
-                </v-col>
-                <v-col :cols="participants.length > 1 ? 5 : 6">
-                  <v-select
-                    v-model="row.roles"
-                    label="Rolle"
-                    :rules="notEmpty"
-                    :items="roles"
-                    multiple
-                  >
-                    <template #item="{ props, item }">
-                      <v-list-item v-bind="props" :disabled="i === 0 && item.value === 'ADMIN'">
-                        <template #prepend>
-                          <v-checkbox
-                            hide-details
-                            single-line
-                            :model-value="row.roles.includes(item.value as Role)"
-                          />
-                        </template>
-                      </v-list-item>
-                    </template>
-                  </v-select>
-                </v-col>
-                <v-col v-if="participants.length > 1" cols="1">
-                  <v-icon-btn :icon="mdiMinus" @click="participants.splice(i, 1)"></v-icon-btn>
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-btn
-                  variant="text"
-                  :disabled="loading"
-                  :prepend-icon="mdiAccountPlus"
-                  @click="participants.push({ username: '', roles: [] })"
-                  >Hinzufügen</v-btn
-                >
-                <v-btn
-                  variant="text"
-                  :disabled="loading"
-                  :prepend-icon="mdiAccountMinus"
-                  @click="participants.pop()"
-                  v-if="participants.length > 1"
-                  >Entfernen</v-btn
-                >
-              </v-row>
-            </v-col>
-          </v-stepper-vertical-item>
-          <v-stepper-vertical-item
-            value="5"
             title="Akzeptanzbedingungen"
             subtitle="(optional)"
             editable

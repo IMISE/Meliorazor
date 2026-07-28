@@ -1,4 +1,5 @@
-import type { Annotatable, Questionnaire, Variable } from "@/types/types";
+import type { Role } from "@/types/enums";
+import type { Annotatable, Participant, Questionnaire, Variable } from "@/types/types";
 import type { LocationQueryValue } from "vue-router";
 
 export function clean(input: string | null | undefined, length: number | undefined = undefined) {
@@ -16,6 +17,11 @@ export function clean(input: string | null | undefined, length: number | undefin
     .replace(/_{2,}/g, "_")
     .replace(/(^_|_$)/g, "")
     .substring(0, length);
+}
+
+export function shorten(input: string | null | undefined, length: number): string {
+  const cutoff = length < 3 ? 0 : length - 3;
+  return (input?.length ?? 0) > cutoff + 3 ? (input ?? "") : `${input!.substring(0, cutoff)}…`;
 }
 
 /**
@@ -110,14 +116,22 @@ export function getAnnotatableFromProject(
 }
 
 export function download(format: string, filename: string, contents: string) {
-  var element = document.createElement('a');
+  const element = document.createElement("a");
   element.setAttribute("href", `data:${format};charset=utf-8,${encodeURIComponent(contents)}`);
   element.setAttribute("download", filename);
 
-  element.style.display = 'none';
+  element.style.display = "none";
   document.body.appendChild(element);
 
   element.click();
 
   document.body.removeChild(element);
+}
+
+export function hasRole(
+  username: string | undefined,
+  role: Role,
+  participants: Participant[],
+): boolean {
+  return participants.find((p) => p.username === username)?.roles.includes(role) ?? false;
 }

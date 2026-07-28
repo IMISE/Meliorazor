@@ -30,11 +30,6 @@ public class QuestionnaireDto {
      */
     private DataElementDto[] dataElements;
 
-    /**
-     * Who has which rights in this project?
-     */
-    private Participant[] participants;
-
     /** URLs of whitelisted value sets. */
     private FhirValueSetDefinition[] valueSets;
 }

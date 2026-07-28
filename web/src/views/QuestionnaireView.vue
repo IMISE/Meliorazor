@@ -1,16 +1,11 @@
 <script setup lang="ts">
-import BaseComponent from "@/components/BaseComponent.vue";
+import BaseComponent from "@/components/wrappers/BaseComponent.vue";
 import DataElementList from "@/components/DataElementList.vue";
 import ValueSetSelector from "@/components/ValueSetSelector.vue";
-import { Role, roles, Status } from "@/types/enums";
-import type {
-  FhirValueSetDefinition,
-  Participant,
-  Questionnaire,
-  QuestionnaireOut,
-} from "@/types/types";
+import { Role, Status } from "@/types/enums";
+import type { FhirValueSetDefinition, Questionnaire, QuestionnaireOut } from "@/types/types";
 import request, { getProject, getVersionKeys } from "@/utils/api";
-import { mdiArrowRight, mdiCheck, mdiClose, mdiMinus, mdiPlus } from "@mdi/js";
+import { mdiArrowRight, mdiCheck, mdiClose, mdiPlus } from "@mdi/js";
 import type { IdTokenClaims } from "oidc-client-ts";
 import { computed, inject, onMounted, provide, ref, watch, type Ref } from "vue";
 import { useRouter } from "vue-router";
@@ -184,21 +179,12 @@ watch(
 );
 
 /** editing */
-const participantEdit: Ref<{ id: number; participant: Participant; original: boolean }[]> = ref([]);
-const participantKey = ref(0);
 const valueSetEdit: Ref<{ id: number; set: FhirValueSetDefinition | undefined }[]> = ref([]);
 const valueSetKey = ref(0);
 const loadingEdits = ref(false);
 watch(
   questionnaire,
   (newVal) => {
-    participantEdit.value = (newVal?.participants ?? []).map((participant, id) => ({
-      id,
-      participant: JSON.parse(JSON.stringify(participant)),
-      original: true,
-    }));
-    participantKey.value = participantEdit.value.length ?? 0;
-
     valueSetEdit.value = (newVal?.valueSets ?? []).map((set, id) => ({ id, set }));
     valueSetKey.value = valueSetEdit.value.length ?? 0;
   },
@@ -219,7 +205,8 @@ const saveEdits = async () => {
           dataElements: undefined,
           options: questionnaire.value.options,
           valueSets: valueSetEdit.value.map((row) => row.set),
-          participants: participantEdit.value.map((row) => row.participant),
+          participants: undefined,
+          groupId: undefined,
         } as QuestionnaireOut),
       )
     : undefined;
@@ -233,14 +220,6 @@ const saveEdits = async () => {
   }
   loadingEdits.value = false;
 };
-/* editing rules */
-const notEmpty = ref([(v: string | unknown[]) => !!v.length || "darf nicht leer sein"]);
-const participantUser = ref([
-  (v: string) => !!v.length || "darf nicht leer sein",
-  (v: string) =>
-    participantEdit.value.reduce((acc, w) => Number(v === w.participant.username) + acc, 0) === 1 ||
-    "darf nur 1x vorkommen",
-]);
 </script>
 
 <template>
@@ -253,7 +232,7 @@ const participantUser = ref([
         <v-tabs v-model="tab" color="primary">
           <v-tab value="single-project" text="Datenelemente" />
           <v-tab v-if="versions?.length" value="project-version-index" text="Versionen" />
-          <v-tab value="project-admin" text="Projektadministration" />
+          <v-tab value="project-value-sets" text="Codequellen" />
         </v-tabs>
         <v-tabs-window v-model="tab">
           <v-tabs-window-item value="single-project">
@@ -309,72 +288,6 @@ const participantUser = ref([
           <v-tabs-window-item value="project-admin">
             <h2>Projektinformationen</h2>
             <v-form :disabled="loadingEdits" @submit.prevent="saveEdits">
-              <h3>Mitwirkende</h3>
-              <div>
-                <v-row v-for="(row, i) in participantEdit" :key="row.id" class="participant-row">
-                  <div v-if="!isAdmin" style="align-self: stretch; text-align: right">
-                    {{ row.participant.username }}
-                  </div>
-                  <v-text-field
-                    v-else
-                    v-model="row.participant.username"
-                    :rules="participantUser"
-                    label="Nutzername"
-                    :disabled="row.original"
-                  ></v-text-field>
-                  <v-select
-                    label="Rolle"
-                    :rules="notEmpty"
-                    :items="roles"
-                    v-model="row.participant.roles"
-                    multiple
-                    :readonly="!isAdmin"
-                  >
-                    <template #item="{ props, item }">
-                      <v-list-item
-                        v-bind="props"
-                        :disabled="
-                          row.original &&
-                          (i === 0 || user?.preferred_username === row.participant.username) &&
-                          item.value === 'ADMIN'
-                        "
-                      >
-                        <template #prepend>
-                          <v-checkbox
-                            hide-details
-                            single-line
-                            :model-value="row.participant.roles.includes(item.value as Role)"
-                          />
-                        </template>
-                      </v-list-item>
-                    </template>
-                  </v-select>
-                  <v-icon-btn
-                    v-if="
-                      i !== 0 &&
-                      (user?.preferred_username !== row.participant.username || !row.original) &&
-                      isAdmin
-                    "
-                    :icon="mdiMinus"
-                    @click.prevent="participantEdit.splice(i, 1)"
-                  />
-                </v-row>
-                <v-btn
-                  v-if="isAdmin"
-                  variant="text"
-                  :disabled="loading"
-                  :prepend-icon="mdiPlus"
-                  @click="
-                    participantEdit.push({
-                      id: participantKey++,
-                      participant: { username: '', roles: [] },
-                      original: false,
-                    })
-                  "
-                >
-                  Hinzufügen
-                </v-btn>
-              </div>
               <h3>Codequellen</h3>
               <div v-if="!isAdmin">
                 <template v-for="(group, key) in valueSetsByServer" :key="key">

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import auth from "@/auth";
 import AnnotationList from "@/components/AnnotationList.vue";
-import BaseComponent from "@/components/BaseComponent.vue";
+import BaseComponent from "@/components/wrappers/BaseComponent.vue";
 import type { Variable } from "@/types/types";
 import getEnv from "@/utils/env";
 import { watch } from "vue";

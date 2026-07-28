@@ -30,6 +30,7 @@ onUpdated(() => getUser());
     <v-app-bar>
       <v-app-bar-title>Meliorazor</v-app-bar-title>
       <v-btn href="/">Home</v-btn>
+      <v-btn href="/groups">Gruppen</v-btn>
       <v-btn href="/projects">Projekte</v-btn>
       <v-btn v-if="user?.access_token" :append-icon="mdiLogout" @click="logout()">{{
         user.profile.preferred_username ?? "Logout"

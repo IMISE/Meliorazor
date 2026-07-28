@@ -3,11 +3,13 @@ export enum Role {
   FEEDBACK = "FEEDBACK",
   VIEW = "VIEW",
   ADMIN = "ADMIN",
+  INFO = "INFO",
 }
 export const roles = [
   { title: "Annotieren", value: "ANNOTATE" },
   { title: "Korrigieren", value: "FEEDBACK" },
   { title: "Alles Sehen", value: "VIEW" },
+  { title: "Projekte sehen", value: "INFO" },
   { title: "Administrieren", value: "ADMIN" },
 ];
 
