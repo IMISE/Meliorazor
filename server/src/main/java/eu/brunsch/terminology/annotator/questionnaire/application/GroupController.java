@@ -34,6 +34,11 @@ public class GroupController {
         return service.getGroups();
     }
 
+    @GetMapping("by-role/{role}")
+    public GroupDto[] getGroups(final @PathVariable Participant.Role role) {
+        return service.getGroupDtosByRoleFlat(role);
+    }
+
     @GetMapping("{groupId}")
     public GroupDto getGroup(final @PathVariable Long groupId) {
         return service.getGroupDto(groupId);

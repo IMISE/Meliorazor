@@ -70,17 +70,15 @@ const groupToTree = (group: TreeGroupHelper): TreeGroup => {
     } as TreeGroup;
 
     if (group.projects.length) {
-      projectKid.children!.push.apply(
-        group.projects.map((project) => ({
-          title: project.title,
-          children: undefined,
-          id: project.id,
-          roles: node.roles,
-          orderedParents: [],
-          icon: mdiBook,
-          type: "single-project",
-        })),
-      );
+      projectKid.children = group.projects.map((project) => ({
+        title: project.title,
+        children: undefined,
+        id: project.id,
+        roles: node.roles,
+        orderedParents: [],
+        icon: mdiBook,
+        type: "single-project",
+      }));
     }
 
     if (isAdmin) {

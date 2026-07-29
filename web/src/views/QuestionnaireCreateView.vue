@@ -1,35 +1,33 @@
 <script setup lang="ts">
-import { computed, inject, onMounted, ref, shallowRef, watch, type Ref } from "vue";
+import { computed, onMounted, ref, shallowRef, watch, watchEffect, type Ref } from "vue";
 import Papa from "papaparse";
 import { mdiAlertCircleOutline, mdiPlus } from "@mdi/js";
 import type { Group, QuestionnaireOptions, Unit, Variable } from "@/types/types";
 import { Role } from "@/types/enums";
 import { useRouter } from "vue-router";
 import { read, utils } from "xlsx";
-import type { IdTokenClaims } from "oidc-client-ts";
 import ValueSetSelector from "@/components/ValueSetSelector.vue";
 import { clean } from "@/utils/utils";
 import type { FhirValueSetDefinition } from "@/types/types";
 import { fieldTypesWithChoicesImport, supportedFieldTypesWithChoices } from "@/types/redCap";
 import BaseComponent from "@/components/wrappers/BaseComponent.vue";
-import { createProject, getGroups } from "@/utils/api";
+import { createProject, getGroupsByRole } from "@/utils/api";
 import GroupSelector from "@/components/groups/GroupSelector.vue";
 
 const step = shallowRef([1]);
 const itemsPerPage = ref(25);
 
-const user = inject<Ref<IdTokenClaims | undefined>>("user");
 const router = useRouter();
 
-const groups: Ref<Group[]> = ref([]);
-const administeredGroups = computed(() =>
-  groups.value.filter((group) =>
-    group.participants.some(
-      (p) => p.username === user?.value?.preferred_username && p.roles.includes(Role.ADMIN),
-    ),
-  ),
+const administeredGroups: Ref<Group[]> = ref([]);
+const preselectedGroupId = computed(() =>
+  router.currentRoute.value.params.gid ? Number(router.currentRoute.value.params.gid) : undefined,
 );
 const selectedGroup: Ref<Group | undefined> = ref();
+watchEffect(
+  () =>
+    (selectedGroup.value = administeredGroups.value.find((g) => g.id === preselectedGroupId.value)),
+);
 
 const title = ref("");
 const description = ref("");
@@ -341,7 +339,7 @@ const fracSliderRules = ref([
     "müssen zusammen mind. 100% sein",
 ]);
 
-onMounted(async () => (groups.value = (await getGroups()) ?? []));
+onMounted(async () => (administeredGroups.value = (await getGroupsByRole(Role.ADMIN)) ?? []));
 </script>
 
 <template>
@@ -357,7 +355,7 @@ onMounted(async () => (groups.value = (await getGroups()) ?? []));
               v-model="selectedGroup"
               :disabled="loading"
               :options="administeredGroups"
-              editable
+              :editable="preselectedGroupId === undefined"
             />
           </v-stepper-vertical-item>
           <v-stepper-vertical-item

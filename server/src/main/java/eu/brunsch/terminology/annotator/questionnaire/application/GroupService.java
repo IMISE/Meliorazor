@@ -57,6 +57,15 @@ public class GroupService {
         return getGroup(groupId).toDtoSeenBy(Utils.username(), groupMapper);
     }
 
+    public GroupDto[] getGroupDtosByRoleFlat(final Participant.Role role) {
+        final String username = Utils.username();
+        return groupRepository
+                .findAllByParticipantsUsername(username)
+                .stream()
+                .filter(g -> g.administeredBy(username))
+                .map(groupMapper::toShallowDto).toArray(GroupDto[]::new);
+    }
+
     public Long createGroup(final GroupCreateDto dto) {
         final String username = Utils.username();
 

@@ -13,6 +13,7 @@ import type {
   RichAction,
   ServerDefinition,
 } from "@/types/types";
+import type { Role } from "@/types/enums";
 
 export default async function request(
   path: string,
@@ -95,6 +96,15 @@ export async function deleteProject(id: number): Promise<boolean> {
 
 export async function getGroups() {
   const response = await request("/groups", "GET");
+  if (!response?.ok) {
+    console.error("Group response not ok :(");
+    return;
+  }
+  return ((await response.json()) ?? []) as Group[];
+}
+
+export async function getGroupsByRole(role: Role) {
+  const response = await request(`/groups/by-role/${role}`, "GET");
   if (!response?.ok) {
     console.error("Group response not ok :(");
     return;
