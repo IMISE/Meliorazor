@@ -18,9 +18,13 @@ const parentGroupId = computed(() =>
 );
 const parentGroup: Ref<Group | undefined> = ref();
 
-watch(parentGroupId, async (newId, oldId) => {
-  parentGroup.value = await getGroup(newId, oldId);
-});
+watch(
+  parentGroupId,
+  async (newId, oldId) => {
+    parentGroup.value = await getGroup(newId, oldId);
+  },
+  { immediate: true },
+);
 
 const name = ref("");
 const description = ref("");

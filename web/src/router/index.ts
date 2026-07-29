@@ -48,6 +48,11 @@ const router = createRouter({
       component: () => import("../views/GroupCreateView.vue"),
     },
     {
+      path: "/groups/:gid-:name?/create",
+      name: "create-group-sub",
+      component: () => import("../views/GroupCreateView.vue"),
+    },
+    {
       path: "/projects",
       name: "projects",
       component: () => import("../views/QuestionnaireOverview.vue"),
@@ -55,6 +60,11 @@ const router = createRouter({
     {
       path: "/projects/create",
       name: "create-project",
+      component: () => import("../views/QuestionnaireCreateView.vue"),
+    },
+    {
+      path: "/grooups/:gid-:name?/projects/create",
+      name: "create-project-sub",
       component: () => import("../views/QuestionnaireCreateView.vue"),
     },
     {
