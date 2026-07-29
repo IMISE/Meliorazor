@@ -3,7 +3,12 @@ import BaseComponent from "@/components/wrappers/BaseComponent.vue";
 import DataElementList from "@/components/DataElementList.vue";
 import ValueSetSelector from "@/components/ValueSetSelector.vue";
 import { Role, Status } from "@/types/enums";
-import type { FhirValueSetDefinition, Questionnaire, QuestionnaireOut } from "@/types/types";
+import type {
+  FhirValueSetDefinition,
+  Questionnaire,
+  QuestionnaireOut,
+  ServerDefinition,
+} from "@/types/types";
 import request, { getProject, getVersionKeys } from "@/utils/api";
 import { mdiArrowRight, mdiCheck, mdiClose, mdiPlus } from "@mdi/js";
 import type { IdTokenClaims } from "oidc-client-ts";
@@ -306,6 +311,7 @@ const saveEdits = async () => {
                   v-for="(row, i) in valueSetEdit"
                   :key="row.id"
                   v-model="row.set"
+                  :allowed-servers="questionnaire.allowedServers ?? []"
                   :disabled="false"
                   :display-controls="valueSetEdit.length > 1"
                   @remove="valueSetEdit.splice(i, 1)"

@@ -1,7 +1,5 @@
 package eu.brunsch.terminology.annotator.questionnaire.application;
 
-import java.util.Set;
-
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -51,7 +49,7 @@ public class GroupController {
 
     @PutMapping("{groupId}/servers")
     public void setServers(final @PathVariable Long groupId, final @RequestBody String[] servers) {
-        service.setServers(groupId, Set.of(servers));
+        service.setServers(groupId, servers);
     }
 
     @PostMapping("{groupId}/accept")

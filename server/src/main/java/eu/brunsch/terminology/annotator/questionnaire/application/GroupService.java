@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.http.HttpStatus;
@@ -57,6 +57,7 @@ public class GroupService {
         return getGroup(groupId).toDtoSeenBy(Utils.username(), groupMapper);
     }
 
+    @Transactional(readOnly = true)
     public GroupDto[] getGroupDtosByRoleFlat(final Participant.Role role) {
         final String username = Utils.username();
         return groupRepository
@@ -214,15 +215,20 @@ public class GroupService {
         }
     }
 
-    public void setServers(final Long groupId, final Set<String> allowedServers) {
-        if (allowedServers != null && allowedServers.size() > 0 && !allowedServers.contains(null)
-                && allowedServers.stream().allMatch(s -> Utils.isUri(s))) {
+    public void setServers(final Long groupId, final String[] allowedServers) {
+        if (allowedServers == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+        final Set<String> newServers = Stream.of(allowedServers)
+                .filter(server -> server != null && !server.isBlank() && Utils.isUri(server))
+                .collect(Collectors.toUnmodifiableSet());
+        if (newServers.size() > 0) {
             final Group group = getGroup(groupId);
             if (!group.administeredBy(Utils.username())) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
             }
 
-            group.setAllowedServers(allowedServers);
+            group.setAllowedServers(newServers);
             groupRepository.save(group);
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);

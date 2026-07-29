@@ -40,4 +40,7 @@ public class QuestionnaireDto {
 
     @NotEmpty
     private Participant[] participants;
+
+    /** FHIR Servers we are allowed to query. */
+    private String[] allowedServers;
 }

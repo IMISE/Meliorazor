@@ -269,6 +269,7 @@ const editServers = async () => {
                 v-for="(row, i) in serverEdit"
                 :key="row.id"
                 v-model="row.server"
+                allow-remove
                 :disabled="false"
                 :display-controls="serverEdit.length > 1"
                 @remove="serverEdit.splice(i, 1)"

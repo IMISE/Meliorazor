@@ -96,6 +96,9 @@ public class AnnotationService {
      */
     public Long importQuestionnaire(final QuestionnaireCreateDto dto) {
         final Questionnaire questionnaire = questionnaireMapper.toEntity(dto);
+        if (!questionnaire.valueSetsAreValid()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
         final Group parent = groupRepository.findById(dto.getGroupId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         if (!parent.administeredBy(Utils.username())) {
@@ -176,7 +179,8 @@ public class AnnotationService {
                                 q.getOptions(),
                                 new DataElementDto[] {},
                                 q.getValueSets(),
-                                q.getParticipants())
+                                q.getParticipants(),
+                                q.getAllowedServers())
                         : q)
                 .toArray(QuestionnaireDto[]::new);
     }
@@ -241,6 +245,9 @@ public class AnnotationService {
             // need to have at least one valueset
             if (dto.getValueSets().length > 0) {
                 q.setValueSets(dto.getValueSets());
+                if (!q.valueSetsAreValid()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+                }
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Too few ValueSets");
             }

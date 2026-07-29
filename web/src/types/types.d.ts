@@ -38,6 +38,7 @@ export interface Questionnaire {
   options: QuestionnaireOptions;
   participants: Participant[];
   valueSets: FhirValueSetDefinition[];
+  allowedServers: ServerDefinition[];
 }
 
 export interface QuestionnaireOut {

@@ -1,20 +1,12 @@
 <script setup lang="ts">
 import type { FhirKeyValue } from "@/types/fhir";
-import type { FhirValueSetDefinition } from "@/types/types";
+import type { FhirValueSetDefinition, ServerDefinition } from "@/types/types";
 import {
   allCodeSystemsAsImplicitValueSets,
   allValueSets,
   expandValueSetRaw,
 } from "@/utils/fhirApi";
-import { isFhirServer, isUrl } from "@/utils/utils";
-import {
-  mdiAlertCircleOutline,
-  mdiCheck,
-  mdiLocationEnter,
-  mdiMinus,
-  mdiPencil,
-  mdiTestTube,
-} from "@mdi/js";
+import { mdiAlertCircleOutline, mdiCheck, mdiMinus, mdiTestTube } from "@mdi/js";
 import { computed, watch } from "vue";
 import { ref, type Ref } from "vue";
 import type { InternalItem } from "vuetify";
@@ -23,6 +15,7 @@ const model = defineModel<FhirValueSetDefinition | undefined>();
 defineProps<{
   displayControls: boolean;
   disabled: boolean;
+  allowedServers: ServerDefinition[];
 }>();
 
 defineEmits<{
@@ -69,16 +62,7 @@ const codeSystems: Ref<
   (FhirValueSetDefinition | (FhirValueSetDefinition & { type: "subheader" }))[]
 > = ref([]);
 const loading = ref(false);
-// if we were passed a server via a model, count that as selected
-// (we do that further below, because we need to load the valuesets still)
-const serverSelected = ref(false);
-const loadingSelection = ref(false);
 const loadingValueSets = ref(false);
-
-const serverRules = ref([
-  (v: string) => !!v.length || "darf nicht leer sein",
-  (v: string) => isUrl(v) || "muss valide URL sein",
-]);
 
 const testConnectionLimit = ref(100);
 const testConnection = async () => {
@@ -144,30 +128,7 @@ const getValueSets = async () => {
   }
 };
 
-const selectServer = async () => {
-  if (serverSelected.value) return;
-
-  loadingSelection.value = true;
-  const isValid = await isFhirServer(server.value);
-  if (isValid) {
-    // TODO: error handling
-    await getValueSets();
-    serverSelected.value = true;
-  }
-  loadingSelection.value = false;
-};
-
-const unselectServer = () => {
-  serverSelected.value = false;
-  selectedSet.value = undefined;
-};
-
-// if we started with a server in our model, select it
-selectServer();
-
-watch(loadingSelection, (val) => {
-  if (val) return;
-});
+watch(server, getValueSets, { immediate: true });
 
 const valueSetProps = (
   item: FhirValueSetDefinition | (FhirValueSetDefinition & { type: "subheader" }),
@@ -196,21 +157,10 @@ const customFilter = (
 
 <template>
   <v-row gap="10" ref="row.ref">
-    <v-col :cols="(displayControls ? 5 : 6) + (serverSelected ? 0 : 6)">
-      <v-text-field
-        v-model="server"
-        :readonly="serverSelected || loadingSelection"
-        :loading="loadingSelection"
-        :rules="serverRules"
-        label="FHIR Server-URL"
-        :prepend-icon="isUrl(server) && !serverSelected ? mdiLocationEnter : undefined"
-        :append-inner-icon="serverSelected ? mdiPencil : undefined"
-        @click:prepend="selectServer"
-        @keydown.enter="loadingSelection ? undefined : selectServer"
-        @click:append-inner="unselectServer"
-      />
+    <v-col :cols="(displayControls ? 5 : 6) + (server !== undefined ? 0 : 6)">
+      <v-select v-model="server" :items="allowedServers" label="FHIR Server" />
     </v-col>
-    <v-col v-if="serverSelected" :cols="6">
+    <v-col v-if="server !== undefined" :cols="6">
       <v-autocomplete
         v-model="selectedSet"
         :items="implicit ? codeSystems : valueSets"

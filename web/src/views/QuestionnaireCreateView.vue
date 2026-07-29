@@ -347,16 +347,23 @@ onMounted(async () => (administeredGroups.value = (await getGroupsByRole(Role.AD
     <v-sheet width="1000" class="sheet">
       <v-form :disabled="loading" @submit.prevent="create">
         <h1>Projekt erstellen</h1>
-        <v-stepper-vertical v-model="step" :mandatory="false" multiple non-linear hide-actions>
+        <group-selector
+          v-model="selectedGroup"
+          :disabled="loading"
+          :options="administeredGroups"
+          :editable="preselectedGroupId === undefined"
+        />
+        <v-stepper-vertical
+          v-model="step"
+          :disabled="!selectedGroup"
+          :mandatory="false"
+          multiple
+          non-linear
+          hide-actions
+        >
           <v-stepper-vertical-item title="Allgemeine Informationen" value="1" editable>
             <v-text-field v-model="title" :rules="notEmpty" label="Titel" required></v-text-field>
             <v-textarea v-model="description" label="Beschreibung"></v-textarea>
-            <group-selector
-              v-model="selectedGroup"
-              :disabled="loading"
-              :options="administeredGroups"
-              :editable="preselectedGroupId === undefined"
-            />
           </v-stepper-vertical-item>
           <v-stepper-vertical-item
             title="Datenelemente"
@@ -398,6 +405,7 @@ onMounted(async () => (administeredGroups.value = (await getGroupsByRole(Role.AD
                 v-model="row.set"
                 :disabled="loading"
                 :display-controls="valueSets.length > 1"
+                :allowed-servers="selectedGroup?.allowedServers ?? []"
                 @remove="valueSets.splice(i, 1)"
               />
               <v-btn

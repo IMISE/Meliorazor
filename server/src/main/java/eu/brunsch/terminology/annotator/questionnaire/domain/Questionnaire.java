@@ -55,6 +55,10 @@ public class Questionnaire {
                 : getGroup().getParticipants() == null ? new Participant[0] : getGroup().getParticipants();
     }
 
+    public String[] getAllowedServers() {
+        return getGroup() == null ? new String[0] : getGroup().getAllowedServers().toArray(String[]::new);
+    }
+
     /**
      * Whether a user with the given username is able to see this questionnaire.
      * This questionnaire should not be displayed to this user if it answers
@@ -78,5 +82,23 @@ public class Questionnaire {
      */
     public boolean administeredBy(final String username) {
         return getGroup() == null ? false : getGroup().administeredBy(username);
+    }
+
+    /**
+     * Do the value sets on this questionnaire comply with the allowed server values
+     * of the parent group?
+     *
+     * @return Whether the Questionnaire should be saved like this.
+     */
+    public boolean valueSetsAreValid() {
+        if (getGroup() == null)
+            return true;
+
+        for (FhirValueSetDefinition valueSet : getValueSets()) {
+            if (!getGroup().getAllowedServers().contains(valueSet.getServer()))
+                return false;
+        }
+
+        return true;
     }
 }
