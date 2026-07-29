@@ -84,7 +84,7 @@ public class UserService {
 
     @SuppressWarnings("null")
     public GroupInvitationDto[] getGroupInvitations(final String username) {
-        final List<Group> invites = groupRepository.findAllByInviteesUsernameAndParentGroupIsNull(username);
+        final List<Group> invites = groupRepository.findAllByInviteesUsername(username);
 
         return invites.stream()
                 // this "deduplicates", but I don't think we want that (think about rejecting

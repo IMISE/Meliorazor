@@ -238,10 +238,11 @@ public class GroupService {
     }
 
     public void acceptInvitation(final Long groupId) {
-        final Group group = getGroup(groupId);
+        final Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         final String username = Utils.username();
         if (!group.isInvited(username)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            throw new ResponseStatusException(group.seenBy(username) ? HttpStatus.BAD_REQUEST : HttpStatus.NOT_FOUND);
         }
 
         Group g = group;
@@ -260,14 +261,16 @@ public class GroupService {
 
                 groupRepository.save(g);
             }
+            g = group.getParentGroup();
         }
     }
 
     public void declineInvitation(final Long groupId) {
-        final Group group = getGroup(groupId);
+        final Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         final String username = Utils.username();
-        if (group.isInvited(username)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        if (!group.isInvited(username)) {
+            throw new ResponseStatusException(group.seenBy(username) ? HttpStatus.BAD_REQUEST : HttpStatus.NOT_FOUND);
         }
         group.removeUser(username).stream().forEach(groupRepository::save);
     }

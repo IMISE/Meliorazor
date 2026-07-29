@@ -96,7 +96,7 @@ const myProfile = computed(
         <h1 v-if="false">Handlungsbedarf</h1>
         <template v-if="invitations.length">
           <h1>Einladungen</h1>
-          <v-list lines="one">
+          <v-list lines="two">
             <v-list-item v-for="row in invitations" :key="row.invite.id">
               <v-list-item-title>
                 <template v-for="(name, i) of row.invite.names" :key="{ name, i }">
@@ -116,7 +116,7 @@ const myProfile = computed(
                 </template>
               </v-list-item-subtitle>
               <template #append>
-                <v-icon-btn
+                <v-btn
                   @click="
                     async () => {
                       row.loading = true;
@@ -125,12 +125,16 @@ const myProfile = computed(
                       row.loading = false;
                     }
                   "
-                  :icon="mdiCheck"
+                  :prepend-icon="mdiCheck"
+                  density="compact"
                   color="success"
+                  rounded
                   :loading="row.loading"
                   :disabled="row.loading"
-                />
-                <v-icon-btn
+                >
+                  Akzeptieren
+                </v-btn>
+                <v-btn
                   @click="
                     async () => {
                       row.loading = true;
@@ -139,11 +143,16 @@ const myProfile = computed(
                       row.loading = false;
                     }
                   "
-                  :icon="mdiClose"
+                  :prepend-icon="mdiClose"
+                  density="compact"
                   color="error"
+                  rounded
                   :loading="row.loading"
                   :disabled="row.loading"
-                />
+                  style="margin-inline-start: 5px"
+                >
+                  Ablehnen
+                </v-btn>
               </template>
             </v-list-item>
           </v-list>

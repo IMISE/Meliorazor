@@ -11,5 +11,5 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
 
     List<Group> findAllByParticipantsUsernameAndParentGroupIsNull(String username);
 
-    List<Group> findAllByInviteesUsernameAndParentGroupIsNull(String username);
+    List<Group> findAllByInviteesUsername(String username);
 }

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.RichActionDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.AnnotationDto;
+import eu.brunsch.terminology.annotator.questionnaire.domain.group.GroupInvitationDto;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -29,7 +30,7 @@ public class UserController {
     }
 
     @GetMapping("{username}/invitations")
-    public RichActionDto[] getInvitations(final @PathVariable String username) {
-        return service.getRecentActions(username);
+    public GroupInvitationDto[] getInvitations(final @PathVariable String username) {
+        return service.getGroupInvitations(username);
     }
 }
