@@ -55,7 +55,14 @@ const groupToTree = (group: TreeGroupHelper): TreeGroup => {
 </script>
 
 <template>
-  <v-treeview v-model="groupsTree" indent-lines open-on-click separate-roots>
+  <v-treeview
+    v-if="groupsTree.length"
+    :items="groupsTree"
+    item-value="id"
+    indent-lines
+    open-on-click
+    separate-roots
+  >
     <template #title="{ item }">
       <template v-for="parent in (item as TreeGroup).orderedParents" :key="parent.id">
         <router-link
@@ -63,8 +70,8 @@ const groupToTree = (group: TreeGroupHelper): TreeGroup => {
         >
           {{ parent.title }}
         </router-link>
-        <v-icon :icon="mdiChevronRight" />
-      </template>
+        <v-icon :icon="mdiChevronRight" /> </template
+      >ttt
       <router-link
         :to="{
           name: 'single-group',
@@ -78,4 +85,5 @@ const groupToTree = (group: TreeGroupHelper): TreeGroup => {
       <delete-button v-if="(item as TreeGroup).roles.includes(Role.ADMIN)" />
     </template>
   </v-treeview>
+  <p v-else><i>Keine Gruppen gefunden.</i></p>
 </template>

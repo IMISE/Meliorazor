@@ -357,6 +357,7 @@ onMounted(async () => (groups.value = (await getGroups()) ?? []));
               v-model="selectedGroup"
               :disabled="loading"
               :options="administeredGroups"
+              editable
             />
           </v-stepper-vertical-item>
           <v-stepper-vertical-item

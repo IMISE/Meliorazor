@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import eu.brunsch.terminology.annotator.questionnaire.domain.Questionnaire;
+import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireCreateDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireMapper;
 import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireOptions;
@@ -37,11 +38,13 @@ import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.Comment;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.CommentDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.Versioning;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotation.Annotation.Status;
+import eu.brunsch.terminology.annotator.questionnaire.domain.group.Group;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.ActionRepository;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.AnnotatableRepository;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.AnnotationRepository;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.ChoiceRepository;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.DataElementRepository;
+import eu.brunsch.terminology.annotator.questionnaire.infrastructure.GroupRepository;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.QuestionnaireRepository;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.UnitRepository;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.VersionRepository;
@@ -52,6 +55,8 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 @RequiredArgsConstructor
 public class AnnotationService {
+    /** Group DB access. */
+    private final GroupRepository groupRepository;
     /** Questionnaire DB access. */
     private final QuestionnaireRepository questionnaireRepository;
     /** Version DB access. */
@@ -89,8 +94,15 @@ public class AnnotationService {
      * @param dto probably the parsed eCRF
      * @return ID of the created questionnaire. NO IDs of data elements.
      */
-    public Long importQuestionnaire(final QuestionnaireDto dto) {
+    public Long importQuestionnaire(final QuestionnaireCreateDto dto) {
         final Questionnaire questionnaire = questionnaireMapper.toEntity(dto);
+        final Group parent = groupRepository.findById(dto.getGroupId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (!parent.administeredBy(Utils.username())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        } else {
+            questionnaire.setGroup(parent);
+        }
         questionnaireRepository.save(questionnaire);
 
         for (final DataElementDto dDto : dto.getDataElements()) {
@@ -163,7 +175,8 @@ public class AnnotationService {
                                 q.getDescription(),
                                 q.getOptions(),
                                 new DataElementDto[] {},
-                                q.getValueSets())
+                                q.getValueSets(),
+                                q.getParticipants())
                         : q)
                 .toArray(QuestionnaireDto[]::new);
     }

@@ -90,8 +90,11 @@ public class GroupService {
         }
 
         group.setName(dto.getName());
-        group.setDescription(group.getDescription());
+        group.setDescription(dto.getDescription());
         group.setWebsite(dto.getWebsite());
+        group.setAllowedServers(new HashSet<>());
+        group.setProjects(new HashSet<>());
+        group.setSubGroups(new HashSet<>());
 
         // inherited admins are added, not invited
         final List<Participant> participants = new ArrayList<>();
@@ -154,7 +157,7 @@ public class GroupService {
 
             final Optional<Participant> invited = Stream.of(group.getInvitees())
                     .filter(p -> p.getUsername().equals(change.getUsername())).findAny();
-            final Optional<Participant> accepted = Stream.of(group.getInvitees())
+            final Optional<Participant> accepted = Stream.of(group.getParticipants())
                     .filter(p -> p.getUsername().equals(change.getUsername())).findAny();
 
             if (invited.isEmpty() && accepted.isEmpty()) {

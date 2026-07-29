@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,7 +31,7 @@ public class Participant {
     /**
      * Roles that get assigned.
      */
-    @NotNull
+    @NotEmpty
     private Role[] roles;
 
     /** User privileges. */

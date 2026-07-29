@@ -1,11 +1,19 @@
 <script setup lang="ts">
 import FhirServerSelector from "@/components/controls/FhirServerSelector.vue";
 import TooltipIcon from "@/components/icons/TooltipIcon.vue";
+import QuestionnaireList from "@/components/QuestionnaireList.vue";
 import { Role, roles } from "@/types/enums";
 import type { Group, Participant, ServerDefinition } from "@/types/types";
 import { editGroupParticipants, editGroupServers, getGroup } from "@/utils/api";
 import { isUrl } from "@/utils/utils";
-import { mdiAccount, mdiEmailOpenHeartOutline, mdiHexagram, mdiMinus, mdiPlus } from "@mdi/js";
+import {
+  mdiAccount,
+  mdiEmailOpenHeartOutline,
+  mdiHexagram,
+  mdiMinus,
+  mdiPlus,
+  mdiRefresh,
+} from "@mdi/js";
 import type { IdTokenClaims } from "oidc-client-ts";
 import { ref, watch } from "vue";
 import { computed, inject, type Ref } from "vue";
@@ -22,7 +30,9 @@ const loading = ref(false);
 
 const tab = ref("projects");
 
-watch(groupId, getGroup, { immediate: true });
+watch(groupId, async (newId, oldId) => (group.value = await getGroup(newId, oldId)), {
+  immediate: true,
+});
 
 // EDITING STUFF
 /** editing */
@@ -31,6 +41,8 @@ const participantKey = ref(0);
 const serverEdit: Ref<{ id: number; server: ServerDefinition | undefined }[]> = ref([]);
 const serverKey = ref(0);
 const loadingEdits = ref(false);
+const editsFailed = ref(false);
+const editsSuccess = ref(false);
 watch(
   group,
   (newVal) => {
@@ -79,17 +91,36 @@ const participantUser = ref([
     "darf nur 1x vorkommen",
 ]);
 
-const editParticipants = () =>
-  editGroupParticipants(
+const editParticipants = async () => {
+  loadingEdits.value = true;
+  const ok = await editGroupParticipants(
     group.value!.id,
     participantEdit.value.map((row) => row.participant),
   );
+  if (ok) {
+    group.value = await getGroup(groupId.value);
+    editsSuccess.value = true;
+  } else {
+    editsFailed.value = true;
+  }
+  loadingEdits.value = false;
+};
 
-const editServers = () =>
-  editGroupServers(
+const editServers = async () => {
+  loadingEdits.value = true;
+  const ok = await editGroupServers(
     group.value!.id,
     serverEdit.value.map((row) => row.server).filter(isUrl) as string[],
   );
+
+  if (ok) {
+    group.value = await getGroup(groupId.value);
+    editsSuccess.value = true;
+  } else {
+    editsFailed.value = true;
+  }
+  loadingEdits.value = false;
+};
 </script>
 
 <template>
@@ -113,8 +144,25 @@ const editServers = () =>
               :questionnaires="group.projects"
               display-controls
               display-link
-              @delete="getGroup(groupId)"
+              @delete="async () => (group = await getGroup(groupId))"
             />
+            <v-row>
+              <v-btn
+                :prepend-icon="mdiPlus"
+                color="primary"
+                @click="$router.push({ name: 'create-project' })"
+              >
+                Neu
+              </v-btn>
+              <v-btn
+                @click="async () => (group = await getGroup(groupId))"
+                :prepend-icon="mdiRefresh"
+                :disabled="loading"
+                :loading="loading"
+              >
+                Aktualisieren
+              </v-btn>
+            </v-row>
           </v-tabs-window-item>
           <v-tabs-window-item value="group-members">
             <h2>Mitwirkende</h2>
@@ -205,6 +253,7 @@ const editServers = () =>
               </v-btn>
               <v-btn
                 block
+                color="primary"
                 type="submit"
                 :disabled="loadingEdits || editedParticipants"
                 :loading="loadingEdits"
@@ -234,6 +283,7 @@ const editServers = () =>
               </v-btn>
               <v-btn
                 block
+                color="primary"
                 type="submit"
                 :disabled="loadingEdits || editedParticipants"
                 :loading="loadingEdits"
@@ -247,9 +297,27 @@ const editServers = () =>
       <h3 v-else-if="loading">Lädt &hellip;</h3>
       <template v-else>
         <h3>Fehler</h3>
-        <p>Fehler beim Abrufen des Projekts.</p>
+        <p>Fehler beim Abrufen der Gruppe.</p>
       </template>
     </v-sheet>
+    <v-snackbar
+      v-model="editsSuccess"
+      location="bottom"
+      prepend-icon="$success"
+      color="success"
+      :timeout="2000"
+      title="Bearbeiten erfolgreich"
+      text="Liste wurde bearbeitet."
+    />
+    <v-snackbar
+      v-model="editsFailed"
+      location="bottom"
+      prepend-icon="$error"
+      color="error"
+      :timeout="2000"
+      title="Fehler beim Bearbeiten"
+      text="Liste konnte nicht bearbeitet werden."
+    />
   </base-component>
 </template>
 

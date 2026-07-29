@@ -22,7 +22,7 @@ onMounted(fetchGroups);
     <h1>Gruppen</h1>
     <br />
     <h3 v-if="loading">Lädt &hellip;</h3>
-    <group-tree v-else :groups="groups" />
+    <group-tree :groups="groups" />
     <v-row>
       <v-btn
         :prepend-icon="mdiPlus"

@@ -17,6 +17,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,6 +31,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "Groups")
 public class Group {
     /** Identifier value. */
     @Id
@@ -35,9 +40,11 @@ public class Group {
     private Long id;
 
     /** Display name of the group. */
+    @NotBlank
     private String name;
 
     /** Additional information. */
+    @NotBlank
     private String description;
 
     /** A URL that leads to further information about this group. */
@@ -46,14 +53,17 @@ public class Group {
 
     /** Assigns usernames permissions. */
     @ElementCollection
+    @NotEmpty
     private Participant[] participants;
 
     /** Invited participants need to accept or reject their invitation. */
     @ElementCollection
+    @NotNull
     private Participant[] invitees;
 
     /** Subordinate groups to support nested organisations. */
     @OneToMany(mappedBy = "parentGroup", fetch = FetchType.LAZY)
+    @NotNull
     private Set<Group> subGroups;
 
     /**
@@ -61,6 +71,7 @@ public class Group {
      * These are inherited to our subgroups, they may add upon them, but (at this
      * time) can't remove any.
      */
+    @NotNull
     private Set<String> allowedServers;
 
     /**
@@ -68,6 +79,7 @@ public class Group {
      * participants and servers, though they're a subset of the ones defined here.
      */
     @OneToMany(mappedBy = "group", fetch = FetchType.EAGER)
+    @NotNull
     private Set<Questionnaire> projects;
 
     /**

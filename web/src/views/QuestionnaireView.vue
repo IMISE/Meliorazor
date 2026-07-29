@@ -285,7 +285,7 @@ const saveEdits = async () => {
               </v-list-item>
             </v-list>
           </v-tabs-window-item>
-          <v-tabs-window-item value="project-admin">
+          <v-tabs-window-item value="project-value-sets">
             <h2>Projektinformationen</h2>
             <v-form :disabled="loadingEdits" @submit.prevent="saveEdits">
               <h3>Codequellen</h3>

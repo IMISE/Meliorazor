@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireCreateDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.VersionCreateDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.VersionDto;
@@ -43,7 +44,7 @@ public class AnnotationController {
      * @return ID of the created questionnaire.
      */
     @PostMapping("questionnaire")
-    public Long importQuestionnaire(final @RequestBody QuestionnaireDto dto) {
+    public Long importQuestionnaire(final @RequestBody QuestionnaireCreateDto dto) {
         return service.importQuestionnaire(dto);
     }
 

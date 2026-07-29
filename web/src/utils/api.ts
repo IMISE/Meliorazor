@@ -94,7 +94,7 @@ export async function deleteProject(id: number): Promise<boolean> {
 }
 
 export async function getGroups() {
-  const response = await request("/group", "GET");
+  const response = await request("/groups", "GET");
   if (!response?.ok) {
     console.error("Group response not ok :(");
     return;
@@ -109,7 +109,7 @@ export async function getGroup(
   if ((oldId !== undefined && id === oldId) || id === undefined) {
     return;
   } else {
-    const response = await request(`/group/${id}`, "GET");
+    const response = await request(`/groups/${id}`, "GET");
     if (!response?.ok) {
       console.error("Group response not ok :(");
       return;
@@ -118,22 +118,34 @@ export async function getGroup(
   }
 }
 
-export async function createGroup(group: CreateGroup) {
-  const response = await request(`/group`, "POST", JSON.stringify(group));
-  return !!response?.ok;
+export async function createGroup(group: CreateGroup): Promise<number | null> {
+  const response = await request(`/groups`, "POST", JSON.stringify(group));
+  if (response?.ok) {
+    const text = await response.text();
+    const number = Number(text);
+    if (!isNaN(number)) {
+      return number;
+    }
+  }
+  return null;
 }
 
 export async function deleteGroup(id: number): Promise<boolean> {
-  const response = await request(`/group/${id}`, "DELETE");
+  const response = await request(`/groups/${id}`, "DELETE");
   return !!response?.ok;
 }
 
-export async function editGroupParticipants(id: number, participants: Participant[]) {
-  await request(`/group/${id}/participants`, "PUT", JSON.stringify(participants));
+export async function editGroupParticipants(
+  id: number,
+  participants: Participant[],
+): Promise<boolean> {
+  const response = await request(`/groups/${id}/participants`, "PUT", JSON.stringify(participants));
+  return !!response?.ok;
 }
 
-export async function editGroupServers(id: number, servers: ServerDefinition[]) {
-  await request(`/group/${id}/servers`, "PUT", JSON.stringify(servers));
+export async function editGroupServers(id: number, servers: ServerDefinition[]): Promise<boolean> {
+  const response = await request(`/groups/${id}/servers`, "PUT", JSON.stringify(servers));
+  return !!response?.ok;
 }
 
 export async function getRecentActions(username: string) {

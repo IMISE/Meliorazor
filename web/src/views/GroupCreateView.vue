@@ -44,34 +44,30 @@ watch(
   () => (participants.value = JSON.parse(JSON.stringify(defaultParticipants.value))),
 );
 
-const loading: Ref<boolean> = ref(false);
-const response: Ref<Response | undefined> = ref();
+const loading = ref(false);
+const createError = ref(false);
 const create = async () => {
   loading.value = true;
-  await createGroup({
+  const id = await createGroup({
     name: name.value,
     description: description.value,
     website: website.value || null,
     participants: participants.value,
     parentGroupId: parentGroupId.value ?? null,
   });
-  loading.value = false;
-};
-
-watch(response, async (val) => {
-  if (val?.ok) {
-    const body = await val.text();
-    const id = Number(body);
-    if (!body || !Number.isInteger(id)) return;
-    return router.push({
+  if (id !== null) {
+    router.push({
       name: "single-group",
       params: {
         gid: id,
         name: clean(name.value),
       },
     });
+  } else {
+    createError.value = true;
   }
-});
+  loading.value = false;
+};
 
 const notEmpty = ref([(v: string | unknown[]) => !!v.length || "darf nicht leer sein"]);
 const participantUser = ref([
@@ -83,7 +79,7 @@ const participantUser = ref([
 </script>
 
 <template>
-  <base-component :back-button-link="{ name: 'projects' }">
+  <base-component :back-button-link="{ name: 'groups' }">
     <v-sheet width="1000" class="sheet">
       <v-form :disabled="loading" @submit.prevent="create">
         <h1>Gruppe erstellen</h1>
@@ -178,6 +174,15 @@ const participantUser = ref([
         </v-btn>
       </v-form>
     </v-sheet>
+    <v-snackbar
+      v-model="createError"
+      location="bottom"
+      prepend-icon="$error"
+      color="error"
+      :timeout="2000"
+      title="Fehler beim Erstellen"
+      text="Gruppe konnte nicht erstellt werden."
+    />
   </base-component>
 </template>
 

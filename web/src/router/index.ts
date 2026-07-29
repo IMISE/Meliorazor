@@ -43,9 +43,9 @@ const router = createRouter({
       component: () => import("../views/GroupView.vue"),
     },
     {
-      path: "/groups/:gid-:name?",
-      name: "single-group",
-      component: () => import("../views/QuestionnaireOverview.vue"),
+      path: "/groups/create",
+      name: "create-group",
+      component: () => import("../views/GroupCreateView.vue"),
     },
     {
       path: "/projects",

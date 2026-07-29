@@ -1,12 +1,10 @@
 package eu.brunsch.terminology.annotator.questionnaire.domain;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.ReportingPolicy;
 import org.mapstruct.MappingConstants.ComponentModel;
 
 @Mapper(
-    componentModel = ComponentModel.SPRING,
-    unmappedTargetPolicy = ReportingPolicy.IGNORE
+    componentModel = ComponentModel.SPRING
 )
 public interface QuestionnaireMapper {
     /**
@@ -22,5 +20,12 @@ public interface QuestionnaireMapper {
      * @return entity which can be saved
      */
     public Questionnaire toEntity(QuestionnaireDto dto);
+
+    /**
+     * Map an incoming questionnaire create DTO to questionnaire.
+     * @param dto incoming DTO
+     * @return entity which can be saved
+     */
+    public Questionnaire toEntity(QuestionnaireCreateDto dto);
 
 }
