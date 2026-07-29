@@ -18,6 +18,7 @@ import eu.brunsch.terminology.annotator.questionnaire.domain.group.GroupCreateDt
 import eu.brunsch.terminology.annotator.questionnaire.domain.group.GroupDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.group.GroupMapper;
 import eu.brunsch.terminology.annotator.questionnaire.domain.group.Participant;
+import eu.brunsch.terminology.annotator.questionnaire.domain.group.Participant.Role;
 import eu.brunsch.terminology.annotator.questionnaire.infrastructure.GroupRepository;
 import eu.brunsch.terminology.annotator.utils.Utils;
 import lombok.RequiredArgsConstructor;
@@ -58,7 +59,7 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
-    public GroupDto[] getGroupDtosByRoleFlat(final Participant.Role role) {
+    public GroupDto[] getGroupDtosByRoleFlat(final Role role) {
         final String username = Utils.username();
         return groupRepository
                 .findAllByParticipantsUsername(username)
@@ -114,9 +115,9 @@ public class GroupService {
 
             // everyone should have INFO role
             Participant newUser = p;
-            if (!p.hasRole(Participant.Role.INFO)) {
-                final Participant.Role[] roles = Arrays.copyOf(p.getRoles(), p.getRoles().length + 1);
-                roles[roles.length - 1] = Participant.Role.INFO;
+            if (!p.hasRole(Role.INFO)) {
+                final Role[] roles = Arrays.copyOf(p.getRoles(), p.getRoles().length + 1);
+                roles[roles.length - 1] = Role.INFO;
             }
 
             if (inheritedAdmins.contains(p.getUsername())) {
@@ -160,9 +161,9 @@ public class GroupService {
         for (final Participant _change : participants) {
             Participant change = _change;
             // leaving INFO out is not an error, but it should still be present
-            if (!change.hasRole(Participant.Role.INFO)) {
-                final Participant.Role[] roles = Arrays.copyOf(change.getRoles(), change.getRoles().length + 1);
-                roles[roles.length - 1] = Participant.Role.INFO;
+            if (!change.hasRole(Role.INFO)) {
+                final Role[] roles = Arrays.copyOf(change.getRoles(), change.getRoles().length + 1);
+                roles[roles.length - 1] = Role.INFO;
             }
 
             final Participant invitee = group.getInvitee(change.getUsername());
@@ -180,10 +181,11 @@ public class GroupService {
                     // newly invited user
                     // add to this project and all parent project where they aren't present
                     Group ancestor = parent;
+                    final Participant minimal = new Participant(change.getUsername(), new Role[] { Role.INFO });
                     while (ancestor != null && !ancestor.seenBy(change.getUsername())) {
                         Participant[] ancestorInvites = Arrays.copyOf(ancestor.getInvitees(),
                                 ancestor.getInvitees().length + 1);
-                        ancestorInvites[ancestorInvites.length - 1] = change;
+                        ancestorInvites[ancestorInvites.length - 1] = minimal;
                         ancestor.setInvitees(ancestorInvites);
                         groupRepository.save(ancestor);
                         ancestor = ancestor.getParentGroup();
