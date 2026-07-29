@@ -164,30 +164,31 @@ public class GroupService {
                 roles[roles.length - 1] = Participant.Role.INFO;
             }
 
-            final Optional<Participant> invited = Stream.of(group.getInvitees())
-                    .filter(p -> p.getUsername().equals(change.getUsername())).findAny();
-            final Optional<Participant> accepted = Stream.of(group.getParticipants())
-                    .filter(p -> p.getUsername().equals(change.getUsername())).findAny();
-
-            if (invited.isEmpty() && accepted.isEmpty()) {
-                // newly invited user
-                // add to this project and all parent project where they aren't present
-                Group ancestor = parent;
-                while (ancestor != null && !ancestor.seenBy(change.getUsername())) {
-                    List<Participant> ancestorInvites = new ArrayList<>();
-                    ancestorInvites.addAll(List.of(ancestor.getInvitees()));
-                    ancestorInvites.add(change);
-                    ancestor.setInvitees(ancestorInvites.toArray(Participant[]::new));
-                    groupRepository.save(ancestor);
-                    ancestor = ancestor.getParentGroup();
-                }
-            } else if (invited.isEmpty()) {
-                // old participant
-                newParticipants.add(change);
-
-            } else {
-                // old invite
+            final Participant invitee = group.getInvitee(change.getUsername());
+            if (invitee != null) {
+                // we invited this person previously
+                // no further action required
                 newInvites.add(change);
+            } else {
+                final Participant user = group.getUser(change.getUsername());
+                if (user != null) {
+                    // this person already accepted their invitation
+                    // no further action required
+                    newParticipants.add(change);
+                } else {
+                    // newly invited user
+                    // add to this project and all parent project where they aren't present
+                    Group ancestor = parent;
+                    while (ancestor != null && !ancestor.seenBy(change.getUsername())) {
+                        Participant[] ancestorInvites = Arrays.copyOf(ancestor.getInvitees(),
+                                ancestor.getInvitees().length + 1);
+                        ancestorInvites[ancestorInvites.length - 1] = change;
+                        ancestor.setInvitees(ancestorInvites);
+                        groupRepository.save(ancestor);
+                        ancestor = ancestor.getParentGroup();
+                    }
+                    newInvites.add(change);
+                }
             }
 
             // find and process removed users

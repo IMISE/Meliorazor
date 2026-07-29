@@ -183,14 +183,14 @@ public class Group {
         return Stream.of(getParticipants())
                 .filter(p -> p.getUsername().equals(username))
                 .findAny()
-                .orElseGet(null);
+                .orElseGet(() -> null);
     }
 
     public Participant getInvitee(final String username) {
         return Stream.of(getInvitees())
                 .filter(p -> p.getUsername().equals(username))
                 .findAny()
-                .orElseGet(null);
+                .orElseGet(() -> null);
     }
 
     /**
