@@ -5,7 +5,7 @@ import { mdiAlertCircleOutline, mdiPlus } from "@mdi/js";
 import type { Group, QuestionnaireOptions, Unit, Variable } from "@/types/types";
 import { Role } from "@/types/enums";
 import { useRouter } from "vue-router";
-import { read, utils } from "xlsx";
+import XLSX from "xlsx";
 import ValueSetSelector from "@/components/ValueSetSelector.vue";
 import { clean } from "@/utils/utils";
 import type { FhirValueSetDefinition } from "@/types/types";
@@ -109,14 +109,33 @@ watch(file, () => {
     }
     case "OpenClinica": {
       const reader = new FileReader();
-      reader.onload = (data) => {
+      reader.onload = ({ target }) => {
         try {
-          const wb = read(data, { type: "buffer" });
-          const ws = wb.Sheets["Items"]!;
-          const items: { [index: string]: string }[] = utils.sheet_to_json(ws, {
-            header: "A",
-            skipHidden: true,
+          const wb = XLSX.read(target?.result ?? "", {
+            type: "buffer",
+            // we only parse items right now
+            sheets: ["Items"],
           });
+          const ws = wb.Sheets["Items"]!;
+          const items: { [index: string]: string }[] = XLSX.utils.sheet_to_json(ws, { skipHidden: true });
+          const responseOptionsLabelToValues = new Map<string, { text: string, values: string }>();
+          items.forEach((item) => {
+            // this only needs to be defined once and can be reused afterwards
+            // defined select options
+            const responseLabel = item["RESPONSE_LABEL"];
+            if (!responseLabel) return;
+            else if (item["RESPONSE_OPTIONS_TEXT"] !== "") {
+              responseOptionsLabelToValues.set(
+                responseLabel,
+                { text: item["RESPONSE_OPTIONS_TEXT"]!, values: item["RESPONSE_OPTIONS_VALUES_OR_CALCULATIONS"]! }
+              );
+            } else {
+              const { text, values } = responseOptionsLabelToValues.get(responseLabel)!;
+              item["RESPONSE_OPTIONS_TEXT"] = text;
+              item["RESPONSE_OPTIONS_VALUES_OR_CALCULATIONS"] = values;
+            }
+
+          })
           contents.value = { data: items, errors: [] };
         } catch (e) {
           console.error(e);
@@ -132,7 +151,7 @@ watch(file, () => {
         }
       };
       reader.onerror = console.error;
-      reader.readAsText(file.value);
+      reader.readAsArrayBuffer(file.value);
       break;
     }
     default: {
@@ -155,6 +174,44 @@ const redcapFieldType = (datum: { [index: string]: string }) => {
       return t;
   }
 };
+
+const openClinicaFieldType = (datum: { [index: string]: string }) => {
+  const t = datum?.["RESPONSE_TYPE*"] as string;
+  switch (t) {
+    case "text":
+    case "textarea":
+      return "text";
+    case "radio":
+    case "multi-select":
+    case "checkbox":
+      return "radio";
+    case "calculation":
+    case "group-calculation":
+    case "instant-calculation":
+      // we don't handle these right now
+      return t;
+    case "file":
+      return "file";
+    // should be nothing
+    default:
+      return t;
+  }
+}
+
+const openClinicaChoices = (datum: { [index: string]: string }) => {
+  const text = datum["RESPONSE_OPTIONS_TEXT"];
+  if (!text) {
+    return null;
+  }
+  const values = datum["RESPONSE_OPTIONS_VALUES_OR_CALCULATIONS"]!.split(",");
+  return text.split(",").filter((choice) => choice)
+              .map((choice, index) => ({
+                id: undefined,
+                code: "" + values[index],
+                label: choice,
+                annotations: [],
+              }))
+}
 
 const parsedDataREDCap = () =>
   contents.value?.data.map(
@@ -211,25 +268,15 @@ const parsedDataOpenClinica = () =>
         id: undefined,
         variableName: datum["ITEM_NAME*"] as string,
         label: datum["DESCRIPTION_LABEL*"] as string,
-        fieldType: datum["DATA_TYPE*"] as string,
-        unit: {
+        fieldType: openClinicaFieldType(datum),
+        unit: datum["UNITS"] ? {
           id: undefined,
-          label: "Automatisch generierte Einheit",
+          label: datum["UNITS"],
           min: null,
           max: null,
           annotations: [],
-        } as Unit,
-        choices: datum["RESPONSE_OPTIONS_TEXT"]
-          ? (datum["RESPONSE_OPTIONS_TEXT"] as string)
-              .split(",")
-              .filter((choice) => choice)
-              .map((choice, index) => ({
-                id: undefined,
-                code: "" + index,
-                label: choice,
-                annotations: [],
-              }))
-          : null,
+        } as Unit : null,
+        choices: openClinicaChoices(datum),
         metadata: Object.keys(datum)
           .filter(
             (key) =>
@@ -379,9 +426,9 @@ onMounted(async () => (administeredGroups.value = (await getGroupsByRole(Role.AD
             editable
           >
             <v-select
-              label="Typ vom Data Dictionary"
+              label="Typ des Data Dictionaries"
               :rules="notEmpty"
-              :items="['REDCap' /*, 'OpenClinica'*/]"
+              :items="['REDCap', 'OpenClinica']"
               v-model="fileType"
             ></v-select>
             <v-file-input
@@ -394,7 +441,7 @@ onMounted(async () => (administeredGroups.value = (await getGroupsByRole(Role.AD
             <v-file-input
               v-else-if="fileType === 'OpenClinica'"
               v-model="ocFile"
-              accept=".xls"
+              :accept="['.xls', '.xlsx']"
               :rules="atLeastOneDE"
               label="Data Dictionary eingeben"
             ></v-file-input>
