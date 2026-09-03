@@ -41,7 +41,14 @@ export interface Questionnaire {
   allowedServers: ServerDefinition[];
 }
 
-export interface QuestionnaireOut {
+export interface QuestionnaireEdit {
+  title: string | null | undefined;
+  description: string | null | undefined;
+  options: QuestionnaireOptions | null | undefined;
+  valueSets: FhirValueSetDefinition[] | null | undefined;
+}
+
+export interface QuestionnaireCreate {
   id?: number | null | undefined;
   title: string | null | undefined;
   description: string | null | undefined;

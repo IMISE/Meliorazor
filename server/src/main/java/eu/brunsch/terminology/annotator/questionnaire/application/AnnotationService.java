@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 import eu.brunsch.terminology.annotator.questionnaire.domain.Questionnaire;
 import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireCreateDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireDto;
+import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireEditDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireMapper;
 import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireOptions;
 import eu.brunsch.terminology.annotator.questionnaire.domain.Version;
@@ -218,13 +219,7 @@ public class AnnotationService {
      * @param dto new contents; ignores ID, data elements and empty (undefined/null)
      *            properties.
      */
-    @SuppressWarnings("null")
-    public void editQuestionnaire(final Long id, final QuestionnaireDto dto) {
-        // access & permissions stuff
-        if (dto.getId() != null && id != dto.getId()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "IDs do not match");
-        }
-
+    public void editQuestionnaire(final Long id, final QuestionnaireEditDto dto) {
         final String username = Utils.username();
         final Questionnaire q = questionnaireRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));

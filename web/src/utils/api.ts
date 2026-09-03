@@ -9,7 +9,7 @@ import type {
   GroupInvitation,
   Participant,
   Questionnaire,
-  QuestionnaireOut,
+  QuestionnaireCreate,
   RichAction,
   ServerDefinition,
 } from "@/types/types";
@@ -85,7 +85,7 @@ export async function getProjects() {
   return ((await response.json()) ?? []) as Questionnaire[];
 }
 
-export async function createProject(q: QuestionnaireOut) {
+export async function createProject(q: QuestionnaireCreate) {
   return await request(`/questionnaire`, "POST", JSON.stringify(q));
 }
 

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireCreateDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireDto;
+import eu.brunsch.terminology.annotator.questionnaire.domain.QuestionnaireEditDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.VersionCreateDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.VersionDto;
 import eu.brunsch.terminology.annotator.questionnaire.domain.annotatable.DataElementDto;
@@ -75,7 +76,7 @@ public class AnnotationController {
      */
     @PutMapping("questionnaire/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void editQuestionnaire(final @PathVariable Long id, final @RequestBody QuestionnaireDto dto) {
+    public void editQuestionnaire(final @PathVariable Long id, final @RequestBody QuestionnaireEditDto dto) {
         service.editQuestionnaire(id, dto);
     }
 
