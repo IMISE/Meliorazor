@@ -205,14 +205,20 @@ const saveEdits = async () => {
     : undefined;
   if (response?.ok) {
     editFeedbackIcon.value = mdiCheck;
+    editSuccessFeedback.value = true
     setTimeout(() => (editFeedbackIcon.value = undefined), 2_000);
     await get(projectId.value);
   } else {
     editFeedbackIcon.value = mdiClose;
-    setTimeout(() => (editFeedbackIcon.value = undefined), 5_000);
+    editErrorFeedback.value = true
+    setTimeout(() => (editFeedbackIcon.value = undefined), 2_000);
   }
   loadingEdits.value = false;
 };
+
+
+const editSuccessFeedback = ref(false)
+const editErrorFeedback = ref(false)
 </script>
 
 <template>
@@ -337,6 +343,25 @@ const saveEdits = async () => {
         <p>Fehler beim Abrufen des Projekts.</p>
       </template>
     </v-sheet>
+    <v-snackbar
+      v-model="editErrorFeedback"
+      location="bottom"
+      prepend-icon="$error"
+      color="error"
+      :timeout="2000"
+      title="Fehler beim Bearbeiten"
+      text="Projekt konnte nicht gespeichert werden."
+    />
+    <v-snackbar
+      v-model="editSuccessFeedback"
+      class="feedback"
+      location="bottom"
+      prepend-icon="$success"
+      color="success"
+      :timeout="2000"
+      title="Bearbeiten"
+      text="Projekt wurde erfolgreich bearbeitet."
+    />
   </base-component>
 </template>
 
