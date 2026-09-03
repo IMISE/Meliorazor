@@ -96,7 +96,7 @@ public class GroupService {
         if (!Participant.checkConsistent(dto.getParticipants(), username, inheritedAdmins)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
-        if (!Utils.isUri(dto.getWebsite())) {
+        if (dto.getWebsite() != null && dto.getWebsite().length() > 0 && !Utils.isUri(dto.getWebsite())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 

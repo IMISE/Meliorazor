@@ -2,6 +2,7 @@ package eu.brunsch.terminology.annotator.questionnaire.domain.group;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,7 @@ public class GroupCreateDto {
     @NotBlank
     private String name;
 
-    @NotBlank
+    @NotNull
     private String description;
 
     private String website;
