@@ -28,6 +28,13 @@ watchEffect(
   () =>
     (selectedGroup.value = administeredGroups.value.find((g) => g.id === preselectedGroupId.value)),
 );
+watch(selectedGroup, (newVal, oldVal) => {
+  if (newVal == null) {
+    step.value = []
+  } else if (oldVal == null) {
+    step.value = [1]
+  }
+}, { immediate: true });
 
 const title = ref("");
 const description = ref("");
