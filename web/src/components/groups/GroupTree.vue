@@ -13,6 +13,7 @@ import {
 import type { IdTokenClaims } from "oidc-client-ts";
 import { computed, inject, type Ref } from "vue";
 import DeleteButton from "../controls/DeleteButton.vue";
+import { deleteGroup } from "@/utils/api.ts";
 
 const user = inject("user") as Ref<IdTokenClaims | undefined>;
 
@@ -162,7 +163,7 @@ const groupToTree = (group: TreeGroupHelper): TreeGroup => {
       </template>
     </template>
     <template #append="{ item }">
-      <delete-button v-if="item.type === 'single-group' && item.roles.includes(Role.ADMIN)" />
+      <delete-button v-if="item.type === 'single-group' && item.roles.includes(Role.ADMIN)" @delete="() => deleteGroup(item.id)" />
     </template>
   </v-treeview>
   <p v-else><i>Keine Gruppen gefunden.</i></p>
